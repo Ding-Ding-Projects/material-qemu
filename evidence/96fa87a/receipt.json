@@ -1,0 +1,85 @@
+{
+  "schemaVersion": 1,
+  "route": "linux-container-playwright",
+  "source": "96fa87a7c6f55bd304380067638cc462159d3635",
+  "image": "sha256:839ceffe46ce0d731a6ae1de83eeac20e5c060657ae630d8511c94d39986ee37",
+  "browser": "141.0.7390.37",
+  "isolatedContext": true,
+  "screenshots": [
+    {
+      "path": "initial.png",
+      "sha256": "ab650b253f1aee114d6f9748fbc9b60a0cb340a49e6a9fba8955e8604bdba153",
+      "width": 1440,
+      "height": 1000,
+      "viewport": {
+        "width": 1440,
+        "height": 1000
+      },
+      "scale": 1,
+      "theme": "dark",
+      "language": "en",
+      "reducedMotion": true,
+      "capturedAt": "2026-11-13T23:17:58.270181+00:00",
+      "inspected": true,
+      "state": "Initial owner setup with empty credential fields"
+    },
+    {
+      "path": "console.png",
+      "sha256": "9c04fa4ee8ab6bd7b30c25af1c5895972e857fa23675add05852ad12dad046e0",
+      "width": 1440,
+      "height": 1032,
+      "viewport": {
+        "width": 1440,
+        "height": 1000
+      },
+      "scale": 1,
+      "theme": "dark",
+      "language": "en",
+      "reducedMotion": true,
+      "capturedAt": "2026-11-13T23:18:06.326489+00:00",
+      "inspected": true,
+      "state": "Authenticated live SeaBIOS display on a blank test disk"
+    },
+    {
+      "path": "machines-360.png",
+      "sha256": "c03ab0b202053fafd206bb7a8313fe00c518eef99eeb4455d5ef7a7458b63355",
+      "width": 360,
+      "height": 1639,
+      "viewport": {
+        "width": 360,
+        "height": 900
+      },
+      "scale": 1,
+      "theme": "dark",
+      "language": "en",
+      "reducedMotion": true,
+      "capturedAt": "2026-11-13T23:18:07.445327+00:00",
+      "inspected": true,
+      "state": "Running test machine at narrow viewport"
+    }
+  ],
+  "pageErrors": [],
+  "checks": [
+    "owner setup UI",
+    "onboarding UI",
+    "anonymous state rejection",
+    "setup credential absent from anonymous response",
+    "machine wizard UI",
+    "real QEMU start pause resume stop",
+    "live console canvas",
+    "360 and 1440 body overflow",
+    "Virtual WebAuthn registration and sign-in",
+    "Folder rename and removal while machine runs preserves machine and view assignments",
+    "Saved-view deletion",
+    "Dialog Escape and opener focus restoration",
+    "12 language/theme/width tuples with equal action inventories",
+    "Preferences survive reload"
+  ],
+  "privacyReview": "Synthetic verification owner and machine only; no credentials, private paths or unrelated content in selected images.",
+  "limitations": [
+    "Browser virtual authenticator, not physical hardware",
+    "Blank disk firmware display, not guest OS installation",
+    "Display scale 1; no full reference parity verdict",
+    "Linux browser evidence, not native Windows installer proof"
+  ]
+}

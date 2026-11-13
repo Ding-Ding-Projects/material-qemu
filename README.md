@@ -30,3 +30,13 @@ The default Compose port is loopback-only. Remote access requires a reviewed HTT
 The other 50 design boards remain design-only. Appliance operating-system images, USB installation, advanced QEMU hardware, snapshots, migration, desktop assistants, portable companions and native installers are not delivered. Full required-feature parity, regex tooling, complete translation and production hardening remain incomplete. `build-installer.bat` reports that gap with a nonzero exit code.
 
 See [roadmap](ROADMAP.md), [handoff](HANDOFF.md), [runtime architecture](docs/features/runtime.md) and the original [design contract](design/HANDOFF.md). Design frames illustrate the reference only and are not runtime evidence.
+
+## Verified runtime images
+
+The following images show the real container built from `96fa87a7c6f55bd304380067638cc462159d3635`. The [evidence inventory](evidence/README.md) records source and image identity, exact hashes, viewports, observed interactions and limitations. Later source changes require their own evidence.
+
+![Initial owner setup with empty credential fields](evidence/96fa87a/initial.png)
+
+![Authenticated QEMU console displaying SeaBIOS on an intentionally blank disk](evidence/96fa87a/console.png)
+
+[Machine management at 360 pixels](evidence/96fa87a/machines-360.png)
