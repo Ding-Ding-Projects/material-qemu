@@ -1,0 +1,488 @@
+{
+ "v": 3,
+ "createdOnFiles": {
+  "v": 1,
+  "at": "2026-11-13T05:41:40Z"
+ },
+ "title": "Material QEMU",
+ "launch": {
+  "view": "canvas"
+ },
+ "pages": [],
+ "boards": {
+  "Main.dc.html": {
+   "x": 0,
+   "y": 300,
+   "w": 1440,
+   "h": 900,
+   "title": "Front screen and passkey sign-in",
+   "expand": "fill"
+  },
+  "Onboarding.dc.html": {
+   "x": 1520,
+   "y": 300,
+   "w": 1440,
+   "h": 980,
+   "title": "First-run setup wizard",
+   "expand": "fill"
+  },
+  "Overview.dc.html": {
+   "x": 3040,
+   "y": 300,
+   "w": 1440,
+   "h": 1500,
+   "title": "Overview dashboard",
+   "expand": "fill"
+  },
+  "Machines.dc.html": {
+   "x": 4560,
+   "y": 300,
+   "w": 1440,
+   "h": 1100,
+   "title": "Machines list",
+   "expand": "fill"
+  },
+  "NewMachine.dc.html": {
+   "x": 6080,
+   "y": 300,
+   "w": 1440,
+   "h": 1050,
+   "title": "New machine wizard",
+   "expand": "fill"
+  },
+  "Console.dc.html": {
+   "x": 7600,
+   "y": 300,
+   "w": 1440,
+   "h": 1150,
+   "title": "Machine console",
+   "expand": "fill"
+  },
+  "Processor.dc.html": {
+   "x": 0,
+   "y": 2220,
+   "w": 1440,
+   "h": 1500,
+   "title": "Processor and NUMA settings",
+   "expand": "fill"
+  },
+  "Memory.dc.html": {
+   "x": 1520,
+   "y": 2220,
+   "w": 1440,
+   "h": 1250,
+   "title": "Memory settings",
+   "expand": "fill"
+  },
+  "Firmware.dc.html": {
+   "x": 3040,
+   "y": 2220,
+   "w": 1440,
+   "h": 1300,
+   "title": "Firmware, boot and TPM",
+   "expand": "fill"
+  },
+  "Storage.dc.html": {
+   "x": 4560,
+   "y": 2220,
+   "w": 1440,
+   "h": 1150,
+   "title": "Storage devices",
+   "expand": "fill"
+  },
+  "Network.dc.html": {
+   "x": 6080,
+   "y": 2220,
+   "w": 1440,
+   "h": 1250,
+   "title": "Network devices",
+   "expand": "fill"
+  },
+  "Display.dc.html": {
+   "x": 7600,
+   "y": 2220,
+   "w": 1440,
+   "h": 1250,
+   "title": "Display, input and audio",
+   "expand": "fill"
+  },
+  "Passthrough.dc.html": {
+   "x": 9120,
+   "y": 2220,
+   "w": 1440,
+   "h": 1350,
+   "title": "USB, PCI and passthrough",
+   "expand": "fill"
+  },
+  "GuestAgent.dc.html": {
+   "x": 10640,
+   "y": 2220,
+   "w": 1440,
+   "h": 1050,
+   "title": "Serial, chardevs and guest agent",
+   "expand": "fill"
+  },
+  "OtherDevices.dc.html": {
+   "x": 12160,
+   "y": 2220,
+   "w": 1440,
+   "h": 1150,
+   "title": "Shared folders and other devices",
+   "expand": "fill"
+  },
+  "Security.dc.html": {
+   "x": 13680,
+   "y": 2220,
+   "w": 1440,
+   "h": 1050,
+   "title": "Security and confidential computing",
+   "expand": "fill"
+  },
+  "Snapshots.dc.html": {
+   "x": 0,
+   "y": 4140,
+   "w": 1440,
+   "h": 1250,
+   "title": "Snapshots",
+   "expand": "fill"
+  },
+  "Migration.dc.html": {
+   "x": 1520,
+   "y": 4140,
+   "w": 1440,
+   "h": 1150,
+   "title": "Live migration",
+   "expand": "fill"
+  },
+  "Jobs.dc.html": {
+   "x": 3040,
+   "y": 4140,
+   "w": 1440,
+   "h": 1000,
+   "title": "Jobs and backups",
+   "expand": "fill"
+  },
+  "Monitor.dc.html": {
+   "x": 4560,
+   "y": 4140,
+   "w": 1440,
+   "h": 1000,
+   "title": "QMP and HMP monitor",
+   "expand": "fill"
+  },
+  "Debug.dc.html": {
+   "x": 6080,
+   "y": 4140,
+   "w": 1440,
+   "h": 1250,
+   "title": "Debug and trace",
+   "expand": "fill"
+  },
+  "Stats.dc.html": {
+   "x": 7600,
+   "y": 4140,
+   "w": 1440,
+   "h": 1150,
+   "title": "Live stats",
+   "expand": "fill"
+  },
+  "UserMode.dc.html": {
+   "x": 9120,
+   "y": 4140,
+   "w": 1440,
+   "h": 1000,
+   "title": "User-mode emulation",
+   "expand": "fill"
+  },
+  "DiskImages.dc.html": {
+   "x": 0,
+   "y": 5810,
+   "w": 1440,
+   "h": 1450,
+   "title": "Storage pools and disk images",
+   "expand": "fill"
+  },
+  "Images.dc.html": {
+   "x": 1520,
+   "y": 5810,
+   "w": 1440,
+   "h": 1200,
+   "title": "ISO library and templates",
+   "expand": "fill"
+  },
+  "HostNetworks.dc.html": {
+   "x": 3040,
+   "y": 5810,
+   "w": 1440,
+   "h": 1050,
+   "title": "Host networks",
+   "expand": "fill"
+  },
+  "Appliance.dc.html": {
+   "x": 4560,
+   "y": 5810,
+   "w": 1440,
+   "h": 1400,
+   "title": "Host and appliance",
+   "expand": "fill"
+  },
+  "CommandPalette.dc.html": {
+   "x": 0,
+   "y": 7680,
+   "w": 1440,
+   "h": 900,
+   "title": "Command palette and context menu",
+   "expand": "fill"
+  },
+  "RegexBuilder.dc.html": {
+   "x": 1520,
+   "y": 7680,
+   "w": 1440,
+   "h": 1000,
+   "title": "Regex builder",
+   "expand": "fill"
+  },
+  "SettingsLanguage.dc.html": {
+   "x": 3040,
+   "y": 7680,
+   "w": 1440,
+   "h": 1350,
+   "title": "Settings: language and voice",
+   "expand": "fill"
+  },
+  "SettingsAppearance.dc.html": {
+   "x": 4560,
+   "y": 7680,
+   "w": 1440,
+   "h": 1250,
+   "title": "Settings: appearance",
+   "expand": "fill"
+  },
+  "MotionEditor.dc.html": {
+   "x": 6080,
+   "y": 7680,
+   "w": 1440,
+   "h": 1150,
+   "title": "Animation and transition editor",
+   "expand": "fill"
+  },
+  "Locks.dc.html": {
+   "x": 7600,
+   "y": 7680,
+   "w": 1440,
+   "h": 1000,
+   "title": "Locks, unlock ladder and support tickets",
+   "expand": "fill"
+  },
+  "Users.dc.html": {
+   "x": 9120,
+   "y": 7680,
+   "w": 1440,
+   "h": 1100,
+   "title": "Users, passkeys and authenticator",
+   "expand": "fill"
+  },
+  "History.dc.html": {
+   "x": 10640,
+   "y": 7680,
+   "w": 1440,
+   "h": 1100,
+   "title": "History, exports and notifications",
+   "expand": "fill"
+  },
+  "Docs.dc.html": {
+   "x": 12160,
+   "y": 7680,
+   "w": 1440,
+   "h": 950,
+   "title": "Docs, changelog and status",
+   "expand": "fill"
+  },
+  "Extensions.dc.html": {
+   "x": 13680,
+   "y": 7680,
+   "w": 1440,
+   "h": 1000,
+   "title": "Extensions and drawing",
+   "expand": "fill"
+  },
+  "Tabs.dc.html": {
+   "x": 15200,
+   "y": 7680,
+   "w": 1440,
+   "h": 950,
+   "title": "New tab catalog and tab tools",
+   "expand": "fill"
+  },
+  "Phone-Overview.dc.html": {
+   "x": 0,
+   "y": 9450,
+   "w": 390,
+   "h": 844,
+   "title": "Phone: overview"
+  },
+  "Phone-Console.dc.html": {
+   "x": 470,
+   "y": 9450,
+   "w": 390,
+   "h": 844,
+   "title": "Phone: console"
+  },
+  "Phone-Settings.dc.html": {
+   "x": 940,
+   "y": 9450,
+   "w": 390,
+   "h": 844,
+   "title": "Phone: settings"
+  },
+  "Assist-Home.dc.html": {
+   "x": 0,
+   "y": 10714,
+   "w": 1440,
+   "h": 950,
+   "title": "Desktop assist: home",
+   "expand": "fill"
+  },
+  "Assist-Build.dc.html": {
+   "x": 1520,
+   "y": 10714,
+   "w": 1440,
+   "h": 1150,
+   "title": "Desktop assist: build image",
+   "expand": "fill"
+  },
+  "Assist-BuildProgress.dc.html": {
+   "x": 3040,
+   "y": 10714,
+   "w": 1440,
+   "h": 900,
+   "title": "Desktop assist: build progress",
+   "expand": "fill"
+  },
+  "Assist-Deploy.dc.html": {
+   "x": 4560,
+   "y": 10714,
+   "w": 1440,
+   "h": 1150,
+   "title": "Desktop assist: deploy",
+   "expand": "fill"
+  },
+  "Assist-Verify.dc.html": {
+   "x": 6080,
+   "y": 10714,
+   "w": 1440,
+   "h": 950,
+   "title": "Desktop assist: verify and open",
+   "expand": "fill"
+  },
+  "Assist-Releases.dc.html": {
+   "x": 7600,
+   "y": 10714,
+   "w": 1440,
+   "h": 900,
+   "title": "Desktop assist: releases",
+   "expand": "fill"
+  }
+ },
+ "order": [
+  "Main.dc.html",
+  "Onboarding.dc.html",
+  "Overview.dc.html",
+  "Machines.dc.html",
+  "NewMachine.dc.html",
+  "Console.dc.html",
+  "Processor.dc.html",
+  "Memory.dc.html",
+  "Firmware.dc.html",
+  "Storage.dc.html",
+  "Network.dc.html",
+  "Display.dc.html",
+  "Passthrough.dc.html",
+  "GuestAgent.dc.html",
+  "OtherDevices.dc.html",
+  "Security.dc.html",
+  "Snapshots.dc.html",
+  "Migration.dc.html",
+  "Jobs.dc.html",
+  "Monitor.dc.html",
+  "Debug.dc.html",
+  "Stats.dc.html",
+  "UserMode.dc.html",
+  "DiskImages.dc.html",
+  "Images.dc.html",
+  "HostNetworks.dc.html",
+  "Appliance.dc.html",
+  "CommandPalette.dc.html",
+  "RegexBuilder.dc.html",
+  "SettingsLanguage.dc.html",
+  "SettingsAppearance.dc.html",
+  "MotionEditor.dc.html",
+  "Locks.dc.html",
+  "Users.dc.html",
+  "History.dc.html",
+  "Docs.dc.html",
+  "Extensions.dc.html",
+  "Tabs.dc.html",
+  "Phone-Overview.dc.html",
+  "Phone-Console.dc.html",
+  "Phone-Settings.dc.html",
+  "Assist-Home.dc.html",
+  "Assist-Build.dc.html",
+  "Assist-BuildProgress.dc.html",
+  "Assist-Deploy.dc.html",
+  "Assist-Verify.dc.html",
+  "Assist-Releases.dc.html"
+ ],
+ "notes": {
+  "front": {
+   "x": 0,
+   "y": 0,
+   "text": "Appliance front door",
+   "kind": "title1",
+   "maxW": 4000
+  },
+  "hw": {
+   "x": 0,
+   "y": 1920,
+   "text": "Machine hardware: every QEMU device family",
+   "kind": "title1",
+   "maxW": 4000
+  },
+  "ops": {
+   "x": 0,
+   "y": 3840,
+   "text": "Lifecycle, monitor and debugging",
+   "kind": "title1",
+   "maxW": 4000
+  },
+  "host": {
+   "x": 0,
+   "y": 5510,
+   "text": "Host, storage and the appliance",
+   "kind": "title1",
+   "maxW": 4000
+  },
+  "uh": {
+   "x": 0,
+   "y": 7380,
+   "text": "Built-in product features",
+   "kind": "title1",
+   "maxW": 4000
+  },
+  "phone": {
+   "x": 0,
+   "y": 9150,
+   "text": "Phone parity",
+   "kind": "title1",
+   "maxW": 4000
+  },
+  "assist": {
+   "x": 0,
+   "y": 10414,
+   "text": "Desktop build and deploy assistant",
+   "kind": "title1",
+   "maxW": 4000
+  }
+ },
+ "designSystems": []
+}

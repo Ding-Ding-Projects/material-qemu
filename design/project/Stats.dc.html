@@ -1,0 +1,249 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Live stats</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto+Flex:opsz,wght@8..144,300..900&amp;family=Roboto+Mono:wght@400;500&amp;family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,300..600,0..1,0&amp;display=swap">
+<style>
+body{margin:0;background:var(--bg,#FFF8F6)}
+a{color:#A23F00}a:hover{color:#7C2E00}
+.app{--primary:#A23F00;--on-primary:#FFFFFF;--pc:#FFDBCC;--on-pc:#360F00;--sec:#77574A;--sc:#FFDBCC;--on-sc:#2C160C;
+--ter:#006A60;--tc:#9EF2E4;--on-tc:#00201C;--err:#BA1A1A;--ec:#FFDAD6;--on-ec:#410002;--ok:#2E6B2F;--okc:#B1F2AB;--warn:#7A5900;--wc:#FFDF9E;
+--s:#FFF8F6;--s0:#FFFFFF;--s1:#FFF1EC;--s2:#FCEAE3;--s3:#F6E5DE;--s4:#F0DFD8;--on-s:#231A16;--on-sv:#53433D;--ol:#85736C;--olv:#D8C2BA;
+--shadow:0 1px 2px rgba(35,26,22,.12),0 2px 8px rgba(35,26,22,.08);--lift:0 6px 18px rgba(35,26,22,.16),0 2px 6px rgba(35,26,22,.10);
+font-family:"Roboto Flex",system-ui,sans-serif;color:var(--on-s);background:var(--s);min-height:100%;font-size:14px;line-height:1.45}
+.app.dark{--primary:#FFB595;--on-primary:#571E00;--pc:#7C2E00;--on-pc:#FFDBCC;--sec:#E7BDAD;--sc:#5D4033;--on-sc:#FFDBCC;
+--ter:#82D5C8;--tc:#005048;--on-tc:#9EF2E4;--err:#FFB4AB;--ec:#93000A;--on-ec:#FFDAD6;--ok:#96D590;--okc:#145218;--warn:#F2C14A;--wc:#5C4300;
+--s:#1A110E;--s0:#140C09;--s1:#231A16;--s2:#271E1A;--s3:#322824;--s4:#3D332E;--on-s:#F1DFD8;--on-sv:#D8C2BA;--ol:#A08D86;--olv:#53433D;
+--shadow:0 1px 2px rgba(0,0,0,.4);--lift:0 8px 22px rgba(0,0,0,.5)}
+.ms{font-family:"Material Symbols Rounded";font-weight:normal;font-style:normal;font-size:20px;line-height:1;letter-spacing:normal;text-transform:none;display:inline-block;white-space:nowrap;direction:ltr;-webkit-font-smoothing:antialiased;font-variation-settings:"FILL" 1,"wght" 500,"opsz" 20;flex:none;width:20px;overflow:hidden}
+.ms.o{font-variation-settings:"FILL" 0,"wght" 400,"opsz" 20}
+.mono{font-family:"Roboto Mono",ui-monospace,monospace;font-size:12.5px}
+.topbar{display:flex;flex-wrap:wrap;align-items:center;gap:12px;padding:10px 16px;background:var(--s1);border-bottom:1px solid var(--olv);position:relative}
+.brand{display:flex;align-items:center;gap:10px;font-weight:700;font-size:17px;letter-spacing:-.01em;font-variation-settings:"opsz" 30}
+.brand .mark{width:32px;height:32px;border-radius:10px;background:var(--primary);color:var(--on-primary);display:grid;place-items:center}
+.search{flex:1 1 320px;display:flex;align-items:center;gap:8px;background:var(--s3);border-radius:28px;padding:4px 6px 4px 14px;min-width:0;max-width:640px}
+.search input{flex:1;min-width:0;border:0;background:transparent;font:inherit;color:var(--on-s);padding:8px 0;outline:none}
+.search input::placeholder{color:var(--on-sv)}
+.rx{border:1px solid var(--olv);background:var(--s1);color:var(--on-sv);border-radius:16px;font:500 12px "Roboto Mono",monospace;padding:6px 10px;cursor:pointer;min-height:32px}
+.rx:hover{background:var(--s4)}
+.kbd{font:500 11.5px "Roboto Mono",monospace;padding:3px 7px;border-radius:6px;background:var(--s0);border:1px solid var(--olv);border-bottom-width:2px;color:var(--on-sv);white-space:nowrap}
+.ib{width:44px;height:44px;border-radius:22px;border:0;background:transparent;color:var(--on-sv);display:grid;place-items:center;cursor:pointer;position:relative;transition:background .2s}
+.ib:hover{background:var(--s4)}
+.ib .dot{position:absolute;top:9px;right:9px;width:8px;height:8px;border-radius:4px;background:var(--err)}
+.avatar{width:36px;height:36px;border-radius:18px;background:var(--tc);color:var(--on-tc);display:grid;place-items:center;font-weight:700;font-size:13px;flex:none}
+.pill{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:16px;background:var(--s3);font-size:12.5px;font-weight:500;color:var(--on-sv);white-space:nowrap}
+.pill.ok{background:var(--okc);color:var(--ok)}.pill.warn{background:var(--wc);color:var(--warn)}.pill.err{background:var(--ec);color:var(--err)}.pill.pri{background:var(--pc);color:var(--on-pc)}.pill.ter{background:var(--tc);color:var(--on-tc)}
+.app.dark .pill.ok{color:var(--ok)}
+.live{width:8px;height:8px;border-radius:4px;background:currentColor;flex:none;animation:pulse 1.8s ease-out infinite}
+.body{display:flex;flex-wrap:wrap;align-items:stretch}
+.tabs{flex:1 1 240px;max-width:272px;padding:12px 10px;background:var(--s1);border-right:1px solid var(--olv);display:flex;flex-direction:column;gap:2px;box-sizing:border-box}
+.tabs .tg{display:flex;align-items:center;gap:8px;margin:12px 6px 4px;font-size:11.5px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--on-sv)}
+.tabs .tg i{width:10px;height:10px;border-radius:3px;display:inline-block}
+.tab{display:flex;align-items:center;gap:10px;min-height:40px;padding:0 6px 0 12px;border-radius:20px;color:var(--on-sv);text-decoration:none;font-weight:500;position:relative;transition:background .25s,color .25s}
+.tab:hover{background:var(--s3);color:var(--on-s)}
+.tab span.l{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tab.on{background:var(--sc);color:var(--on-sc)}
+.tab .x{width:28px;height:28px;border-radius:14px;border:0;background:transparent;color:inherit;display:none;place-items:center;cursor:pointer}
+.tab.on .x,.tab:hover .x{display:grid}
+.tab .st{width:8px;height:8px;border-radius:4px;flex:none}
+.tabfoot{margin-top:auto;padding-top:12px;display:flex;flex-direction:column;gap:6px}
+.main{flex:999 1 560px;min-width:0;padding:24px 28px 40px;box-sizing:border-box;display:flex;flex-direction:column;gap:20px}
+.crumb{display:flex;align-items:center;gap:6px;color:var(--on-sv);font-size:13px;flex-wrap:wrap}
+.h1{font-size:30px;font-weight:650;letter-spacing:-.02em;margin:0;font-variation-settings:"opsz" 48;line-height:1.15}
+.h2{font-size:18px;font-weight:620;margin:0;letter-spacing:-.005em}
+.h3{font-size:14px;font-weight:620;margin:0}
+.sub{color:var(--on-sv);margin:4px 0 0}
+.row{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.sp{flex:1}
+.grid{display:grid;gap:16px}
+.g2{grid-template-columns:repeat(auto-fit,minmax(min(100%,380px),1fr))}
+.g3{grid-template-columns:repeat(auto-fit,minmax(min(100%,280px),1fr))}
+.g4{grid-template-columns:repeat(auto-fit,minmax(min(100%,210px),1fr))}
+.card{background:var(--s0);border-radius:24px;padding:20px;box-shadow:var(--shadow);display:flex;flex-direction:column;gap:14px;transition:transform .35s cubic-bezier(.2,0,0,1),box-shadow .35s;min-width:0}
+.card:hover{transform:translateY(-2px);box-shadow:var(--lift)}
+.card.tonal{background:var(--s2);box-shadow:none}
+.card.pri{background:var(--pc);color:var(--on-pc);box-shadow:none}
+.card.ter{background:var(--tc);color:var(--on-tc);box-shadow:none}
+.ch{display:flex;align-items:center;gap:10px}
+.ch .ms{color:var(--primary)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:40px;padding:0 20px;border-radius:20px;border:0;font:600 14px "Roboto Flex",sans-serif;cursor:pointer;white-space:nowrap;transition:transform .2s cubic-bezier(.2,0,0,1),background .2s,box-shadow .2s;text-decoration:none}
+.btn:active{transform:scale(.96)}
+.btn.f{background:var(--primary);color:var(--on-primary)}.btn.f:hover{box-shadow:var(--lift)}
+.btn.t{background:var(--sc);color:var(--on-sc)}
+.btn.o{background:transparent;color:var(--primary);border:1px solid var(--ol)}
+.btn.x{background:transparent;color:var(--primary);padding:0 12px}
+.btn.d{background:var(--err);color:var(--on-primary)}
+.app.dark .btn.d{color:#690005}
+.btn.lg{min-height:56px;padding:0 28px;border-radius:28px;font-size:16px}
+.btn.sm{min-height:32px;padding:0 14px;font-size:13px}
+.seg{display:inline-flex;border:1px solid var(--ol);border-radius:20px;overflow:hidden;flex-wrap:wrap}
+.seg button{border:0;border-right:1px solid var(--ol);background:transparent;color:var(--on-s);font:500 13px "Roboto Flex",sans-serif;min-height:40px;padding:0 14px;display:flex;align-items:center;gap:6px;cursor:pointer}
+.seg button:last-child{border-right:0}
+.seg button.on{background:var(--sc);color:var(--on-sc)}
+.field{display:flex;flex-direction:column;gap:6px;min-width:0}
+.field label{font-size:12.5px;font-weight:600;color:var(--on-sv);display:flex;align-items:center;gap:4px}
+.field input,.field select{font:inherit;color:var(--on-s);background:var(--s1);border:1px solid var(--ol);border-radius:12px;padding:11px 14px;min-height:46px;box-sizing:border-box;width:100%}
+.field input:focus{outline:2px solid var(--primary);outline-offset:0}
+.field .hint{font-size:12px;color:var(--on-sv)}
+.info{width:24px;height:24px;border-radius:12px;border:0;background:transparent;color:var(--on-sv);display:inline-grid;place-items:center;cursor:pointer;padding:0}
+.info .ms{font-size:16px;width:16px;color:var(--on-sv)}
+.sw{width:52px;height:32px;border-radius:16px;border:2px solid var(--ol);background:var(--s4);position:relative;cursor:pointer;flex:none;padding:0;transition:background .25s}
+.sw::after{content:"";position:absolute;top:6px;left:6px;width:16px;height:16px;border-radius:8px;background:var(--ol);transition:all .3s cubic-bezier(.3,1.4,.5,1)}
+.sw.on{background:var(--primary);border-color:var(--primary)}
+.sw.on::after{left:24px;top:2px;width:24px;height:24px;border-radius:12px;background:var(--on-primary)}
+.opt{display:flex;align-items:center;gap:12px;min-height:56px;padding:4px 0;border-bottom:1px solid var(--s3)}
+.opt:last-child{border-bottom:0}
+.opt .t{flex:1;min-width:0}
+.opt .t b{display:block;font-weight:560}
+.opt .t small{display:block;color:var(--on-sv);font-size:12.5px}
+.slider{flex:1 1 140px;max-width:240px;height:44px;position:relative;display:flex;align-items:center}
+.slider .tr{height:16px;border-radius:8px;background:var(--sc);flex:1;position:relative;overflow:hidden}
+.slider .fi{position:absolute;left:0;top:0;bottom:0;background:var(--primary);border-radius:8px}
+.slider .th{position:absolute;top:6px;width:4px;height:32px;border-radius:2px;background:var(--primary)}
+.chip{display:inline-flex;align-items:center;gap:6px;min-height:32px;padding:0 12px;border-radius:8px;border:1px solid var(--ol);font-size:13px;font-weight:500;background:transparent;color:var(--on-s);white-space:nowrap;cursor:pointer}
+.chip.on{background:var(--sc);border-color:var(--sc);color:var(--on-sc)}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.tbl{width:100%;border-collapse:separate;border-spacing:0;font-size:13.5px}
+.tbl th{text-align:left;font-size:12px;font-weight:600;color:var(--on-sv);padding:10px 12px;border-bottom:1px solid var(--olv);white-space:nowrap}
+.tbl td{padding:10px 12px;border-bottom:1px solid var(--s3);vertical-align:middle}
+.tbl tr:hover td{background:var(--s1)}
+.scroll{overflow-x:auto;max-width:100%}
+.stat{display:flex;flex-direction:column;gap:2px}
+.stat b{font-size:28px;font-weight:650;letter-spacing:-.02em;font-variation-settings:"opsz" 40}
+.stat small{color:var(--on-sv);font-size:12.5px}
+.bar{height:8px;border-radius:4px;background:var(--s4);overflow:hidden}
+.bar i{display:block;height:100%;border-radius:4px;background:var(--primary)}
+.bar.sh i{background:linear-gradient(90deg,var(--primary),var(--ter),var(--primary));background-size:200% 100%;animation:shimmer 2.4s linear infinite}
+.term{background:#140C09;color:#F1DFD8;border-radius:16px;padding:14px 16px;font:12.5px/1.6 "Roboto Mono",monospace;overflow:auto;white-space:pre}
+.term .c{color:#FFB595}.term .g{color:#96D590}.term .m{color:#A08D86}.term .y{color:#F2C14A}.term .b{color:#82D5C8}
+.screen{background:#0E0A08;border-radius:16px;aspect-ratio:16/10;position:relative;overflow:hidden;display:grid;place-items:center}
+.note{font-size:12.5px;color:var(--on-sv)}
+.divider{height:1px;background:var(--olv);border:0;margin:0}
+.ovl{position:absolute;background:var(--s2);border-radius:20px;box-shadow:var(--lift);padding:10px;z-index:3}
+.menu{display:flex;flex-direction:column;min-width:240px}
+.menu .mi{display:flex;align-items:center;gap:12px;min-height:44px;padding:0 12px;border-radius:12px;font-weight:500}
+.menu .mi:hover,.menu .mi.hl{background:var(--s4)}
+.menu .mi .k{margin-left:auto}
+.chart{width:100%;height:auto;display:block}
+.chart .ln{fill:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:1400;animation:draw 1.6s cubic-bezier(.2,0,0,1) both}
+.chart .gd{stroke:var(--s3);stroke-width:1}
+.chart .pd{animation:pulse2 1.8s ease-out infinite;transform-box:fill-box;transform-origin:center}
+.badge{display:inline-grid;place-items:center;min-width:20px;height:20px;padding:0 6px;border-radius:10px;background:var(--err);color:#fff;font-size:11px;font-weight:700;box-sizing:border-box}
+.kv{display:grid;grid-template-columns:minmax(120px,auto) 1fr;gap:8px 16px;font-size:13.5px}
+.kv dt{color:var(--on-sv)}.kv dd{margin:0;font-weight:500;min-width:0;overflow-wrap:anywhere}
+.steps{display:flex;gap:8px;flex-wrap:wrap}
+.step{display:flex;align-items:center;gap:8px;padding:6px 14px 6px 6px;border-radius:20px;background:var(--s2);font-weight:500;font-size:13px}
+.step i{width:28px;height:28px;border-radius:14px;display:grid;place-items:center;font-style:normal;font-weight:700;background:var(--s4);font-size:12px}
+.step.done i{background:var(--ter);color:var(--on-primary)}.step.on{background:var(--pc);color:var(--on-pc)}.step.on i{background:var(--primary);color:var(--on-primary)}
+.tree{display:flex;flex-direction:column;gap:4px;font-size:13.5px}
+.tree .n{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:12px}
+.tree .n:hover{background:var(--s3)}
+.tree .n.on{background:var(--pc);color:var(--on-pc)}
+.fab{position:fixed;right:28px;bottom:28px;min-height:56px;padding:0 20px;border-radius:16px;background:var(--pc);color:var(--on-pc);border:0;display:flex;align-items:center;gap:10px;font:600 15px "Roboto Flex",sans-serif;box-shadow:var(--lift);cursor:pointer}
+.rise{animation:rise .62s cubic-bezier(.2,0,0,1) both;animation-delay:calc(var(--i,0) * 55ms)}
+.pop{animation:pop .45s cubic-bezier(.34,1.56,.64,1) both}
+.slide{animation:slidein .5s cubic-bezier(.2,0,0,1) both}
+@keyframes rise{from{opacity:0;transform:translateY(16px) scale(.985)}to{opacity:1;transform:none} }
+@keyframes pop{from{opacity:0;transform:scale(.9)}to{opacity:1;transform:none} }
+@keyframes slidein{from{opacity:0;transform:translateX(24px)}to{opacity:1;transform:none} }
+@keyframes pulse{0%{box-shadow:0 0 0 0 currentColor}70%{box-shadow:0 0 0 7px transparent}100%{box-shadow:0 0 0 0 transparent} }
+@keyframes pulse2{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.6);opacity:.35} }
+@keyframes shimmer{from{background-position:200% 0}to{background-position:-200% 0} }
+@keyframes draw{from{stroke-dashoffset:1400}to{stroke-dashoffset:0} }
+.calm *,.calm *::after{animation:none!important;transition:none!important}
+@media (prefers-reduced-motion: reduce){.app *,.app *::after{animation:none!important;transition:none!important} }
+@media (max-width:720px){.tabs{max-width:none;flex-direction:row;overflow-x:auto;border-right:0;border-bottom:1px solid var(--olv)}.tabs .tg,.tabfoot{display:none}.main{padding:16px}.h1{font-size:24px} }
+</style>
+</helmet>
+<div class="app {{themeClass}} {{motionClass}}">
+<header class="topbar">
+<div class="brand"><span class="mark"><span class="ms " aria-hidden="true">memory</span></span><span>Material QEMU</span></div>
+<div class="search" role="search"><span class="ms o" aria-hidden="true">search</span><input aria-label="Search" placeholder="Search machines, disks, settings, QMP commands"><button class="rx" aria-label="Open regex builder for this search">.*</button><span class="kbd">Ctrl+Shift+F</span></div>
+<span class="sp"></span>
+<span class="pill ok"><span class="live"></span>Appliance healthy · http://192.168.1.40:8006/</span>
+<button class="ib" aria-label="Command palette"><span class="ms o" aria-hidden="true">terminal</span></button>
+<button class="ib" aria-label="Notifications, 3 unread"><span class="ms o" aria-hidden="true">notifications</span><span class="dot"></span></button>
+<button class="ib" aria-label="Help and documentation"><span class="ms o" aria-hidden="true">help</span></button>
+<span class="avatar" aria-label="Signed in as owner">SM</span>
+</header>
+<div class="body">
+<nav class="tabs" aria-label="Open tabs">
+<a class="tab" href="#"><span class="ms o" aria-hidden="true">dashboard</span><span class="l">Overview</span><span class="ms " aria-hidden="true">keep</span><button class="x" aria-label="Close Overview tab"><span class="ms o" aria-hidden="true">close</span></button></a>
+<div class="tg"><i style="background:var(--primary)"></i>Machines<span class="sp"></span><span class="ms o" aria-hidden="true">expand_less</span></div>
+<a class="tab on" href="#" aria-current="page"><span class="ms " aria-hidden="true">computer</span><span class="l">ubuntu-24.04</span><span class="st" style="background:var(--ok)"></span><button class="x" aria-label="Close ubuntu-24.04 tab"><span class="ms o" aria-hidden="true">close</span></button></a>
+<a class="tab" href="#"><span class="ms o" aria-hidden="true">desktop_windows</span><span class="l">win11-dev</span><span class="st" style="background:var(--ok)"></span><button class="x" aria-label="Close win11-dev tab"><span class="ms o" aria-hidden="true">close</span></button></a>
+<a class="tab" href="#"><span class="ms o" aria-hidden="true">router</span><span class="l">alpine-router</span><span class="st" style="background:var(--warn)"></span><button class="x" aria-label="Close alpine-router tab"><span class="ms o" aria-hidden="true">close</span></button></a>
+<a class="tab" href="#"><span class="ms o" aria-hidden="true">developer_board</span><span class="l">riscv-lab</span><span class="st" style="background:var(--ol)"></span><button class="x" aria-label="Close riscv-lab tab"><span class="ms o" aria-hidden="true">close</span></button></a>
+<a class="tab" href="#"><span class="ms o" aria-hidden="true">view_list</span><span class="l">All machines</span><button class="x" aria-label="Close All machines tab"><span class="ms o" aria-hidden="true">close</span></button></a>
+<div class="tg"><i style="background:var(--ter)"></i>Host<span class="sp"></span><span class="ms o" aria-hidden="true">expand_less</span></div>
+<a class="tab" href="#"><span class="ms o" aria-hidden="true">hard_drive</span><span class="l">Storage &amp; disks</span><button class="x" aria-label="Close Storage &amp; disks tab"><span class="ms o" aria-hidden="true">close</span></button></a>
+<a class="tab" href="#"><span class="ms o" aria-hidden="true">album</span><span class="l">ISO &amp; templates</span><button class="x" aria-label="Close ISO &amp; templates tab"><span class="ms o" aria-hidden="true">close</span></button></a>
+<a class="tab" href="#"><span class="ms o" aria-hidden="true">lan</span><span class="l">Networks</span><button class="x" aria-label="Close Networks tab"><span class="ms o" aria-hidden="true">close</span></button></a>
+<a class="tab" href="#"><span class="ms o" aria-hidden="true">dns</span><span class="l">Host &amp; appliance</span><button class="x" aria-label="Close Host &amp; appliance tab"><span class="ms o" aria-hidden="true">close</span></button></a>
+<div class="tg"><i style="background:var(--sec)"></i>Tools<span class="sp"></span><span class="ms o" aria-hidden="true">expand_less</span></div>
+<a class="tab" href="#"><span class="ms o" aria-hidden="true">terminal</span><span class="l">QMP monitor</span><button class="x" aria-label="Close QMP monitor tab"><span class="ms o" aria-hidden="true">close</span></button></a>
+<a class="tab" href="#"><span class="ms o" aria-hidden="true">bug_report</span><span class="l">Debug &amp; trace</span><button class="x" aria-label="Close Debug &amp; trace tab"><span class="ms o" aria-hidden="true">close</span></button></a>
+<a class="tab" href="#"><span class="ms o" aria-hidden="true">sync</span><span class="l">Jobs &amp; backups</span><button class="x" aria-label="Close Jobs &amp; backups tab"><span class="ms o" aria-hidden="true">close</span></button></a>
+<a class="tab" href="#"><span class="ms o" aria-hidden="true">memory_alt</span><span class="l">User-mode</span><button class="x" aria-label="Close User-mode tab"><span class="ms o" aria-hidden="true">close</span></button></a>
+<div class="tg"><i style="background:var(--ol)"></i>You<span class="sp"></span><span class="ms o" aria-hidden="true">expand_less</span></div>
+<a class="tab" href="#"><span class="ms o" aria-hidden="true">settings</span><span class="l">Settings</span><button class="x" aria-label="Close Settings tab"><span class="ms o" aria-hidden="true">close</span></button></a>
+<a class="tab" href="#"><span class="ms o" aria-hidden="true">history</span><span class="l">History</span><button class="x" aria-label="Close History tab"><span class="ms o" aria-hidden="true">close</span></button></a>
+<a class="tab" href="#"><span class="ms o" aria-hidden="true">menu_book</span><span class="l">Docs &amp; changelog</span><button class="x" aria-label="Close Docs &amp; changelog tab"><span class="ms o" aria-hidden="true">close</span></button></a>
+<div class="tabfoot"><button class="btn t sm"><span class="ms " aria-hidden="true">tab</span>Open every tab</button><button class="btn x sm"><span class="ms " aria-hidden="true">add</span>New tab</button></div>
+</nav>
+<main class="main">
+<div class="rise" style="--i:0;display:flex;flex-direction:column;gap:8px">
+<div class="crumb">Machines <span class="ms o" aria-hidden="true">chevron_right</span> ubuntu-24.04 <span class="ms o" aria-hidden="true">chevron_right</span> Stats</div>
+<div class="row" style="align-items:flex-end"><div style="flex:1 1 420px;min-width:0"><h1 class="h1">Live stats</h1><p class="sub">KVM statistics, per-vCPU, block, network, balloon and dirty rate, all live with keyboard scrubbing.</p></div><div class="row"><div class="seg" role="group"><button class="on" aria-pressed="true"><span class="ms " aria-hidden="true">check</span>5 min</button><button class="" aria-pressed="false">1 h</button><button class="" aria-pressed="false">24 h</button><button class="" aria-pressed="false">7 d</button></div><button class="btn o "><span class="ms " aria-hidden="true">pause</span>Pause live</button><button class="btn o "><span class="ms " aria-hidden="true">download</span>Export CSV</button></div></div>
+</div><div class="grid g2"><section class="card rise " style="--i:0;"><div class="ch"><span class="ms " aria-hidden="true">speed</span><h2 class="h2">vCPU 0-7 usage</h2><span class="sp"></span></div><svg class="chart" viewBox="0 0 620 160" role="img" aria-label="vCPU 0-7 usage, live, now 57%">
+<defs><linearGradient id="g13" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="var(--primary)" stop-opacity=".28"></stop><stop offset="100%" stop-color="var(--primary)" stop-opacity="0"></stop></linearGradient></defs>
+<line class="gd" x1="0" x2="620" y1="14" y2="14"></line><line class="gd" x1="0" x2="620" y1="77.0" y2="77.0"></line><line class="gd" x1="0" x2="620" y1="140" y2="140"></line><path d="M8.0,15.9 C10.4,17.4 17.6,20.8 22.4,25.1 C27.1,29.4 31.9,36.9 36.7,41.8 C41.5,46.7 46.3,51.7 51.1,54.8 C55.9,57.9 60.6,59.7 65.4,60.3 C70.2,60.9 75.0,58.8 79.8,58.5 C84.6,58.2 89.4,57.2 94.2,58.5 C98.9,59.7 103.7,61.9 108.5,65.9 C113.3,69.9 118.1,75.8 122.9,82.6 C127.7,89.4 132.4,98.9 137.2,106.6 C142.0,114.4 146.8,123.3 151.6,128.9 C156.4,134.4 161.2,139.1 165.9,140.0 C170.7,140.9 175.5,138.5 180.3,134.4 C185.1,130.4 189.9,123.3 194.7,115.9 C199.5,108.5 204.2,98.3 209.0,90.0 C213.8,81.6 218.6,72.1 223.4,65.9 C228.2,59.7 233.0,55.4 237.7,52.9 C242.5,50.4 247.3,51.1 252.1,51.1 C256.9,51.1 261.7,52.3 266.5,52.9 C271.2,53.5 276.0,55.7 280.8,54.8 C285.6,53.8 290.4,50.7 295.2,47.4 C300.0,44.0 304.8,38.4 309.5,34.4 C314.3,30.4 319.1,25.7 323.9,23.3 C328.7,20.8 333.5,18.3 338.3,19.6 C343.0,20.8 347.8,24.8 352.6,30.7 C357.4,36.5 362.2,45.8 367.0,54.8 C371.8,63.7 376.5,75.1 381.3,84.4 C386.1,93.7 390.9,103.6 395.7,110.4 C400.5,117.1 405.3,122.7 410.1,125.2 C414.8,127.6 419.6,127.0 424.4,125.2 C429.2,123.3 434.0,118.1 438.8,114.1 C443.6,110.0 448.3,104.5 453.1,101.1 C457.9,97.7 462.7,94.9 467.5,93.7 C472.3,92.4 477.1,93.1 481.8,93.7 C486.6,94.3 491.4,97.1 496.2,97.4 C501.0,97.7 505.8,97.7 510.6,95.5 C515.4,93.4 520.1,90.0 524.9,84.4 C529.7,78.9 534.5,70.2 539.3,62.2 C544.1,54.1 548.9,44.3 553.6,36.2 C558.4,28.2 565.6,17.7 568.0,14.0 L568.0,148 L8.0,148 Z" fill="url(#g13)"></path><path class="ln" d="M8.0,15.9 C10.4,17.4 17.6,20.8 22.4,25.1 C27.1,29.4 31.9,36.9 36.7,41.8 C41.5,46.7 46.3,51.7 51.1,54.8 C55.9,57.9 60.6,59.7 65.4,60.3 C70.2,60.9 75.0,58.8 79.8,58.5 C84.6,58.2 89.4,57.2 94.2,58.5 C98.9,59.7 103.7,61.9 108.5,65.9 C113.3,69.9 118.1,75.8 122.9,82.6 C127.7,89.4 132.4,98.9 137.2,106.6 C142.0,114.4 146.8,123.3 151.6,128.9 C156.4,134.4 161.2,139.1 165.9,140.0 C170.7,140.9 175.5,138.5 180.3,134.4 C185.1,130.4 189.9,123.3 194.7,115.9 C199.5,108.5 204.2,98.3 209.0,90.0 C213.8,81.6 218.6,72.1 223.4,65.9 C228.2,59.7 233.0,55.4 237.7,52.9 C242.5,50.4 247.3,51.1 252.1,51.1 C256.9,51.1 261.7,52.3 266.5,52.9 C271.2,53.5 276.0,55.7 280.8,54.8 C285.6,53.8 290.4,50.7 295.2,47.4 C300.0,44.0 304.8,38.4 309.5,34.4 C314.3,30.4 319.1,25.7 323.9,23.3 C328.7,20.8 333.5,18.3 338.3,19.6 C343.0,20.8 347.8,24.8 352.6,30.7 C357.4,36.5 362.2,45.8 367.0,54.8 C371.8,63.7 376.5,75.1 381.3,84.4 C386.1,93.7 390.9,103.6 395.7,110.4 C400.5,117.1 405.3,122.7 410.1,125.2 C414.8,127.6 419.6,127.0 424.4,125.2 C429.2,123.3 434.0,118.1 438.8,114.1 C443.6,110.0 448.3,104.5 453.1,101.1 C457.9,97.7 462.7,94.9 467.5,93.7 C472.3,92.4 477.1,93.1 481.8,93.7 C486.6,94.3 491.4,97.1 496.2,97.4 C501.0,97.7 505.8,97.7 510.6,95.5 C515.4,93.4 520.1,90.0 524.9,84.4 C529.7,78.9 534.5,70.2 539.3,62.2 C544.1,54.1 548.9,44.3 553.6,36.2 C558.4,28.2 565.6,17.7 568.0,14.0" stroke="var(--primary)"></path>
+<circle class="pd" cx="568.0" cy="14.0" r="9" fill="var(--primary)" opacity=".25"></circle><circle cx="568.0" cy="14.0" r="4.5" fill="var(--primary)"></circle>
+<rect x="570.0" y="2.0" width="46" height="22" rx="11" fill="var(--primary)"></rect><text x="593.0" y="17.0" text-anchor="middle" font-size="11.5" font-weight="700" fill="var(--s0)" font-family="Roboto Flex">57%</text>
+</svg></section><section class="card rise " style="--i:1;"><div class="ch"><span class="ms " aria-hidden="true">logout</span><h2 class="h2">KVM exits per second</h2><span class="sp"></span></div><svg class="chart" viewBox="0 0 620 160" role="img" aria-label="KVM exits per second, live, now 18k">
+<defs><linearGradient id="g14" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="var(--sec)" stop-opacity=".28"></stop><stop offset="100%" stop-color="var(--sec)" stop-opacity="0"></stop></linearGradient></defs>
+<line class="gd" x1="0" x2="620" y1="14" y2="14"></line><line class="gd" x1="0" x2="620" y1="77.0" y2="77.0"></line><line class="gd" x1="0" x2="620" y1="140" y2="140"></line><path d="M8.0,58.5 C10.4,60.2 17.6,66.6 22.4,68.8 C27.1,71.1 31.9,71.6 36.7,71.8 C41.5,72.1 46.3,70.1 51.1,70.3 C55.9,70.6 60.6,70.8 65.4,73.3 C70.2,75.8 75.0,80.0 79.8,85.2 C84.6,90.3 89.4,97.8 94.2,104.4 C98.9,111.1 103.7,119.2 108.5,125.2 C113.3,131.1 118.1,137.8 122.9,140.0 C127.7,142.2 132.4,141.2 137.2,138.5 C142.0,135.8 146.8,130.4 151.6,123.7 C156.4,117.0 161.2,106.9 165.9,98.5 C170.7,90.1 175.5,80.5 180.3,73.3 C185.1,66.1 189.9,59.5 194.7,55.5 C199.5,51.6 204.2,50.3 209.0,49.6 C213.8,48.8 218.6,50.1 223.4,51.1 C228.2,52.0 233.0,55.0 237.7,55.5 C242.5,56.0 247.3,55.5 252.1,54.0 C256.9,52.5 261.7,49.6 266.5,46.6 C271.2,43.6 276.0,39.0 280.8,36.2 C285.6,33.5 290.4,30.3 295.2,30.3 C300.0,30.3 304.8,32.0 309.5,36.2 C314.3,40.4 319.1,47.6 323.9,55.5 C328.7,63.4 333.5,74.3 338.3,83.7 C343.0,93.1 347.8,104.2 352.6,111.8 C357.4,119.5 362.2,126.2 367.0,129.6 C371.8,133.1 376.5,133.6 381.3,132.6 C386.1,131.6 390.9,127.6 395.7,123.7 C400.5,119.7 405.3,113.3 410.1,108.9 C414.8,104.4 419.6,99.7 424.4,97.0 C429.2,94.3 434.0,93.3 438.8,92.6 C443.6,91.8 448.3,92.3 453.1,92.6 C457.9,92.8 462.7,94.8 467.5,94.0 C472.3,93.3 477.1,92.1 481.8,88.1 C486.6,84.2 491.4,77.0 496.2,70.3 C501.0,63.7 505.8,55.5 510.6,48.1 C515.4,40.7 520.1,31.5 524.9,25.9 C529.7,20.2 534.5,15.2 539.3,14.0 C544.1,12.8 548.9,14.7 553.6,18.4 C558.4,22.2 565.6,33.3 568.0,36.2 L568.0,148 L8.0,148 Z" fill="url(#g14)"></path><path class="ln" d="M8.0,58.5 C10.4,60.2 17.6,66.6 22.4,68.8 C27.1,71.1 31.9,71.6 36.7,71.8 C41.5,72.1 46.3,70.1 51.1,70.3 C55.9,70.6 60.6,70.8 65.4,73.3 C70.2,75.8 75.0,80.0 79.8,85.2 C84.6,90.3 89.4,97.8 94.2,104.4 C98.9,111.1 103.7,119.2 108.5,125.2 C113.3,131.1 118.1,137.8 122.9,140.0 C127.7,142.2 132.4,141.2 137.2,138.5 C142.0,135.8 146.8,130.4 151.6,123.7 C156.4,117.0 161.2,106.9 165.9,98.5 C170.7,90.1 175.5,80.5 180.3,73.3 C185.1,66.1 189.9,59.5 194.7,55.5 C199.5,51.6 204.2,50.3 209.0,49.6 C213.8,48.8 218.6,50.1 223.4,51.1 C228.2,52.0 233.0,55.0 237.7,55.5 C242.5,56.0 247.3,55.5 252.1,54.0 C256.9,52.5 261.7,49.6 266.5,46.6 C271.2,43.6 276.0,39.0 280.8,36.2 C285.6,33.5 290.4,30.3 295.2,30.3 C300.0,30.3 304.8,32.0 309.5,36.2 C314.3,40.4 319.1,47.6 323.9,55.5 C328.7,63.4 333.5,74.3 338.3,83.7 C343.0,93.1 347.8,104.2 352.6,111.8 C357.4,119.5 362.2,126.2 367.0,129.6 C371.8,133.1 376.5,133.6 381.3,132.6 C386.1,131.6 390.9,127.6 395.7,123.7 C400.5,119.7 405.3,113.3 410.1,108.9 C414.8,104.4 419.6,99.7 424.4,97.0 C429.2,94.3 434.0,93.3 438.8,92.6 C443.6,91.8 448.3,92.3 453.1,92.6 C457.9,92.8 462.7,94.8 467.5,94.0 C472.3,93.3 477.1,92.1 481.8,88.1 C486.6,84.2 491.4,77.0 496.2,70.3 C501.0,63.7 505.8,55.5 510.6,48.1 C515.4,40.7 520.1,31.5 524.9,25.9 C529.7,20.2 534.5,15.2 539.3,14.0 C544.1,12.8 548.9,14.7 553.6,18.4 C558.4,22.2 565.6,33.3 568.0,36.2" stroke="var(--sec)"></path>
+<circle class="pd" cx="568.0" cy="36.2" r="9" fill="var(--sec)" opacity=".25"></circle><circle cx="568.0" cy="36.2" r="4.5" fill="var(--sec)"></circle>
+<rect x="570.0" y="24.2" width="46" height="22" rx="11" fill="var(--sec)"></rect><text x="593.0" y="39.2" text-anchor="middle" font-size="11.5" font-weight="700" fill="var(--s0)" font-family="Roboto Flex">18k</text>
+</svg></section><section class="card rise " style="--i:2;"><div class="ch"><span class="ms " aria-hidden="true">hourglass</span><h2 class="h2">Halt polling success</h2><span class="sp"></span></div><svg class="chart" viewBox="0 0 620 160" role="img" aria-label="Halt polling success, live, now 92%">
+<defs><linearGradient id="g15" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="var(--ter)" stop-opacity=".28"></stop><stop offset="100%" stop-color="var(--ter)" stop-opacity="0"></stop></linearGradient></defs>
+<line class="gd" x1="0" x2="620" y1="14" y2="14"></line><line class="gd" x1="0" x2="620" y1="77.0" y2="77.0"></line><line class="gd" x1="0" x2="620" y1="140" y2="140"></line><path d="M8.0,77.0 C10.4,77.0 17.6,75.5 22.4,77.0 C27.1,78.5 31.9,82.2 36.7,86.0 C41.5,89.8 46.3,94.2 51.1,99.5 C55.9,104.8 60.6,111.5 65.4,117.5 C70.2,123.5 75.0,131.8 79.8,135.5 C84.6,139.2 89.4,141.5 94.2,140.0 C98.9,138.5 103.7,132.5 108.5,126.5 C113.3,120.5 118.1,112.2 122.9,104.0 C127.7,95.8 132.4,85.2 137.2,77.0 C142.0,68.8 146.8,60.5 151.6,54.5 C156.4,48.5 161.2,43.2 165.9,41.0 C170.7,38.8 175.5,39.5 180.3,41.0 C185.1,42.5 189.9,47.8 194.7,50.0 C199.5,52.2 204.2,54.5 209.0,54.5 C213.8,54.5 218.6,52.2 223.4,50.0 C228.2,47.8 233.0,43.2 237.7,41.0 C242.5,38.8 247.3,37.2 252.1,36.5 C256.9,35.8 261.7,33.5 266.5,36.5 C271.2,39.5 276.0,47.7 280.8,54.5 C285.6,61.2 290.4,68.0 295.2,77.0 C300.0,86.0 304.8,99.5 309.5,108.5 C314.3,117.5 319.1,126.5 323.9,131.0 C328.7,135.5 333.5,135.5 338.3,135.5 C343.0,135.5 347.8,134.8 352.6,131.0 C357.4,127.2 362.2,119.0 367.0,113.0 C371.8,107.0 376.5,99.5 381.3,95.0 C386.1,90.5 390.9,87.5 395.7,86.0 C400.5,84.5 405.3,86.0 410.1,86.0 C414.8,86.0 419.6,86.8 424.4,86.0 C429.2,85.2 434.0,83.8 438.8,81.5 C443.6,79.2 448.3,77.8 453.1,72.5 C457.9,67.2 462.7,57.5 467.5,50.0 C472.3,42.5 477.1,33.5 481.8,27.5 C486.6,21.5 491.4,16.2 496.2,14.0 C501.0,11.8 505.8,11.8 510.6,14.0 C515.4,16.2 520.1,20.7 524.9,27.5 C529.7,34.2 534.5,45.5 539.3,54.5 C544.1,63.5 548.9,74.0 553.6,81.5 C558.4,89.0 565.6,96.5 568.0,99.5 L568.0,148 L8.0,148 Z" fill="url(#g15)"></path><path class="ln" d="M8.0,77.0 C10.4,77.0 17.6,75.5 22.4,77.0 C27.1,78.5 31.9,82.2 36.7,86.0 C41.5,89.8 46.3,94.2 51.1,99.5 C55.9,104.8 60.6,111.5 65.4,117.5 C70.2,123.5 75.0,131.8 79.8,135.5 C84.6,139.2 89.4,141.5 94.2,140.0 C98.9,138.5 103.7,132.5 108.5,126.5 C113.3,120.5 118.1,112.2 122.9,104.0 C127.7,95.8 132.4,85.2 137.2,77.0 C142.0,68.8 146.8,60.5 151.6,54.5 C156.4,48.5 161.2,43.2 165.9,41.0 C170.7,38.8 175.5,39.5 180.3,41.0 C185.1,42.5 189.9,47.8 194.7,50.0 C199.5,52.2 204.2,54.5 209.0,54.5 C213.8,54.5 218.6,52.2 223.4,50.0 C228.2,47.8 233.0,43.2 237.7,41.0 C242.5,38.8 247.3,37.2 252.1,36.5 C256.9,35.8 261.7,33.5 266.5,36.5 C271.2,39.5 276.0,47.7 280.8,54.5 C285.6,61.2 290.4,68.0 295.2,77.0 C300.0,86.0 304.8,99.5 309.5,108.5 C314.3,117.5 319.1,126.5 323.9,131.0 C328.7,135.5 333.5,135.5 338.3,135.5 C343.0,135.5 347.8,134.8 352.6,131.0 C357.4,127.2 362.2,119.0 367.0,113.0 C371.8,107.0 376.5,99.5 381.3,95.0 C386.1,90.5 390.9,87.5 395.7,86.0 C400.5,84.5 405.3,86.0 410.1,86.0 C414.8,86.0 419.6,86.8 424.4,86.0 C429.2,85.2 434.0,83.8 438.8,81.5 C443.6,79.2 448.3,77.8 453.1,72.5 C457.9,67.2 462.7,57.5 467.5,50.0 C472.3,42.5 477.1,33.5 481.8,27.5 C486.6,21.5 491.4,16.2 496.2,14.0 C501.0,11.8 505.8,11.8 510.6,14.0 C515.4,16.2 520.1,20.7 524.9,27.5 C529.7,34.2 534.5,45.5 539.3,54.5 C544.1,63.5 548.9,74.0 553.6,81.5 C558.4,89.0 565.6,96.5 568.0,99.5" stroke="var(--ter)"></path>
+<circle class="pd" cx="568.0" cy="99.5" r="9" fill="var(--ter)" opacity=".25"></circle><circle cx="568.0" cy="99.5" r="4.5" fill="var(--ter)"></circle>
+<rect x="570.0" y="87.5" width="46" height="22" rx="11" fill="var(--ter)"></rect><text x="593.0" y="102.5" text-anchor="middle" font-size="11.5" font-weight="700" fill="var(--s0)" font-family="Roboto Flex">92%</text>
+</svg></section><section class="card rise " style="--i:3;"><div class="ch"><span class="ms " aria-hidden="true">hard_drive</span><h2 class="h2">disk0 read / write latency</h2><span class="sp"></span></div><svg class="chart" viewBox="0 0 620 160" role="img" aria-label="disk0 read / write latency, live, now 0.4ms">
+<defs><linearGradient id="g16" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="var(--primary)" stop-opacity=".28"></stop><stop offset="100%" stop-color="var(--primary)" stop-opacity="0"></stop></linearGradient></defs>
+<line class="gd" x1="0" x2="620" y1="14" y2="14"></line><line class="gd" x1="0" x2="620" y1="77.0" y2="77.0"></line><line class="gd" x1="0" x2="620" y1="140" y2="140"></line><path d="M8.0,98.8 C10.4,101.4 17.6,109.1 22.4,114.8 C27.1,120.5 31.9,128.9 36.7,133.1 C41.5,137.3 46.3,140.4 51.1,140.0 C55.9,139.6 60.6,135.8 65.4,130.8 C70.2,125.9 75.0,118.6 79.8,110.2 C84.6,101.8 89.4,90.0 94.2,80.4 C98.9,70.9 103.7,59.8 108.5,52.9 C113.3,46.1 118.1,41.9 122.9,39.2 C127.7,36.5 132.4,36.1 137.2,36.9 C142.0,37.7 146.8,41.5 151.6,43.8 C156.4,46.1 161.2,49.1 165.9,50.7 C170.7,52.2 175.5,53.3 180.3,52.9 C185.1,52.6 189.9,50.3 194.7,48.4 C199.5,46.5 204.2,42.6 209.0,41.5 C213.8,40.3 218.6,39.6 223.4,41.5 C228.2,43.4 233.0,47.2 237.7,52.9 C242.5,58.7 247.3,67.1 252.1,75.9 C256.9,84.6 261.7,96.9 266.5,105.6 C271.2,114.4 276.0,122.8 280.8,128.5 C285.6,134.3 290.4,138.5 295.2,140.0 C300.0,141.5 304.8,140.8 309.5,137.7 C314.3,134.7 319.1,127.8 323.9,121.7 C328.7,115.6 333.5,107.2 338.3,101.1 C343.0,94.9 347.8,88.5 352.6,85.0 C357.4,81.6 362.2,81.2 367.0,80.4 C371.8,79.7 376.5,80.4 381.3,80.4 C386.1,80.4 390.9,82.0 395.7,80.4 C400.5,78.9 405.3,75.5 410.1,71.3 C414.8,67.1 419.6,61.3 424.4,55.2 C429.2,49.1 434.0,40.7 438.8,34.6 C443.6,28.5 448.3,22.0 453.1,18.6 C457.9,15.1 462.7,12.9 467.5,14.0 C472.3,15.1 477.1,19.3 481.8,25.5 C486.6,31.6 491.4,41.9 496.2,50.7 C501.0,59.4 505.8,69.7 510.6,78.1 C515.4,86.5 520.1,95.3 524.9,101.1 C529.7,106.8 534.5,111.0 539.3,112.5 C544.1,114.0 548.9,111.4 553.6,110.2 C558.4,109.1 565.6,106.4 568.0,105.6 L568.0,148 L8.0,148 Z" fill="url(#g16)"></path><path class="ln" d="M8.0,98.8 C10.4,101.4 17.6,109.1 22.4,114.8 C27.1,120.5 31.9,128.9 36.7,133.1 C41.5,137.3 46.3,140.4 51.1,140.0 C55.9,139.6 60.6,135.8 65.4,130.8 C70.2,125.9 75.0,118.6 79.8,110.2 C84.6,101.8 89.4,90.0 94.2,80.4 C98.9,70.9 103.7,59.8 108.5,52.9 C113.3,46.1 118.1,41.9 122.9,39.2 C127.7,36.5 132.4,36.1 137.2,36.9 C142.0,37.7 146.8,41.5 151.6,43.8 C156.4,46.1 161.2,49.1 165.9,50.7 C170.7,52.2 175.5,53.3 180.3,52.9 C185.1,52.6 189.9,50.3 194.7,48.4 C199.5,46.5 204.2,42.6 209.0,41.5 C213.8,40.3 218.6,39.6 223.4,41.5 C228.2,43.4 233.0,47.2 237.7,52.9 C242.5,58.7 247.3,67.1 252.1,75.9 C256.9,84.6 261.7,96.9 266.5,105.6 C271.2,114.4 276.0,122.8 280.8,128.5 C285.6,134.3 290.4,138.5 295.2,140.0 C300.0,141.5 304.8,140.8 309.5,137.7 C314.3,134.7 319.1,127.8 323.9,121.7 C328.7,115.6 333.5,107.2 338.3,101.1 C343.0,94.9 347.8,88.5 352.6,85.0 C357.4,81.6 362.2,81.2 367.0,80.4 C371.8,79.7 376.5,80.4 381.3,80.4 C386.1,80.4 390.9,82.0 395.7,80.4 C400.5,78.9 405.3,75.5 410.1,71.3 C414.8,67.1 419.6,61.3 424.4,55.2 C429.2,49.1 434.0,40.7 438.8,34.6 C443.6,28.5 448.3,22.0 453.1,18.6 C457.9,15.1 462.7,12.9 467.5,14.0 C472.3,15.1 477.1,19.3 481.8,25.5 C486.6,31.6 491.4,41.9 496.2,50.7 C501.0,59.4 505.8,69.7 510.6,78.1 C515.4,86.5 520.1,95.3 524.9,101.1 C529.7,106.8 534.5,111.0 539.3,112.5 C544.1,114.0 548.9,111.4 553.6,110.2 C558.4,109.1 565.6,106.4 568.0,105.6" stroke="var(--primary)"></path>
+<circle class="pd" cx="568.0" cy="105.6" r="9" fill="var(--primary)" opacity=".25"></circle><circle cx="568.0" cy="105.6" r="4.5" fill="var(--primary)"></circle>
+<rect x="570.0" y="93.6" width="46" height="22" rx="11" fill="var(--primary)"></rect><text x="593.0" y="108.6" text-anchor="middle" font-size="11.5" font-weight="700" fill="var(--s0)" font-family="Roboto Flex">0.4ms</text>
+</svg></section><section class="card rise " style="--i:4;"><div class="ch"><span class="ms " aria-hidden="true">lan</span><h2 class="h2">net0 packets per second</h2><span class="sp"></span></div><svg class="chart" viewBox="0 0 620 160" role="img" aria-label="net0 packets per second, live, now 61k">
+<defs><linearGradient id="g17" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="var(--ter)" stop-opacity=".28"></stop><stop offset="100%" stop-color="var(--ter)" stop-opacity="0"></stop></linearGradient></defs>
+<line class="gd" x1="0" x2="620" y1="14" y2="14"></line><line class="gd" x1="0" x2="620" y1="77.0" y2="77.0"></line><line class="gd" x1="0" x2="620" y1="140" y2="140"></line><path d="M8.0,134.4 C10.4,133.8 17.6,134.4 22.4,130.7 C27.1,127.0 31.9,119.9 36.7,112.2 C41.5,104.5 46.3,94.0 51.1,84.4 C55.9,74.8 60.6,63.1 65.4,54.8 C70.2,46.4 75.0,38.7 79.8,34.4 C84.6,30.1 89.4,28.8 94.2,28.8 C98.9,28.8 103.7,31.6 108.5,34.4 C113.3,37.2 118.1,42.4 122.9,45.5 C127.7,48.6 132.4,51.7 137.2,52.9 C142.0,54.1 146.8,53.8 151.6,52.9 C156.4,52.0 161.2,48.6 165.9,47.4 C170.7,46.1 175.5,44.6 180.3,45.5 C185.1,46.4 189.9,48.6 194.7,52.9 C199.5,57.2 204.2,63.7 209.0,71.4 C213.8,79.2 218.6,90.3 223.4,99.2 C228.2,108.2 233.0,118.4 237.7,125.2 C242.5,132.0 247.3,137.5 252.1,140.0 C256.9,142.5 261.7,142.5 266.5,140.0 C271.2,137.5 276.0,131.0 280.8,125.2 C285.6,119.3 290.4,111.6 295.2,104.8 C300.0,98.0 304.8,89.7 309.5,84.4 C314.3,79.2 319.1,75.5 323.9,73.3 C328.7,71.1 333.5,71.8 338.3,71.4 C343.0,71.1 347.8,71.8 352.6,71.4 C357.4,71.1 362.2,72.1 367.0,69.6 C371.8,67.1 376.5,61.6 381.3,56.6 C386.1,51.7 390.9,45.8 395.7,39.9 C400.5,34.1 405.3,25.7 410.1,21.4 C414.8,17.1 419.6,14.0 424.4,14.0 C429.2,14.0 434.0,16.5 438.8,21.4 C443.6,26.4 448.3,35.0 453.1,43.6 C457.9,52.3 462.7,64.0 467.5,73.3 C472.3,82.6 477.1,92.1 481.8,99.2 C486.6,106.3 491.4,112.8 496.2,115.9 C501.0,119.0 505.8,118.7 510.6,117.8 C515.4,116.8 520.1,112.5 524.9,110.4 C529.7,108.2 534.5,106.0 539.3,104.8 C544.1,103.6 548.9,102.3 553.6,102.9 C558.4,103.6 565.6,107.6 568.0,108.5 L568.0,148 L8.0,148 Z" fill="url(#g17)"></path><path class="ln" d="M8.0,134.4 C10.4,133.8 17.6,134.4 22.4,130.7 C27.1,127.0 31.9,119.9 36.7,112.2 C41.5,104.5 46.3,94.0 51.1,84.4 C55.9,74.8 60.6,63.1 65.4,54.8 C70.2,46.4 75.0,38.7 79.8,34.4 C84.6,30.1 89.4,28.8 94.2,28.8 C98.9,28.8 103.7,31.6 108.5,34.4 C113.3,37.2 118.1,42.4 122.9,45.5 C127.7,48.6 132.4,51.7 137.2,52.9 C142.0,54.1 146.8,53.8 151.6,52.9 C156.4,52.0 161.2,48.6 165.9,47.4 C170.7,46.1 175.5,44.6 180.3,45.5 C185.1,46.4 189.9,48.6 194.7,52.9 C199.5,57.2 204.2,63.7 209.0,71.4 C213.8,79.2 218.6,90.3 223.4,99.2 C228.2,108.2 233.0,118.4 237.7,125.2 C242.5,132.0 247.3,137.5 252.1,140.0 C256.9,142.5 261.7,142.5 266.5,140.0 C271.2,137.5 276.0,131.0 280.8,125.2 C285.6,119.3 290.4,111.6 295.2,104.8 C300.0,98.0 304.8,89.7 309.5,84.4 C314.3,79.2 319.1,75.5 323.9,73.3 C328.7,71.1 333.5,71.8 338.3,71.4 C343.0,71.1 347.8,71.8 352.6,71.4 C357.4,71.1 362.2,72.1 367.0,69.6 C371.8,67.1 376.5,61.6 381.3,56.6 C386.1,51.7 390.9,45.8 395.7,39.9 C400.5,34.1 405.3,25.7 410.1,21.4 C414.8,17.1 419.6,14.0 424.4,14.0 C429.2,14.0 434.0,16.5 438.8,21.4 C443.6,26.4 448.3,35.0 453.1,43.6 C457.9,52.3 462.7,64.0 467.5,73.3 C472.3,82.6 477.1,92.1 481.8,99.2 C486.6,106.3 491.4,112.8 496.2,115.9 C501.0,119.0 505.8,118.7 510.6,117.8 C515.4,116.8 520.1,112.5 524.9,110.4 C529.7,108.2 534.5,106.0 539.3,104.8 C544.1,103.6 548.9,102.3 553.6,102.9 C558.4,103.6 565.6,107.6 568.0,108.5" stroke="var(--ter)"></path>
+<circle class="pd" cx="568.0" cy="108.5" r="9" fill="var(--ter)" opacity=".25"></circle><circle cx="568.0" cy="108.5" r="4.5" fill="var(--ter)"></circle>
+<rect x="570.0" y="96.5" width="46" height="22" rx="11" fill="var(--ter)"></rect><text x="593.0" y="111.5" text-anchor="middle" font-size="11.5" font-weight="700" fill="var(--s0)" font-family="Roboto Flex">61k</text>
+</svg></section><section class="card rise " style="--i:5;"><div class="ch"><span class="ms " aria-hidden="true">speed</span><h2 class="h2">Dirty rate (calc-dirty-rate)</h2><span class="sp"></span></div><svg class="chart" viewBox="0 0 620 160" role="img" aria-label="Dirty rate (calc-dirty-rate), live, now 42MB/s">
+<defs><linearGradient id="g18" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="var(--err)" stop-opacity=".28"></stop><stop offset="100%" stop-color="var(--err)" stop-opacity="0"></stop></linearGradient></defs>
+<line class="gd" x1="0" x2="620" y1="14" y2="14"></line><line class="gd" x1="0" x2="620" y1="77.0" y2="77.0"></line><line class="gd" x1="0" x2="620" y1="140" y2="140"></line><path d="M8.0,86.4 C10.4,81.2 17.6,64.4 22.4,54.9 C27.1,45.5 31.9,35.5 36.7,29.8 C41.5,24.0 46.3,21.4 51.1,20.3 C55.9,19.3 60.6,20.8 65.4,23.4 C70.2,26.1 75.0,31.9 79.8,36.1 C84.6,40.3 89.4,46.0 94.2,48.7 C98.9,51.3 103.7,51.3 108.5,51.8 C113.3,52.3 118.1,52.3 122.9,51.8 C127.7,51.3 132.4,48.7 137.2,48.7 C142.0,48.7 146.8,48.7 151.6,51.8 C156.4,55.0 161.2,61.3 165.9,67.6 C170.7,73.9 175.5,81.2 180.3,89.6 C185.1,98.0 189.9,110.1 194.7,117.9 C199.5,125.8 204.2,133.2 209.0,136.8 C213.8,140.5 218.6,141.1 223.4,140.0 C228.2,138.9 233.0,136.3 237.7,130.6 C242.5,124.8 247.3,113.2 252.1,105.3 C256.9,97.5 261.7,89.6 266.5,83.3 C271.2,77.0 276.0,71.2 280.8,67.6 C285.6,63.9 290.4,62.3 295.2,61.2 C300.0,60.2 304.8,61.2 309.5,61.2 C314.3,61.2 319.1,62.3 323.9,61.2 C328.7,60.2 333.5,58.1 338.3,54.9 C343.0,51.8 347.8,47.6 352.6,42.3 C357.4,37.1 362.2,28.2 367.0,23.4 C371.8,18.7 376.5,15.0 381.3,14.0 C386.1,13.0 390.9,13.5 395.7,17.2 C400.5,20.8 405.3,28.2 410.1,36.1 C414.8,43.9 419.6,54.4 424.4,64.4 C429.2,74.4 434.0,87.5 438.8,95.9 C443.6,104.3 448.3,110.6 453.1,114.8 C457.9,119.0 462.7,121.1 467.5,121.1 C472.3,121.1 477.1,117.4 481.8,114.8 C486.6,112.2 491.4,108.0 496.2,105.3 C501.0,102.7 505.8,100.1 510.6,99.1 C515.4,98.0 520.1,98.0 524.9,99.1 C529.7,100.1 534.5,103.8 539.3,105.3 C544.1,106.9 548.9,109.5 553.6,108.5 C558.4,107.5 565.6,100.6 568.0,99.1 L568.0,148 L8.0,148 Z" fill="url(#g18)"></path><path class="ln" d="M8.0,86.4 C10.4,81.2 17.6,64.4 22.4,54.9 C27.1,45.5 31.9,35.5 36.7,29.8 C41.5,24.0 46.3,21.4 51.1,20.3 C55.9,19.3 60.6,20.8 65.4,23.4 C70.2,26.1 75.0,31.9 79.8,36.1 C84.6,40.3 89.4,46.0 94.2,48.7 C98.9,51.3 103.7,51.3 108.5,51.8 C113.3,52.3 118.1,52.3 122.9,51.8 C127.7,51.3 132.4,48.7 137.2,48.7 C142.0,48.7 146.8,48.7 151.6,51.8 C156.4,55.0 161.2,61.3 165.9,67.6 C170.7,73.9 175.5,81.2 180.3,89.6 C185.1,98.0 189.9,110.1 194.7,117.9 C199.5,125.8 204.2,133.2 209.0,136.8 C213.8,140.5 218.6,141.1 223.4,140.0 C228.2,138.9 233.0,136.3 237.7,130.6 C242.5,124.8 247.3,113.2 252.1,105.3 C256.9,97.5 261.7,89.6 266.5,83.3 C271.2,77.0 276.0,71.2 280.8,67.6 C285.6,63.9 290.4,62.3 295.2,61.2 C300.0,60.2 304.8,61.2 309.5,61.2 C314.3,61.2 319.1,62.3 323.9,61.2 C328.7,60.2 333.5,58.1 338.3,54.9 C343.0,51.8 347.8,47.6 352.6,42.3 C357.4,37.1 362.2,28.2 367.0,23.4 C371.8,18.7 376.5,15.0 381.3,14.0 C386.1,13.0 390.9,13.5 395.7,17.2 C400.5,20.8 405.3,28.2 410.1,36.1 C414.8,43.9 419.6,54.4 424.4,64.4 C429.2,74.4 434.0,87.5 438.8,95.9 C443.6,104.3 448.3,110.6 453.1,114.8 C457.9,119.0 462.7,121.1 467.5,121.1 C472.3,121.1 477.1,117.4 481.8,114.8 C486.6,112.2 491.4,108.0 496.2,105.3 C501.0,102.7 505.8,100.1 510.6,99.1 C515.4,98.0 520.1,98.0 524.9,99.1 C529.7,100.1 534.5,103.8 539.3,105.3 C544.1,106.9 548.9,109.5 553.6,108.5 C558.4,107.5 565.6,100.6 568.0,99.1" stroke="var(--err)"></path>
+<circle class="pd" cx="568.0" cy="99.1" r="9" fill="var(--err)" opacity=".25"></circle><circle cx="568.0" cy="99.1" r="4.5" fill="var(--err)"></circle>
+<rect x="570.0" y="87.1" width="46" height="22" rx="11" fill="var(--err)"></rect><text x="593.0" y="102.1" text-anchor="middle" font-size="11.5" font-weight="700" fill="var(--s0)" font-family="Roboto Flex">42MB/s</text>
+</svg></section></div><p class="note rise" style="--i:8">Charts snap without easing and stop pulsing under reduced motion or Low stimulation mode. Every value stays readable and is announced on scrub.</p>
+</main>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"dark":{"editor":"boolean","default":false},"motion":{"editor":"boolean","default":true},"$preview":{"width":1440,"height":1150} }'>
+class Component extends DCLogic {
+renderVals() {
+const dark = this.props.dark ?? false;
+const motion = this.props.motion ?? true;
+return { themeClass: dark ? 'dark' : 'light', motionClass: motion ? 'moving' : 'calm' };
+}
+}
+</script>
+</body>
+</html>
