@@ -31,3 +31,7 @@ The coordinating browser review also verified candidate 224048a with an actual v
 ## ISO import unit
 
 Authenticated ISO import now streams directly into exclusive managed temporary files, confirms actual length and finalizes without overwrite. Two concurrent uploads, 2 GiB per file and a fifteen-minute deadline bound the route. Unit and real HTTP tests cover unauthorized/wrong-origin/CSRF requests, duplicate collisions, overflow, truncated streams, abort cleanup and directory-symlink escape. Browser acceptance of this newer unit remains pending. See the complete six-board control inventory for every known residual.
+
+## Console and presentation unit
+
+Pinned local Roboto Flex and rounded symbol fonts replace generic font/glyph fallbacks; licenses are retained. Narrow notifications reserve layout space and can be dismissed. Console scaling and input show persistent actual state. Reset confirmation, expanded key sequences and explicit clipboard/type-text controls are implemented without claiming guest acceptance. This newer candidate still needs independent browser verification.

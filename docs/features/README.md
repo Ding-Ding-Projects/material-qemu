@@ -9,3 +9,5 @@ The application includes task-oriented help for creating machines, controlling l
 
 - [ISO import and transfer limits](media.md)
 - [Supplied six-board control inventory](design-coverage.md)
+
+- [Console controls and local presentation](console.md)

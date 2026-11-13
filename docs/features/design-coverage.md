@@ -99,13 +99,13 @@ This inventory covers the controls in the supplied Main, Onboarding, Overview, M
 | Supplied control | Current state and exact limit |
 | --- | --- |
 | Pause/resume/shutdown/force off | Implemented. Graceful ACPI outcome depends on the guest; forced stop waits for process exit. |
-| Reset | Backend implemented; visible control pending. |
+| Reset | Implemented visible confirmation and server-owned QMP command; newer browser acceptance pending. |
 | VNC | Actual authenticated noVNC connection implemented. |
 | SPICE/D-Bus | Pending transports, never presented as supported. |
 | Fit/scaling/fullscreen/reconnect | Implemented controls; complete native fullscreen/device acceptance pending. |
-| Keyboard release | View-only toggle implemented; designed Ctrl+Alt release shortcut pending. |
-| Ctrl+Alt+Del | Implemented; expanded key menu pending. |
-| Clipboard/type text | Pending; guest support must remain explicit. |
+| Keyboard release | Persistent view-only toggle with visible state and aria-pressed implemented; designed Ctrl+Alt release shortcut pending. |
+| Ctrl+Alt+Del | Implemented alongside Ctrl+Alt+F1/F2, Escape, Enter, Print Screen and system key in a bounded key menu. |
+| Clipboard/type text | Implemented explicit user text transfer, with 256-character bound and truthful guest-support limitation. Guest acceptance remains unverified. |
 | Media change/eject, USB redirection | Pending. |
 | Screenshot/record/drawing | Pending. Runtime evidence capture is independent of these product features. |
 | Summary/hardware/snapshots/migrate/guest-agent/monitor/stats/log tabs | Pending broader board implementations. |

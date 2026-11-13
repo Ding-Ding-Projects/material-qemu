@@ -15,7 +15,7 @@ import { Store, event } from "./store.mjs";
 import { Qemu, validateMachine, hostMetrics } from "./qemu.mjs";
 import { Sessions, hashPassword, checkPassword } from "./auth.mjs";
 import { updateOrganization, requireFolder } from "./organization.mjs";
-import { receiveIso, MAX_ISO_BYTES } from './media.mjs';
+import { receiveIso, MAX_ISO_BYTES } from "./media.mjs";
 import { dataDirectory } from "./paths.mjs";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
@@ -37,7 +37,7 @@ export async function createApplication(options = {}) {
   const qemu = await new Qemu(data).open();
   const sessions = new Sessions();
   const challenges = new Map();
-  let activeUploads=0;
+  let activeUploads = 0;
   const bootstrapFile = path.join(data, "setup-code");
   let bootstrap = null;
   if (!store.state.owner) {
@@ -96,7 +96,10 @@ export async function createApplication(options = {}) {
       if (req.method !== "GET") {
         if (
           req.headers.origin !== origin ||
-          req.headers["content-type"]?.split(";")[0] !== (route==='/api/media'?'application/octet-stream':'application/json')
+          req.headers["content-type"]?.split(";")[0] !==
+            (route === "/api/media"
+              ? "application/octet-stream"
+              : "application/json")
         )
           return json(res, 403, { error: "Origin or content type rejected." });
         if (session && req.headers["x-csrf-token"] !== session.csrf)
@@ -104,16 +107,37 @@ export async function createApplication(options = {}) {
             error: "Session verification failed. Reload and try again.",
           });
       }
-      if(route==='/api/media'&&req.method==='POST') {
-        if(!session)return json(res,401,{error:'Sign in to upload installation media.'});
-        if(activeUploads>=2)return json(res,429,{error:'Two uploads are already active. Wait for one to finish.'});
+      if (route === "/api/media" && req.method === "POST") {
+        if (!session)
+          return json(res, 401, {
+            error: "Sign in to upload installation media.",
+          });
+        if (activeUploads >= 2)
+          return json(res, 429, {
+            error: "Two uploads are already active. Wait for one to finish.",
+          });
         activeUploads++;
-        const deadline=setTimeout(()=>req.destroy(new Error('Upload exceeded the 15-minute limit.')),15*60*1000);
+        const deadline = setTimeout(
+          () => req.destroy(new Error("Upload exceeded the 15-minute limit.")),
+          15 * 60 * 1000,
+        );
         try {
-          const media=await receiveIso(req,data,url.searchParams.get('name'));
-          await store.transaction(s=>event(s,`Imported installation media ${media.name} (${media.bytes} bytes).`));
-          return json(res,201,media);
-        } finally {clearTimeout(deadline);activeUploads--;}
+          const media = await receiveIso(
+            req,
+            data,
+            url.searchParams.get("name"),
+          );
+          await store.transaction((s) =>
+            event(
+              s,
+              `Imported installation media ${media.name} (${media.bytes} bytes).`,
+            ),
+          );
+          return json(res, 201, media);
+        } finally {
+          clearTimeout(deadline);
+          activeUploads--;
+        }
       }
       const body = req.method === "GET" ? {} : await readJson(req);
       if (route === "/api/setup" && req.method === "POST") {
@@ -373,6 +397,10 @@ export async function createApplication(options = {}) {
           if (match[2] === "keys") {
             const sequences = {
               ctrlaltdel: ["ctrl", "alt", "delete"],
+              ctrlaltf1: ["ctrl", "alt", "f1"],
+              ctrlaltf2: ["ctrl", "alt", "f2"],
+              print: ["print"],
+              meta: ["meta_l"],
               escape: ["esc"],
               enter: ["ret"],
             };
@@ -475,6 +503,20 @@ export async function createApplication(options = {}) {
         "node_modules/@simplewebauthn/browser/dist/bundle",
       );
       relative = "index.umd.min.js";
+    }
+    if (route === "/fonts/roboto-flex.woff2") {
+      base = path.join(
+        root,
+        "node_modules/@fontsource-variable/roboto-flex/files",
+      );
+      relative = "roboto-flex-latin-full-normal.woff2";
+    }
+    if (route === "/fonts/material-symbols.woff2") {
+      base = path.join(
+        root,
+        "node_modules/@fontsource/material-symbols-rounded/files",
+      );
+      relative = "material-symbols-rounded-latin-500-normal.woff2";
     }
     const file = path.resolve(base, relative);
     if (!file.startsWith(base + path.sep))

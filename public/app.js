@@ -1,5 +1,5 @@
 import { createViews } from "./views.js";
-import { uploadIso } from './upload.js';
+import { uploadIso } from "./upload.js";
 const { startRegistration, startAuthentication } = window.SimpleWebAuthnBrowser;
 
 const $ = (selector) => document.querySelector(selector);
@@ -12,7 +12,9 @@ const escape = (value) =>
       ],
   );
 const bytes = (value) =>
-  value == null ? t("Unavailable","未能提供") : `${(value / 1073741824).toFixed(1)} GiB`;
+  value == null
+    ? t("Unavailable", "未能提供")
+    : `${(value / 1073741824).toFixed(1)} GiB`;
 let session,
   state,
   page = "overview",
@@ -28,6 +30,8 @@ let session,
   noticeTimer,
   dialogOpener,
   dialogOpenerAction;
+let consoleScale = localStorage.getItem("mq-console-scale") !== "false";
+let consoleInput = localStorage.getItem("mq-console-input") !== "false";
 const names = {
   overview: ["Overview", "總覽"],
   machines: ["All machines", "所有機器"],
@@ -71,9 +75,16 @@ function enumLabel(value) {
   return labels[value] ? t(...labels[value]) : value;
 }
 function notify(message) {
-  $("#notice").textContent = message;
+  const text = document.createElement("span");
+  text.textContent = message;
+  const dismiss = document.createElement("button");
+  dismiss.type = "button";
+  dismiss.textContent = t("Dismiss", "關閉通知");
+  dismiss.onclick = () => $("#notice").replaceChildren();
+  $("#notice").replaceChildren(text, dismiss);
   clearTimeout(noticeTimer);
-  noticeTimer = setTimeout(() => ($("#notice").textContent = ""), 6500);
+  if (!matchMedia("(max-width:760px)").matches)
+    noticeTimer = setTimeout(() => $("#notice").replaceChildren(), 6500);
 }
 async function api(route, body, options = {}) {
   const response = await fetch(`/api${route}`, {
@@ -138,8 +149,11 @@ function render() {
     return;
   }
   $("#app").innerHTML =
-    `<header class="topbar"><div class="brand"><span class="mark" aria-hidden="true">▧</span>Material QEMU</div><div class="search"><input id="global-search" aria-label="${t("Search machines", "搜尋機器")}" placeholder="${t("Search machines, folders and notes", "搜尋機器、資料夾和備註")}" value="${escape(query)}"></div><span class="spacer"></span><span class="pill healthy health">● ${t("Host connected", "主機已連線")}</span>${button("logout", t("Sign out", "登出"), "ghost")}</header><div class="shell"><nav aria-label="${t("Workspace", "工作區")}">${["overview", "machines", "new"].map((k) => button(`page:${k}`, `<span aria-hidden="true">${{ overview: "▦", machines: "▤", new: "＋" }[k]}</span><span>${label(k)}</span>`, page === k ? "active" : "")).join("")}<div class="group">${t("Machines", "機器")}</div>${state.machines.map((m) => button(`console:${m.id}`, `<span aria-hidden="true">▣</span><span class="nav-name">${escape(m.name)}</span>`, "machine-nav")).join("")}<div class="group">${t("Your workspace", "你的工作區")}</div>${["settings", "history", "docs"].map((k) => button(`page:${k}`, label(k), page === k ? "active" : "")).join("")}<div class="bottom">Material QEMU 0.1.0<br>${t("Built", "建置時間")} ${escape(state.updatedAt || t("unavailable", "未能提供"))}<br>${escape(state.owner.name)}</div></nav><main class="main" id="main" tabindex="-1">${({ overview: views().overview, machines: views().machines, new: machineWizard, settings: views().settings, history: views().history, docs: views().docs, console: views().consolePage }[page] || views().overview)()}</main></div>`;
-  if (page === "console") connectConsole();
+    `<header class="topbar"><div class="brand"><span class="mark" aria-hidden="true"><span class="icon">memory</span></span>Material QEMU</div><div class="search"><input id="global-search" aria-label="${t("Search machines", "搜尋機器")}" placeholder="${t("Search machines, folders and notes", "搜尋機器、資料夾和備註")}" value="${escape(query)}"></div><span class="spacer"></span><span class="pill healthy health">● ${t("Host connected", "主機已連線")}</span>${button("logout", t("Sign out", "登出"), "ghost")}</header><div class="shell"><nav aria-label="${t("Workspace", "工作區")}">${["overview", "machines", "new"].map((k) => button(`page:${k}`, `<span class="icon" aria-hidden="true">${{ overview: "dashboard", machines: "view_list", new: "add" }[k]}</span><span>${label(k)}</span>`, page === k ? "active" : "")).join("")}<div class="group">${t("Machines", "機器")}</div>${state.machines.map((m) => button(`console:${m.id}`, `<span class="icon" aria-hidden="true">computer</span><span class="nav-name">${escape(m.name)}</span>`, "machine-nav")).join("")}<div class="group">${t("Your workspace", "你的工作區")}</div>${["settings", "history", "docs"].map((k) => button(`page:${k}`, label(k), page === k ? "active" : "")).join("")}<div class="bottom">Material QEMU 0.1.0<br>${t("Built", "建置時間")} ${escape(state.updatedAt || t("unavailable", "未能提供"))}<br>${escape(state.owner.name)}</div></nav><main class="main" id="main" tabindex="-1">${({ overview: views().overview, machines: views().machines, new: machineWizard, settings: views().settings, history: views().history, docs: views().docs, console: views().consolePage }[page] || views().overview)()}</main></div>`;
+  if (page === "console") {
+    updateConsoleControls();
+    connectConsole();
+  }
   const search = $("#global-search");
   search?.addEventListener("input", (e) => {
     query = e.target.value;
@@ -153,7 +167,7 @@ function render() {
 function renderAuth() {
   const setup = session?.setupRequired;
   $("#app").innerHTML =
-    `<header class="topbar"><div class="brand"><span class="mark">▧</span>Material QEMU</div><span class="spacer"></span><small>0.1.0 · ${escape(session.updatedAt || t("Build time unavailable", "未能提供建置時間"))}</small></header><main class="auth"><div class="card auth-card"><section class="auth-intro"><div class="mark" aria-hidden="true">▧</div><span class="pill">${t("Your machines. Your control.", "你的機器，由你掌控。")}</span><h1 style="margin-top:24px">${t("A quieter home for your virtual machines.", "虛擬機器的安心基地。")}</h1><p class="muted">${t("One workspace for QEMU. Manage, monitor and connect, with everything running on your own host.", "一個 QEMU 工作區，管理、監察及連線，全部在你的主機上運行。")}</p><p class="muted-line">${t("Private by default. No cloud account required.", "預設私人使用，毋須雲端帳戶。")}</p></section><section class="auth-form"><h2>${setup ? t("Welcome to your new workspace", "歡迎使用新工作區") : t("Welcome back", "歡迎回來")}</h2><p class="muted">${setup ? t("Create the owner account to begin guided setup.", "建立擁有人帳戶，開始設定。") : t("Unlock your local workspace.", "解鎖你的本機工作區。")}</p>${!setup ? button("passkey-login", t("Sign in with a passkey", "使用通行密鑰登入"), "primary", 'style="width:100%;margin-bottom:22px"') : ""}<form id="auth-form">${setup ? field("owner", t("Your name", "你的名字"), "", "text", 'required autocomplete="name"') + field("bootstrap", t("Setup authorization code", "設定授權碼"), "", "password", 'required autocomplete="off"') : ""}${field("password", t("Password", "密碼"), "", "password", `required minlength="12" maxlength="256" autocomplete="${setup ? "new-password" : "current-password"}"`)}<button class="${setup ? "primary" : ""}" type="submit" style="width:100%">${setup ? t("Create owner account", "建立擁有人帳戶") : t("Sign in with password", "使用密碼登入")}</button></form><p class="muted-line">${setup ? t("The setup authorization code is stored in the host data directory. Passwords need at least 12 characters.", "設定授權碼存於主機資料目錄，密碼最少需要十二個字元。") : t("Passkeys require HTTPS or localhost. Your password remains available as a recovery method.", "通行密鑰需要 HTTPS 或 localhost。密碼仍可用作復原登入。")}</p></section></div></main>`;
+    `<header class="topbar"><div class="brand"><span class="mark" aria-hidden="true"><span class="icon">memory</span></span>Material QEMU</div><span class="spacer"></span><small>0.1.0 · ${escape(session.updatedAt || t("Build time unavailable", "未能提供建置時間"))}</small></header><main class="auth"><div class="card auth-card"><section class="auth-intro"><div class="mark" aria-hidden="true"><span class="icon">memory</span></div><span class="pill">${t("Your machines. Your control.", "你的機器，由你掌控。")}</span><h1 style="margin-top:24px">${t("A quieter home for your virtual machines.", "虛擬機器的安心基地。")}</h1><p class="muted">${t("One workspace for QEMU. Manage, monitor and connect, with everything running on your own host.", "一個 QEMU 工作區，管理、監察及連線，全部在你的主機上運行。")}</p><p class="muted-line">${t("Private by default. No cloud account required.", "預設私人使用，毋須雲端帳戶。")}</p></section><section class="auth-form"><h2>${setup ? t("Welcome to your new workspace", "歡迎使用新工作區") : t("Welcome back", "歡迎回來")}</h2><p class="muted">${setup ? t("Create the owner account to begin guided setup.", "建立擁有人帳戶，開始設定。") : t("Unlock your local workspace.", "解鎖你的本機工作區。")}</p>${!setup ? button("passkey-login", t("Sign in with a passkey", "使用通行密鑰登入"), "primary", 'style="width:100%;margin-bottom:22px"') : ""}<form id="auth-form">${setup ? field("owner", t("Your name", "你的名字"), "", "text", 'required autocomplete="name"') + field("bootstrap", t("Setup authorization code", "設定授權碼"), "", "password", 'required autocomplete="off"') : ""}${field("password", t("Password", "密碼"), "", "password", `required minlength="12" maxlength="256" autocomplete="${setup ? "new-password" : "current-password"}"`)}<button class="${setup ? "primary" : ""}" type="submit" style="width:100%">${setup ? t("Create owner account", "建立擁有人帳戶") : t("Sign in with password", "使用密碼登入")}</button></form><p class="muted-line">${setup ? t("The setup authorization code is stored in the host data directory. Passwords need at least 12 characters.", "設定授權碼存於主機資料目錄，密碼最少需要十二個字元。") : t("Passkeys require HTTPS or localhost. Your password remains available as a recovery method.", "通行密鑰需要 HTTPS 或 localhost。密碼仍可用作復原登入。")}</p></section></div></main>`;
   $("#auth-form").onsubmit = async (e) => {
     e.preventDefault();
     const values = new FormData(e.target);
@@ -223,13 +237,13 @@ function renderOnboarding() {
   if (n === 5)
     content = `<h3>${t("Isolated by default", "預設隔離")}</h3><p>${t("Machines use restricted user-mode networking, or no network. Host port forwarding and bridges are not enabled.", "機器使用受限制的使用者模式網絡，或完全不連網。不會啟用主機端口轉送或網絡橋接。")}</p><div class="help">${escape(location.origin)}<br>${t("This is your current connection, not a claim of LAN reachability. Use an HTTPS reverse proxy before remote access.", "這是目前連線地址，並不代表區域網絡已可連線。遠端存取前請設定 HTTPS 代理。")}</div>`;
   if (n === 6)
-    content = `<h3>${t("Bring your installation media", "準備安裝媒體")}</h3><p>${t("Place your trusted ISO files in the data volume’s media directory. The host operator manages these files. A blank machine can be created without an ISO.", "將可信的 ISO 放進資料空間的 media 目錄，由主機管理者處理。也可先建立沒有 ISO 的空白機器。")}</p><div class="help">${state.media.length ? state.media.map(escape).join("<br>") : t("No ISO files found. You can add them later.", "尚未找到 ISO，可稍後新增。")}</div>${button("import-iso", t("Import ISO", "匯入 ISO"),"primary")}${button("refresh", t("Check again", "重新檢查"))}`;
+    content = `<h3>${t("Bring your installation media", "準備安裝媒體")}</h3><p>${t("Place your trusted ISO files in the data volume’s media directory. The host operator manages these files. A blank machine can be created without an ISO.", "將可信的 ISO 放進資料空間的 media 目錄，由主機管理者處理。也可先建立沒有 ISO 的空白機器。")}</p><div class="help">${state.media.length ? state.media.map(escape).join("<br>") : t("No ISO files found. You can add them later.", "尚未找到 ISO，可稍後新增。")}</div>${button("import-iso", t("Import ISO", "匯入 ISO"), "primary")}${button("refresh", t("Check again", "重新檢查"))}`;
   if (n === 7)
     content = `<h3>${t("Your first machine is next", "下一步，建立第一部機器")}</h3><p>${t("The machine wizard will help you choose a platform, CPU, memory, private disk, network and display. Finish setup first, or continue with an empty workspace.", "機器精靈會帶你選擇平台、處理器、記憶體、磁碟、網絡及顯示。先完成設定，再建立機器。")}</p><p class="help">${t("Nothing starts automatically. Starting a machine is always an explicit action.", "機器不會自行啟動，每次啟動都需要你的操作。")}</p>`;
   if (n === 8)
     content = `<div class="empty"><div class="empty-icon">✓</div><h2>${t("Your workspace is ready", "工作區已準備好")}</h2><p>${t("Your owner account and preferences are saved. You can register a passkey in Settings and create your first machine.", "帳戶和偏好已儲存，可在設定登記通行密鑰，再建立第一部機器。")}</p></div>`;
   $("#app").innerHTML =
-    `<header class="topbar"><div class="brand"><span class="mark">▧</span>Material QEMU</div><span class="spacer"></span><span class="pill">${t("Setup saved automatically", "設定進度自動儲存")}</span></header><main class="main wizard">${views().heading(t("Make yourself at home", "設定你的工作區"), t("A few practical steps, then you are in.", "幾個實用步驟，完成即可開始。"))}${steps(setupNames, n)}<section class="card wizard-content"><h2>${t(...setupNames[n - 1])}</h2>${content}</section><div class="wizard-footer">${n > 2 ? button("setup-back", t("Back", "上一步")) : "<span></span>"}${button(n === 8 ? "setup-finish" : "setup-next", n === 8 ? t("Open workspace", "開啟工作區") : t("Save & continue", "儲存並繼續"), "primary")}</div></main>`;
+    `<header class="topbar"><div class="brand"><span class="mark" aria-hidden="true"><span class="icon">memory</span></span>Material QEMU</div><span class="spacer"></span><span class="pill">${t("Setup saved automatically", "設定進度自動儲存")}</span></header><main class="main wizard">${views().heading(t("Make yourself at home", "設定你的工作區"), t("A few practical steps, then you are in.", "幾個實用步驟，完成即可開始。"))}${steps(setupNames, n)}<section class="card wizard-content"><h2>${t(...setupNames[n - 1])}</h2>${content}</section><div class="wizard-footer">${n > 2 ? button("setup-back", t("Back", "上一步")) : "<span></span>"}${button(n === 8 ? "setup-finish" : "setup-next", n === 8 ? t("Open workspace", "開啟工作區") : t("Save & continue", "儲存並繼續"), "primary")}</div></main>`;
 }
 const machineSteps = [
   ["Preset", "預設"],
@@ -270,7 +284,7 @@ function machineWizard() {
   if (wizardStep === 4)
     content = `<h3>${wizard.arch === "aarch64" ? "UEFI" : "SeaBIOS"}</h3><p>${t("The supported firmware is selected by the platform. Secure Boot and TPM configuration are not implemented in this release.", "韌體按平台選定。此版本尚未提供安全啟動和 TPM 設定。")}</p><div class="help">${wizard.arch === "aarch64" ? "virt · cortex-a57 · UEFI" : "q35 · max CPU · SeaBIOS"}</div>`;
   if (wizardStep === 5)
-    content = `${field("diskGiB", t("Virtual disk capacity (GiB)", "虛擬磁碟容量（GiB）"), wizard.diskGiB, "number", `min="1" max="256" required ${editing ? "readonly" : ""}`)}${select("iso", t("Installation ISO", "安裝 ISO"), [["", t("No installation media", "沒有安裝媒體")], ...state.media.map((f) => [f, f])], wizard.iso || "")}${button("import-iso",t("Import ISO","匯入 ISO"))}<p class="help">${t("A sparse QCOW2 disk is created inside managed storage. No existing host disk is touched. Disk resizing is not yet available.", "QCOW2 磁碟只會在管理空間內建立，不會觸碰現有主機磁碟。目前未提供調整容量。")}</p>`;
+    content = `${field("diskGiB", t("Virtual disk capacity (GiB)", "虛擬磁碟容量（GiB）"), wizard.diskGiB, "number", `min="1" max="256" required ${editing ? "readonly" : ""}`)}${select("iso", t("Installation ISO", "安裝 ISO"), [["", t("No installation media", "沒有安裝媒體")], ...state.media.map((f) => [f, f])], wizard.iso || "")}${button("import-iso", t("Import ISO", "匯入 ISO"))}<p class="help">${t("A sparse QCOW2 disk is created inside managed storage. No existing host disk is touched. Disk resizing is not yet available.", "QCOW2 磁碟只會在管理空間內建立，不會觸碰現有主機磁碟。目前未提供調整容量。")}</p>`;
   if (wizardStep === 6)
     content =
       select(
@@ -289,7 +303,7 @@ function machineWizard() {
     content = `<dl>${[
       [t("Name", "名稱"), wizard.name],
       [t("Platform", "平台"), wizard.arch],
-      [t("CPU","處理器"), `${wizard.cpus} vCPU`],
+      [t("CPU", "處理器"), `${wizard.cpus} vCPU`],
       [t("Memory", "記憶體"), `${wizard.memory} MiB`],
       [t("Disk", "磁碟"), `${wizard.diskGiB} GiB · QCOW2`],
       [t("Network", "網絡"), enumLabel(wizard.network)],
@@ -321,7 +335,8 @@ async function connectConsole() {
       `${location.protocol === "https:" ? "wss" : "ws"}://${location.host}/console/${selected}`,
       { shared: true },
     );
-    rfb.scaleViewport = true;
+    rfb.scaleViewport = consoleScale;
+    rfb.viewOnly = !consoleInput;
     rfb.resizeSession = false;
     rfb.addEventListener("connect", () => {
       $("#console-status").textContent = t(
@@ -406,8 +421,8 @@ function modal(title, content, confirm, callback) {
     const submit = e.target.querySelector("[type=submit]");
     submit.disabled = true;
     try {
-      const close=await callback(new FormData(e.target));
-      if(close!==false)d.close();
+      const close = await callback(new FormData(e.target));
+      if (close !== false) d.close();
     } catch (error) {
       notify(error.message);
     } finally {
@@ -421,14 +436,53 @@ document.addEventListener("click", async (e) => {
   const action = b.dataset.action;
   try {
     if (action === "dialog-close") return $("#dialog").close();
-    if(action==='import-iso') {
-      if($('#machine-form')&&!saveWizard())return;
-      return modal(t('Import installation ISO','匯入安裝 ISO'),`${field('isoFile',t('Choose a trusted ISO','選擇可信 ISO'),'','file','required accept=".iso"')}${field('isoName',t('Stored filename','儲存檔名'),'','text','required maxlength="155"')}<p class="muted">${t('Maximum 2 GiB and 15 minutes per upload, with two concurrent uploads. Existing filenames are never overwritten. Uploading checks transfer integrity, not whether an image is safe or bootable.','每次上限 2 GiB 和 15 分鐘，最多同時兩個上傳，不會覆寫現有檔名。上傳只檢查傳輸完整性，不代表映像安全或可以啟動。')}</p><progress id="upload-progress" max="100" value="0" style="width:100%"></progress><p id="upload-status" role="status"></p>`,t('Upload ISO','上傳 ISO'),async f=>{
-        const file=f.get('isoFile');if(!file?.size||file.size>state.mediaMaxBytes)throw new Error(t('Choose an ISO between 1 byte and 2 GiB.','請選擇介乎 1 byte 和 2 GiB 的 ISO。'));
-        const transfer=uploadIso(file,f.get('isoName'),session.csrf,(loaded,total)=>{const percent=Math.round(100*loaded/total);if($('#upload-progress'))$('#upload-progress').value=percent;if($('#upload-status'))$('#upload-status').textContent=t(`${percent}% transferred; verifying after upload.`,`${percent}% 已傳送，上傳後會核對。`);});
-        const dialog=$('#dialog'),abort=()=>transfer.abort();dialog.addEventListener('close',abort,{once:true});
-        try{const result=await transfer.promise;wizard.iso=result.name;await refresh();notify(t(`Imported ${result.name} (${result.bytes} bytes).`,`已匯入 ${result.name}（${result.bytes} bytes）。`));}finally{dialog.removeEventListener('close',abort);}
-      });
+    if (action === "import-iso") {
+      if ($("#machine-form") && !saveWizard()) return;
+      return modal(
+        t("Import installation ISO", "匯入安裝 ISO"),
+        `${field("isoFile", t("Choose a trusted ISO", "選擇可信 ISO"), "", "file", 'required accept=".iso"')}${field("isoName", t("Stored filename", "儲存檔名"), "", "text", 'required maxlength="155"')}<p class="muted">${t("Maximum 2 GiB and 15 minutes per upload, with two concurrent uploads. Existing filenames are never overwritten. Uploading checks transfer integrity, not whether an image is safe or bootable.", "每次上限 2 GiB 和 15 分鐘，最多同時兩個上傳，不會覆寫現有檔名。上傳只檢查傳輸完整性，不代表映像安全或可以啟動。")}</p><progress id="upload-progress" max="100" value="0" style="width:100%"></progress><p id="upload-status" role="status"></p>`,
+        t("Upload ISO", "上傳 ISO"),
+        async (f) => {
+          const file = f.get("isoFile");
+          if (!file?.size || file.size > state.mediaMaxBytes)
+            throw new Error(
+              t(
+                "Choose an ISO between 1 byte and 2 GiB.",
+                "請選擇介乎 1 byte 和 2 GiB 的 ISO。",
+              ),
+            );
+          const transfer = uploadIso(
+            file,
+            f.get("isoName"),
+            session.csrf,
+            (loaded, total) => {
+              const percent = Math.round((100 * loaded) / total);
+              if ($("#upload-progress")) $("#upload-progress").value = percent;
+              if ($("#upload-status"))
+                $("#upload-status").textContent = t(
+                  `${percent}% transferred; verifying after upload.`,
+                  `${percent}% 已傳送，上傳後會核對。`,
+                );
+            },
+          );
+          const dialog = $("#dialog"),
+            abort = () => transfer.abort();
+          dialog.addEventListener("close", abort, { once: true });
+          try {
+            const result = await transfer.promise;
+            wizard.iso = result.name;
+            await refresh();
+            notify(
+              t(
+                `Imported ${result.name} (${result.bytes} bytes).`,
+                `已匯入 ${result.name}（${result.bytes} bytes）。`,
+              ),
+            );
+          } finally {
+            dialog.removeEventListener("close", abort);
+          }
+        },
+      );
     }
     if (action.startsWith("page:")) {
       page = action.slice(5);
@@ -696,7 +750,7 @@ document.addEventListener("click", async (e) => {
         try {
           await api(`/machines/${id}/action`, { action: verb });
           outcomes.push(
-            `${state.machines.find((m) => m.id === id)?.name}: ${t("requested","已請求")}`,
+            `${state.machines.find((m) => m.id === id)?.name}: ${t("requested", "已請求")}`,
           );
         } catch (err) {
           outcomes.push(
@@ -727,28 +781,96 @@ document.addEventListener("click", async (e) => {
       return;
     }
     if (action === "console-release") {
-      if (rfb) {
-        rfb.viewOnly = !rfb.viewOnly;
-        notify(
-          rfb.viewOnly
-            ? t("Guest input released.", "客體輸入已解除。")
-            : t("Guest input enabled.", "客體輸入已啟用。"),
-        );
-      }
+      consoleInput = !consoleInput;
+      localStorage.setItem("mq-console-input", String(consoleInput));
+      if (rfb) rfb.viewOnly = !consoleInput;
+      updateConsoleControls();
       return;
     }
     if (action === "console-scale") {
-      if (rfb) {
-        rfb.scaleViewport = !rfb.scaleViewport;
-        notify(t("Console scaling changed.", "主控台縮放已更改。"));
-      }
+      consoleScale = !consoleScale;
+      localStorage.setItem("mq-console-scale", String(consoleScale));
+      if (rfb) rfb.scaleViewport = consoleScale;
+      updateConsoleControls();
       return;
     }
     if (action === "console-fullscreen")
       return $("#console-screen").requestFullscreen();
-    if (action === "console-keys") {
-      await api(`/machines/${selected}/keys`, { keys: "ctrlaltdel" });
-      return;
+    if (action === "console-keys")
+      return modal(
+        t("Send keys", "傳送按鍵"),
+        select(
+          "sequence",
+          t("Key sequence", "按鍵組合"),
+          [
+            ["ctrlaltdel", "Ctrl + Alt + Del"],
+            ["ctrlaltf1", "Ctrl + Alt + F1"],
+            ["ctrlaltf2", "Ctrl + Alt + F2"],
+            ["escape", "Escape"],
+            ["enter", "Enter"],
+            ["print", "Print Screen"],
+            ["meta", t("System key", "系統鍵")],
+          ],
+          "ctrlaltdel",
+        ),
+        t("Send", "傳送"),
+        async (f) => {
+          await api(`/machines/${selected}/keys`, { keys: f.get("sequence") });
+        },
+      );
+    if (action === "console-reset")
+      return modal(
+        t("Reset this machine?", "重設這部機器？"),
+        `<p>${t("Reset restarts the guest immediately. Unsaved guest work may be lost.", "重設會立即重新啟動客體，未儲存的工作可能遺失。")}</p>`,
+        t("Reset machine", "重設機器"),
+        async () => {
+          await api(`/machines/${selected}/action`, { action: "reset" });
+          await refresh();
+        },
+      );
+    if (action === "console-text" || action === "console-clipboard") {
+      if (!rfb || !consoleInput)
+        throw new Error(
+          t(
+            "Connect the console and enable guest input first.",
+            "請先連接主控台並啟用客體輸入。",
+          ),
+        );
+      const clipboard = action === "console-clipboard";
+      return modal(
+        clipboard
+          ? t("Send clipboard text", "傳送剪貼簿文字")
+          : t("Type text into guest", "在客體輸入文字"),
+        `<div class="field"><label for="guest-text">${t("Text, up to 256 characters", "文字，最多 256 字元")}</label><textarea id="guest-text" name="text" maxlength="256" required></textarea></div><p class="muted">${clipboard ? t("Guest clipboard integration is required. Sending does not prove the guest accepted the update.", "需要客體剪貼簿整合，傳送不代表客體已接受。") : t("Text is sent to the currently focused guest control. Keyboard layout and guest support affect the result.", "文字會傳送到客體目前選取的控制，結果取決於鍵盤配置及客體支援。")}</p>`,
+        t("Send text", "傳送文字"),
+        async (f) => {
+          if (!rfb || !consoleInput)
+            throw new Error(
+              t("Console input is unavailable.", "主控台輸入未能使用。"),
+            );
+          const value = f.get("text");
+          if (clipboard) rfb.clipboardPasteFrom(value);
+          else
+            for (const char of value) {
+              const cp = char.codePointAt(0);
+              const keysym =
+                cp === 10
+                  ? 0xff0d
+                  : cp === 9
+                    ? 0xff09
+                    : cp <= 255
+                      ? cp
+                      : 0x01000000 | cp;
+              rfb.sendKey(keysym);
+            }
+          notify(
+            t(
+              "Text sent to the console; guest acceptance is not verified.",
+              "文字已傳送至主控台，客體是否接受仍未驗證。",
+            ),
+          );
+        },
+      );
     }
     if (action === "console-reconnect") {
       if (rfb) rfb.disconnect();
@@ -831,6 +953,8 @@ function views() {
     button,
     pill,
     enumLabel,
+    consoleScale,
+    consoleInput,
   });
 }
 
@@ -845,4 +969,40 @@ document.addEventListener("submit", (event) => {
   }
 });
 
-document.addEventListener('change',event=>{if(event.target.id==='isoFile'&&event.target.files[0])$('#isoName').value=event.target.files[0].name;});
+document.addEventListener("change", (event) => {
+  if (event.target.id === "isoFile" && event.target.files[0])
+    $("#isoName").value = event.target.files[0].name;
+});
+
+function updateConsoleControls() {
+  for (const [action, value, text] of [
+    [
+      "console-scale",
+      consoleScale,
+      consoleScale
+        ? t("Scaling: fit", "縮放：符合畫面")
+        : t("Scaling: native", "縮放：原始大小"),
+    ],
+    [
+      "console-release",
+      consoleInput,
+      consoleInput
+        ? t("Guest input: on", "客體輸入：開啟")
+        : t("Guest input: off", "客體輸入：關閉"),
+    ],
+  ]) {
+    const control = document.querySelector(`[data-action="${action}"]`);
+    if (control) {
+      control.textContent = text;
+      control.setAttribute("aria-pressed", String(value));
+    }
+  }
+}
+new ResizeObserver(() =>
+  document.documentElement.style.setProperty(
+    "--notice-height",
+    matchMedia("(max-width:760px)").matches
+      ? `${$("#notice").getBoundingClientRect().height}px`
+      : "0px",
+  ),
+).observe($("#notice"));

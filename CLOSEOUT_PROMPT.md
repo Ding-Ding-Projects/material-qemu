@@ -11,3 +11,5 @@ Task: https://github.com/Ding-Ding-Projects/material-qemu/issues/1
 New organization pass: saved-view deletion, folder rename preserving machine/view references, confirmed folder removal retaining machines in Unfiled, localized enum/review labels and modal keyboard focus. Nine local tests passed, QEMU lifecycle is skipped only on the native host. Build and browser proof for this source remains pending. Retain source/image binding for the independently verified 224048a virtual-authenticator and twelve-tuple browser proof.
 
 ISO import unit is implemented and tested through real HTTP authorization boundaries and streamed storage fixtures. New source browser acceptance remains pending. The exact residual inventory is docs/features/design-coverage.md; this remains an unfinished full-design objective.
+
+Console/presentation unit adds local licensed fonts/icons, non-overlapping narrow notifications, persistent observable console toggles, reset/key menu and explicit text/clipboard transfer. New candidate browser proof pending; no guest input acceptance is inferred.
