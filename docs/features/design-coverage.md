@@ -1,0 +1,112 @@
+# Supplied six-board control inventory
+
+This inventory covers the controls in the supplied Main, Onboarding, Overview, Machines, NewMachine and Console boards. Repeated shell controls apply to every board where shown. A working implementation is not automatically a visual-parity or runtime-verification claim. Evidence records identify the exact verified source.
+
+## Shared shell
+
+| Supplied control | Current state and exact limit |
+| --- | --- |
+| Brand, version, update timestamp | Implemented; runtime build time is generated or explicitly unavailable. |
+| Global search | Implemented for machine name, notes, folder and architecture. Other product categories remain pending. |
+| Adjacent full regex builder | Pending; no misleading placeholder is displayed. |
+| Command palette shortcut and button | Shortcut currently focuses search; a command catalog and live controls remain pending. |
+| Notifications center | Pending; transient action notifications exist, not the designed center. |
+| Help | Implemented task-oriented runtime help; complete documentation delivery remains pending. |
+| Owner identity | Implemented for one owner; multiple users remain pending. |
+| Health/LAN indicator | Actual host connection shown; LAN reachability is not claimed. |
+| Workspace tabs, close/pin, Open every tab, New tab catalog | Pending. Current navigation switches implemented routes without pretending to implement the complete tab contract. |
+| Host/tool/advanced navigation destinations | Pending under the corresponding broader design boards; no inert command catalog substitutes for them. |
+| Theme, language, reduced motion | Implemented dark/light/system and English/Cantonese/bilingual settings; earlier twelve-tuple evidence remains source-bound. Complete translation of backend diagnostics remains pending. |
+
+## Main sign-in
+
+| Supplied control | Current state and exact limit |
+| --- | --- |
+| Passkey sign-in | Implemented and previously verified with a virtual WebAuthn authenticator; physical devices unverified. |
+| Password sign-in | Implemented with scrypt, sessions and origin/CSRF boundaries. |
+| Username | Pending multi-user support; current runtime has one owner. |
+| Disable password sign-in | Pending; password recovery stays enabled. |
+| Five-attempt unlock ladder | Pending exact design behavior; current bounded limiter permits eight attempts per fifteen-minute window. |
+| Pre-auth language/theme buttons | Pending dedicated front-screen controls; persisted browser preferences are applied. |
+| Target/accelerator/appliance release facts | Only actual discovered runtime facts shown; 29-target and appliance-OS claims are not made. |
+
+## Onboarding
+
+| Supplied control | Current state and exact limit |
+| --- | --- |
+| Owner account/passkey | Password owner setup implemented with protected setup authorization; passkey registration lives in Settings, not the owner step. |
+| Language | Implemented and persisted. |
+| Hardware check | QEMU executable/version and host resources implemented; IOMMU, hugepages, VFIO and confidential-computing discovery pending. |
+| Disk/NFS pool selection | Pending; current runtime uses its managed persistent volume and does not modify host partitions. |
+| Pool name/filesystem/reflink settings | Pending; no formatting occurs. |
+| Keep data/erase confirmation | Host disk erasure is not implemented or authorized by the runtime workflow. |
+| Network bridge configuration | Pending; current guest network is disconnected or restricted user-mode networking. |
+| ISO library | File discovery implemented; authenticated streaming import added with bounds, no-overwrite and cleanup tests. New browser proof pending. |
+| First machine step | Guided explanation implemented; actual creation opens after onboarding rather than inside that step. |
+| Back/Next, save/resume, finish | Implemented. Optional-step skip button and a dedicated Save and finish later exit remain pending. |
+
+## Overview
+
+| Supplied control | Current state and exact limit |
+| --- | --- |
+| Host CPU/memory/uptime | Actual readings implemented; timeseries charts pending. |
+| Disk I/O and network rates | Explicitly unavailable; not simulated. |
+| New machine | Implemented. |
+| Machine import | Pending. |
+| State/architecture chips | State filters exist on Machines; overview architecture chips pending. |
+| Machine console/start/pause/details | Implemented against real runtime. |
+| Live thumbnails, guest CPU/RAM | Pending guest measurement and framebuffer preview integration. |
+| Recent activity | Persisted actual action history implemented. |
+| Running jobs | Pending background-job product model. |
+| Appliance updates/pool health | Pending; no appliance release or pool-health claim is made. |
+
+## Machines
+
+| Supplied control | Current state and exact limit |
+| --- | --- |
+| All/Favourites/Running | Implemented; Paused/Stopped also available. |
+| Needs attention/Recently used | Pending. |
+| Search, list/compact/cards, columns | Implemented text search and three layouts. Full regex builder pending. |
+| Folder creation, rename/removal | Implemented; rename preserves machine and view assignments; removal explicitly retains machines in Unfiled. |
+| Persisted collapsible folder groups | Pending; current folder chips filter without groups. |
+| Drag to folder / Move to folder menu | Pending direct and bulk controls. Editor folder selection is implemented. |
+| Saved views and deletion | Implemented query/state/folder persistence and confirmed deletion. |
+| Details panel and favourites | Implemented. Firmware/network/snapshot/tag details beyond current supported hardware remain pending. |
+| Bulk Start/Pause | Implemented with individual outcomes. |
+| Bulk Snapshot/Shut down/Move/Delete | Pending. No disk or machine deletion is currently exposed. |
+| Import | Pending. |
+
+## New machine
+
+| Supplied control | Current state and exact limit |
+| --- | --- |
+| Eight-step navigation | Implemented, with persisted draft and browser-safe Enter handling. Draft resumes at step one rather than its prior exact step. |
+| Presets | Blank, basic Linux resources and lightweight server resources implemented. Full Windows/cloud-init/microvm/Raspberry Pi/retro/confidential presets pending. |
+| All system targets | Two supported executable targets discovered; capability-derived broader inventory pending. |
+| Machine type and accelerator | Fixed supported defaults and TCG; selectable capability-derived choices pending. |
+| CPU/memory | Bounded actual allocations implemented; topology/NUMA/flags pending. |
+| Firmware | Fixed supported SeaBIOS/UEFI paths; Secure Boot, TPM and custom firmware pending. |
+| Storage | One managed QCOW2 disk, capacity and ISO selection implemented. Advanced devices, formats and resize pending. |
+| Network | Disconnected/restricted user mode implemented; bridges, forwarding and custom NICs pending. |
+| Display/devices | Authenticated VNC with platform defaults; selectable display/audio/USB devices pending. |
+| Name and UUID | Name implemented; UUID generated server-side. User override pending. |
+| Start after creating | Pending. |
+| Readconfig/cloud image/cloud-init import | Pending. Browser-supplied arbitrary command strings are not accepted. |
+| Live command preview | Pending a server-generated allowlisted preview. |
+
+## Console
+
+| Supplied control | Current state and exact limit |
+| --- | --- |
+| Pause/resume/shutdown/force off | Implemented. Graceful ACPI outcome depends on the guest; forced stop waits for process exit. |
+| Reset | Backend implemented; visible control pending. |
+| VNC | Actual authenticated noVNC connection implemented. |
+| SPICE/D-Bus | Pending transports, never presented as supported. |
+| Fit/scaling/fullscreen/reconnect | Implemented controls; complete native fullscreen/device acceptance pending. |
+| Keyboard release | View-only toggle implemented; designed Ctrl+Alt release shortcut pending. |
+| Ctrl+Alt+Del | Implemented; expanded key menu pending. |
+| Clipboard/type text | Pending; guest support must remain explicit. |
+| Media change/eject, USB redirection | Pending. |
+| Screenshot/record/drawing | Pending. Runtime evidence capture is independent of these product features. |
+| Summary/hardware/snapshots/migrate/guest-agent/monitor/stats/log tabs | Pending broader board implementations. |
+| Guest FPS/latency/CPU/RAM | Pending real measurements; no sample values are displayed. |

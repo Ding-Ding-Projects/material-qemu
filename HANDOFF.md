@@ -27,3 +27,7 @@ The coordinating reviewer owns final image verification, evidence promotion, REA
 Added saved-view deletion, folder rename and explicitly confirmed removal to Unfiled. Rename preserves machine assignments and saved folder filters; removal preserves every machine and disk. Negative tests reject invalid names, collisions, stale references and incorrect confirmation atomically. Saved views now persist the folder filter as well as query and state. Filter/layout/status/review labels are localized, singular counts are corrected, and dialog focus restoration/Enter handling are implemented. Browser acceptance of this newer source remains pending.
 
 The coordinating browser review also verified candidate 224048a with an actual virtual WebAuthn authenticator, real lifecycle/console, twelve language/theme/width combinations and preference persistence. Physical authenticators remain unverified. Earlier evidence is not relabelled to this organization pass.
+
+## ISO import unit
+
+Authenticated ISO import now streams directly into exclusive managed temporary files, confirms actual length and finalizes without overwrite. Two concurrent uploads, 2 GiB per file and a fifteen-minute deadline bound the route. Unit and real HTTP tests cover unauthorized/wrong-origin/CSRF requests, duplicate collisions, overflow, truncated streams, abort cleanup and directory-symlink escape. Browser acceptance of this newer unit remains pending. See the complete six-board control inventory for every known residual.

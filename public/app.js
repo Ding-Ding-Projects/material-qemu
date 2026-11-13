@@ -1,4 +1,5 @@
 import { createViews } from "./views.js";
+import { uploadIso } from './upload.js';
 const { startRegistration, startAuthentication } = window.SimpleWebAuthnBrowser;
 
 const $ = (selector) => document.querySelector(selector);
@@ -222,7 +223,7 @@ function renderOnboarding() {
   if (n === 5)
     content = `<h3>${t("Isolated by default", "預設隔離")}</h3><p>${t("Machines use restricted user-mode networking, or no network. Host port forwarding and bridges are not enabled.", "機器使用受限制的使用者模式網絡，或完全不連網。不會啟用主機端口轉送或網絡橋接。")}</p><div class="help">${escape(location.origin)}<br>${t("This is your current connection, not a claim of LAN reachability. Use an HTTPS reverse proxy before remote access.", "這是目前連線地址，並不代表區域網絡已可連線。遠端存取前請設定 HTTPS 代理。")}</div>`;
   if (n === 6)
-    content = `<h3>${t("Bring your installation media", "準備安裝媒體")}</h3><p>${t("Place your trusted ISO files in the data volume’s media directory. The host operator manages these files. A blank machine can be created without an ISO.", "將可信的 ISO 放進資料空間的 media 目錄，由主機管理者處理。也可先建立沒有 ISO 的空白機器。")}</p><div class="help">${state.media.length ? state.media.map(escape).join("<br>") : t("No ISO files found. You can add them later.", "尚未找到 ISO，可稍後新增。")}</div>${button("refresh", t("Check again", "重新檢查"))}`;
+    content = `<h3>${t("Bring your installation media", "準備安裝媒體")}</h3><p>${t("Place your trusted ISO files in the data volume’s media directory. The host operator manages these files. A blank machine can be created without an ISO.", "將可信的 ISO 放進資料空間的 media 目錄，由主機管理者處理。也可先建立沒有 ISO 的空白機器。")}</p><div class="help">${state.media.length ? state.media.map(escape).join("<br>") : t("No ISO files found. You can add them later.", "尚未找到 ISO，可稍後新增。")}</div>${button("import-iso", t("Import ISO", "匯入 ISO"),"primary")}${button("refresh", t("Check again", "重新檢查"))}`;
   if (n === 7)
     content = `<h3>${t("Your first machine is next", "下一步，建立第一部機器")}</h3><p>${t("The machine wizard will help you choose a platform, CPU, memory, private disk, network and display. Finish setup first, or continue with an empty workspace.", "機器精靈會帶你選擇平台、處理器、記憶體、磁碟、網絡及顯示。先完成設定，再建立機器。")}</p><p class="help">${t("Nothing starts automatically. Starting a machine is always an explicit action.", "機器不會自行啟動，每次啟動都需要你的操作。")}</p>`;
   if (n === 8)
@@ -269,7 +270,7 @@ function machineWizard() {
   if (wizardStep === 4)
     content = `<h3>${wizard.arch === "aarch64" ? "UEFI" : "SeaBIOS"}</h3><p>${t("The supported firmware is selected by the platform. Secure Boot and TPM configuration are not implemented in this release.", "韌體按平台選定。此版本尚未提供安全啟動和 TPM 設定。")}</p><div class="help">${wizard.arch === "aarch64" ? "virt · cortex-a57 · UEFI" : "q35 · max CPU · SeaBIOS"}</div>`;
   if (wizardStep === 5)
-    content = `${field("diskGiB", t("Virtual disk capacity (GiB)", "虛擬磁碟容量（GiB）"), wizard.diskGiB, "number", `min="1" max="256" required ${editing ? "readonly" : ""}`)}${select("iso", t("Installation ISO", "安裝 ISO"), [["", t("No installation media", "沒有安裝媒體")], ...state.media.map((f) => [f, f])], wizard.iso || "")}<p class="help">${t("A sparse QCOW2 disk is created inside managed storage. No existing host disk is touched. Disk resizing is not yet available.", "QCOW2 磁碟只會在管理空間內建立，不會觸碰現有主機磁碟。目前未提供調整容量。")}</p>`;
+    content = `${field("diskGiB", t("Virtual disk capacity (GiB)", "虛擬磁碟容量（GiB）"), wizard.diskGiB, "number", `min="1" max="256" required ${editing ? "readonly" : ""}`)}${select("iso", t("Installation ISO", "安裝 ISO"), [["", t("No installation media", "沒有安裝媒體")], ...state.media.map((f) => [f, f])], wizard.iso || "")}${button("import-iso",t("Import ISO","匯入 ISO"))}<p class="help">${t("A sparse QCOW2 disk is created inside managed storage. No existing host disk is touched. Disk resizing is not yet available.", "QCOW2 磁碟只會在管理空間內建立，不會觸碰現有主機磁碟。目前未提供調整容量。")}</p>`;
   if (wizardStep === 6)
     content =
       select(
@@ -405,8 +406,8 @@ function modal(title, content, confirm, callback) {
     const submit = e.target.querySelector("[type=submit]");
     submit.disabled = true;
     try {
-      await callback(new FormData(e.target));
-      d.close();
+      const close=await callback(new FormData(e.target));
+      if(close!==false)d.close();
     } catch (error) {
       notify(error.message);
     } finally {
@@ -420,6 +421,15 @@ document.addEventListener("click", async (e) => {
   const action = b.dataset.action;
   try {
     if (action === "dialog-close") return $("#dialog").close();
+    if(action==='import-iso') {
+      if($('#machine-form')&&!saveWizard())return;
+      return modal(t('Import installation ISO','匯入安裝 ISO'),`${field('isoFile',t('Choose a trusted ISO','選擇可信 ISO'),'','file','required accept=".iso"')}${field('isoName',t('Stored filename','儲存檔名'),'','text','required maxlength="155"')}<p class="muted">${t('Maximum 2 GiB and 15 minutes per upload, with two concurrent uploads. Existing filenames are never overwritten. Uploading checks transfer integrity, not whether an image is safe or bootable.','每次上限 2 GiB 和 15 分鐘，最多同時兩個上傳，不會覆寫現有檔名。上傳只檢查傳輸完整性，不代表映像安全或可以啟動。')}</p><progress id="upload-progress" max="100" value="0" style="width:100%"></progress><p id="upload-status" role="status"></p>`,t('Upload ISO','上傳 ISO'),async f=>{
+        const file=f.get('isoFile');if(!file?.size||file.size>state.mediaMaxBytes)throw new Error(t('Choose an ISO between 1 byte and 2 GiB.','請選擇介乎 1 byte 和 2 GiB 的 ISO。'));
+        const transfer=uploadIso(file,f.get('isoName'),session.csrf,(loaded,total)=>{const percent=Math.round(100*loaded/total);if($('#upload-progress'))$('#upload-progress').value=percent;if($('#upload-status'))$('#upload-status').textContent=t(`${percent}% transferred; verifying after upload.`,`${percent}% 已傳送，上傳後會核對。`);});
+        const dialog=$('#dialog'),abort=()=>transfer.abort();dialog.addEventListener('close',abort,{once:true});
+        try{const result=await transfer.promise;wizard.iso=result.name;await refresh();notify(t(`Imported ${result.name} (${result.bytes} bytes).`,`已匯入 ${result.name}（${result.bytes} bytes）。`));}finally{dialog.removeEventListener('close',abort);}
+      });
+    }
     if (action.startsWith("page:")) {
       page = action.slice(5);
       if (page === "new") return startWizard();
@@ -834,3 +844,5 @@ document.addEventListener("submit", (event) => {
       ?.click();
   }
 });
+
+document.addEventListener('change',event=>{if(event.target.id==='isoFile'&&event.target.files[0])$('#isoName').value=event.target.files[0].name;});

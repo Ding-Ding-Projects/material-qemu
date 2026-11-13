@@ -6,3 +6,6 @@
 - [Preserved design contract](../../design/HANDOFF.md)
 
 The application includes task-oriented help for creating machines, controlling lifecycle and preserving storage. Complete interactive documentation delivery remains pending.
+
+- [ISO import and transfer limits](media.md)
+- [Supplied six-board control inventory](design-coverage.md)

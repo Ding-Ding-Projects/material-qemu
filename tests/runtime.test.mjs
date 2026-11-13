@@ -168,6 +168,14 @@ test("HTTP owner claim, sessions, CSRF and persistence boundaries", async () => 
     assert.deepEqual(state.folders, ["Test"]);
     assert.equal(state.settings.language, "both");
     assert.equal("hash" in state.owner, false);
+    const upload=(headers={})=>fetch(`${origin}/api/media?name=http-fixture.iso`,{method:'POST',headers:{Origin:origin,'Content-Type':'application/octet-stream',...headers},body:Buffer.from('Transport-only fixture, not bootable media.')});
+    assert.equal((await upload()).status,401);
+    assert.equal((await upload({Cookie:cookie})).status,403);
+    assert.equal((await upload({Cookie:cookie,'X-CSRF-Token':csrf,Origin:'http://untrusted.invalid'})).status,403);
+    const uploaded=await upload({Cookie:cookie,'X-CSRF-Token':csrf});assert.equal(uploaded.status,201);
+    const receipt=await uploaded.json();assert.equal(receipt.bytes,Buffer.byteLength("Transport-only fixture, not bootable media."));
+    assert.equal((await upload({Cookie:cookie,'X-CSRF-Token':csrf})).status,400);
+    assert.equal(await readFile(path.join(dir,'media','http-fixture.iso'),'utf8'),'Transport-only fixture, not bootable media.');
     assert.equal(
       (
         await request(
