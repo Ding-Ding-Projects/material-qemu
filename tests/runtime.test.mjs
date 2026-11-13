@@ -110,6 +110,7 @@ test("HTTP owner claim, sessions, CSRF and persistence boundaries", async () => 
     const anonymous = await (await request("/session")).json();
     assert.equal(anonymous.setupRequired, true);
     assert.equal("bootstrap" in anonymous, false);
+    assert.equal(app.server.requestTimeout, 901000);
     assert.equal((await request("/state")).status, 401);
     assert.equal(
       (
@@ -240,6 +241,32 @@ test("HTTP owner claim, sessions, CSRF and persistence boundaries", async () => 
       await readFile(path.join(dir, "media", "http-fixture.iso"), "utf8"),
       "Transport-only fixture, not bootable media.",
     );
+    const realTransaction = app.store.transaction;
+    try {
+      app.store.transaction = async () => {
+        throw new Error("Simulated activity-write failure.");
+      };
+      const saved = await fetch(`${origin}/api/media?name=audit-fixture.iso`, {
+        method: "POST",
+        headers: {
+          Origin: origin,
+          "Content-Type": "application/octet-stream",
+          Cookie: cookie,
+          "X-CSRF-Token": csrf,
+        },
+        body: Buffer.from("Safe transport fixture"),
+      });
+      assert.equal(saved.status, 201);
+      const result = await saved.json();
+      assert.equal(result.auditRecorded, false);
+      assert.match(result.warning, /saved successfully/);
+      assert.equal(
+        await readFile(path.join(dir, "media", "audit-fixture.iso"), "utf8"),
+        "Safe transport fixture",
+      );
+    } finally {
+      app.store.transaction = realTransaction;
+    }
     assert.equal(
       (
         await request(

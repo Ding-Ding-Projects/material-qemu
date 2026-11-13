@@ -19,3 +19,5 @@ Creation/filter unit adds shared safe launch preview, optional immediate startup
 Capability unit adds bounded installed-target discovery, binary-derived machine/accelerator choices, separated unsupported recipes and backwards-compatible machine defaults. Before accepting new i386/arm/aarch64 choices, run the exact-image per-platform QMP start/status/stop regression. KVM is only eligible/unverified unless a real launch proves it.
 
 Onboarding/draft unit adds exact-step local new/edit drafts, persisted skip/save-later, first-machine setup route and browser-local pre-auth language/theme carried into new-owner setup. Latest native checks: eighteen pass, three runtime skips. New browser acceptance remains pending; capability image passed all four real platform launches.
+
+Priority media repair pins raw/read-only CD format, aligns upload deadline, and separates successful storage from audit failure. Native eighteen tests pass with three QEMU skips. Before accepting the repair image, run all four platform launches with harmless blank CD fixture bytes.

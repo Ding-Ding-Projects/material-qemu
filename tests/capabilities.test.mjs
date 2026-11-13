@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { mkdtemp, rm } from "node:fs/promises";
+import { mkdtemp, rm, writeFile } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import { randomUUID } from "node:crypto";
@@ -72,6 +72,10 @@ test("every selectable installed platform recipe launches through real QMP", asy
     );
     if (!available.length)
       return t.skip("No QEMU system emulator is installed on this host.");
+    await writeFile(
+      path.join(dir, "media", "blank-transport-fixture.iso"),
+      Buffer.alloc(32768),
+    );
     for (const [arch, cap] of available) {
       await t.test(arch, async () => {
         const id = randomUUID();
@@ -87,6 +91,7 @@ test("every selectable installed platform recipe launches through real QMP", asy
               cpus: 1,
               diskGiB: 1,
               network: "none",
+              iso: "blank-transport-fixture.iso",
             },
             qemu.capabilities,
           ),

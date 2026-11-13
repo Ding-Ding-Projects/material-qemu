@@ -124,7 +124,15 @@ export function launchPlan(
       "virtio-net-pci,netdev=net0",
     );
   else args.push("-nic", "none");
-  if (machine.iso) args.push("-cdrom", iso, "-boot", "order=d");
+  if (machine.iso)
+    args.push(
+      "-device",
+      "virtio-scsi-pci,id=media-scsi",
+      "-drive",
+      `file=${iso.replaceAll(",", ",,")},format=raw,if=none,media=cdrom,readonly=on,id=installation-media`,
+      "-device",
+      "scsi-cd,drive=installation-media,bus=media-scsi.0,bootindex=1",
+    );
   return { executable: target.executable, args };
 }
 export class Qemu {

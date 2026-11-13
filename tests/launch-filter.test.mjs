@@ -33,10 +33,29 @@ test("launch preview and execution use the same fixed argument builder", () => {
   );
   assert.ok(preview.args.some((arg) => arg.includes("<managed disk>")));
   assert.ok(!actual.args.includes("echo"));
-  assert.equal(
-    actual.args[actual.args.indexOf("-cdrom") + 1],
-    "/data/media/trusted.iso",
+  assert.ok(!actual.args.includes("-cdrom"));
+  const cd = actual.args.find(
+    (value) =>
+      value.includes("id=installation-media") && value.includes("file="),
   );
+  assert.equal(
+    cd,
+    "file=/data/media/trusted.iso,format=raw,if=none,media=cdrom,readonly=on,id=installation-media",
+  );
+  assert.ok(
+    actual.args.includes(
+      "scsi-cd,drive=installation-media,bus=media-scsi.0,bootindex=1",
+    ),
+  );
+  for (const arch of ["x86_64", "i386", "aarch64", "arm"]) {
+    const plan = launchPlan({ ...machine, arch });
+    assert.ok(!plan.args.includes("-cdrom"));
+    assert.ok(
+      plan.args.some((value) =>
+        value.includes("format=raw,if=none,media=cdrom,readonly=on"),
+      ),
+    );
+  }
 });
 test("attention and recent filters use actual errors and last-use timestamps", () => {
   const now = Date.parse("2026-11-13T12:00:00Z");

@@ -553,7 +553,14 @@ document.addEventListener("click", async (e) => {
               t(
                 `Imported ${result.name} (${result.bytes} bytes).`,
                 `已匯入 ${result.name}（${result.bytes} bytes）。`,
-              ),
+              ) +
+                (result.auditRecorded === false
+                  ? " " +
+                    t(
+                      "The file is saved, but activity history could not be recorded.",
+                      "檔案已儲存，但未能記錄活動歷史。",
+                    )
+                  : ""),
             );
           } finally {
             dialog.removeEventListener("close", abort);
@@ -576,7 +583,7 @@ document.addEventListener("click", async (e) => {
     if (action === "new") return startWizard();
     if (action === "refresh") return refresh();
     if (action === "logout") {
-      onboardingMachine=false;
+      onboardingMachine = false;
       await api("/logout", {});
       session = await api("/session");
       state = null;
@@ -642,7 +649,7 @@ document.addEventListener("click", async (e) => {
           skipStep: action === "setup-skip" ? step : undefined,
         },
       });
-      if(action==='setup-finish')page='overview';
+      if (action === "setup-finish") page = "overview";
       return refresh();
     }
     if (action === "wizard-next") {

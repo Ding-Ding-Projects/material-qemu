@@ -127,13 +127,22 @@ export async function createApplication(options = {}) {
             data,
             url.searchParams.get("name"),
           );
-          await store.transaction((s) =>
-            event(
-              s,
-              `Imported installation media ${media.name} (${media.bytes} bytes).`,
-            ),
-          );
-          return json(res, 201, media);
+          try {
+            await store.transaction((s) =>
+              event(
+                s,
+                `Imported installation media ${media.name} (${media.bytes} bytes).`,
+              ),
+            );
+            return json(res, 201, { ...media, auditRecorded: true });
+          } catch {
+            return json(res, 201, {
+              ...media,
+              auditRecorded: false,
+              warning:
+                "ISO saved successfully, but activity history could not be recorded. Refresh the media library before retrying.",
+            });
+          }
         } finally {
           clearTimeout(deadline);
           activeUploads--;
@@ -589,6 +598,8 @@ export async function createApplication(options = {}) {
       return json(res, 404, { error: "Not found." });
     }
   }
+  server.requestTimeout = 15 * 60 * 1000 + 1000;
+  server.headersTimeout = 60000;
   return {
     server,
     store,
@@ -601,14 +612,22 @@ export async function createApplication(options = {}) {
   };
 }
 async function readJson(req) {
+  const deadline = setTimeout(
+    () => req.destroy(new Error("JSON request exceeded the 30-second limit.")),
+    30000,
+  );
   let size = 0,
     chunks = [];
-  for await (const chunk of req) {
-    size += chunk.length;
-    if (size > 64 * 1024) throw new Error("Request is too large.");
-    chunks.push(chunk);
+  try {
+    for await (const chunk of req) {
+      size += chunk.length;
+      if (size > 64 * 1024) throw new Error("Request is too large.");
+      chunks.push(chunk);
+    }
+    return JSON.parse(Buffer.concat(chunks).toString() || "{}");
+  } finally {
+    clearTimeout(deadline);
   }
-  return JSON.parse(Buffer.concat(chunks).toString() || "{}");
 }
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
   const app = await createApplication();

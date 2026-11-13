@@ -47,3 +47,7 @@ Binary-derived machine/accelerator discovery now unions the supplied catalog wit
 ## Onboarding and draft unit
 
 Exact-step new/edit drafts, backwards-compatible draft loading, explicit onboarding skips, save/sign-out/resume, real first-machine creation from onboarding and pre-auth language/theme choices are implemented. Initial browser choices carry into owner setup without persisting credentials. Native unit/API tests pass eighteen cases with three QEMU-dependent skips; newer browser proof remains pending. The preceding capability image independently passed all twenty-three container tests, including actual x86_64/i386/aarch64/arm default-recipe launch/status/stop.
+
+## Media boundary repair
+
+Installation media now has an explicit raw/read-only virtual SCSI CD backend on all supported platforms, preventing uploaded headers from selecting another storage format. The launch-plan regression rejects the old implicit CD path. The per-platform runtime regression uses harmless blank CD bytes; no hostile media is generated. HTTP upload and JSON deadlines are explicit, and successful file storage is reported separately from an activity-write warning. Native tests pass eighteen with three runtime-dependent skips; exact-image verification follows.
