@@ -168,6 +168,41 @@ test("HTTP owner claim, sessions, CSRF and persistence boundaries", async () => 
     assert.deepEqual(state.folders, ["Test"]);
     assert.equal(state.settings.language, "both");
     assert.equal("hash" in state.owner, false);
+    const authenticated = { Cookie: cookie, "X-CSRF-Token": csrf };
+    assert.equal(
+      (
+        await request(
+          "/preferences",
+          { setup: { step: 5, skipStep: 4, complete: false } },
+          authenticated,
+        )
+      ).status,
+      200,
+    );
+    assert.deepEqual(app.store.state.setup.skipped, [4]);
+    assert.equal(app.store.state.setup.step, 5);
+    assert.equal(
+      (
+        await request(
+          "/preferences",
+          { setup: { step: 6, skipStep: 2, complete: false } },
+          authenticated,
+        )
+      ).status,
+      400,
+    );
+    assert.equal(
+      (
+        await request(
+          "/preferences",
+          { setup: { step: 5, complete: true } },
+          authenticated,
+        )
+      ).status,
+      400,
+    );
+    assert.equal(app.store.state.setup.step, 5);
+    assert.equal(app.store.state.setup.complete, false);
     const upload = (headers = {}) =>
       fetch(`${origin}/api/media?name=http-fixture.iso`, {
         method: "POST",

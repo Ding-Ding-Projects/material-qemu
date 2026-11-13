@@ -27,7 +27,7 @@ This inventory covers the controls in the supplied Main, Onboarding, Overview, M
 | Username | Pending multi-user support; current runtime has one owner. |
 | Disable password sign-in | Pending; password recovery stays enabled. |
 | Five-attempt unlock ladder | Pending exact design behavior; current bounded limiter permits eight attempts per fifteen-minute window. |
-| Pre-auth language/theme buttons | Pending dedicated front-screen controls; persisted browser preferences are applied. |
+| Pre-auth language/theme buttons | Implemented browser-local controls; initial choices carry into new-owner setup. Existing account preferences apply after sign-in. |
 | Target/accelerator/appliance release facts | Only actual discovered runtime facts shown; 29-target and appliance-OS claims are not made. |
 
 ## Onboarding
@@ -42,8 +42,8 @@ This inventory covers the controls in the supplied Main, Onboarding, Overview, M
 | Keep data/erase confirmation | Host disk erasure is not implemented or authorized by the runtime workflow. |
 | Network bridge configuration | Pending; current guest network is disconnected or restricted user-mode networking. |
 | ISO library | File discovery implemented; authenticated streaming import added with bounds, no-overwrite and cleanup tests. New browser proof pending. |
-| First machine step | Guided explanation implemented; actual creation opens after onboarding rather than inside that step. |
-| Back/Next, save/resume, finish | Implemented. Optional-step skip button and a dedicated Save and finish later exit remain pending. |
+| First machine step | Implemented actual machine editor route inside onboarding, returning to final review after save. |
+| Back/Next, save/resume, finish | Implemented, including persisted optional-step skipping and Save and finish later sign-out/resume. |
 
 ## Overview
 
@@ -80,7 +80,7 @@ This inventory covers the controls in the supplied Main, Onboarding, Overview, M
 
 | Supplied control | Current state and exact limit |
 | --- | --- |
-| Eight-step navigation | Implemented, with persisted draft and browser-safe Enter handling. Draft resumes at step one rather than its prior exact step. |
+| Eight-step navigation | Implemented exact-step local draft resume, separate new/edit drafts, legacy migration and browser-safe Enter handling. |
 | Presets | Blank, lightweight server and installed-platform Linux resource presets implemented. Windows/cloud-init/microvm/Raspberry Pi/retro/confidential presets retain specific unsupported reasons. |
 | All system targets | Supplied 29-target catalog plus bounded PATH discovery implemented. Actual installed targets, incomplete discovery and unavailable recipes are distinguished. No claim that all targets are installed. |
 | Machine type and accelerator | Binary-derived inventory and supported recipe selectors implemented. KVM eligibility is explicitly launch-unverified; other unsupported accelerators retain reasons. Final image launch acceptance pending. |

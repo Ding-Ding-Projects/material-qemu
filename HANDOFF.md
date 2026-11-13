@@ -43,3 +43,7 @@ The machine editor now displays a server-generated launch plan using the same fi
 ## Capability discovery unit
 
 Binary-derived machine/accelerator discovery now unions the supplied catalog with bounded PATH discovery. Supported PC/q35 and Arm virt recipes are separated from discovered unsupported boards. Version-success/capability-failure states remain honestly installed but incomplete. KVM device access only establishes labelled eligibility, never verified acceleration. The container adds Arm firmware for real i386/arm/aarch64 launch checks; final image results are still pending at this source checkpoint. Native tests pass sixteen cases and skip three runtime-dependent cases because QEMU is absent from this host.
+
+## Onboarding and draft unit
+
+Exact-step new/edit drafts, backwards-compatible draft loading, explicit onboarding skips, save/sign-out/resume, real first-machine creation from onboarding and pre-auth language/theme choices are implemented. Initial browser choices carry into owner setup without persisting credentials. Native unit/API tests pass eighteen cases with three QEMU-dependent skips; newer browser proof remains pending. The preceding capability image independently passed all twenty-three container tests, including actual x86_64/i386/aarch64/arm default-recipe launch/status/stop.

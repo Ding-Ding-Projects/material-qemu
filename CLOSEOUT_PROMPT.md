@@ -17,3 +17,5 @@ Console/presentation unit adds local licensed fonts/icons, non-overlapping narro
 Creation/filter unit adds shared safe launch preview, optional immediate startup, error/recent views and direct/bulk folder moves. Local fourteen tests pass, two real-QEMU tests are explicitly skipped only on the native host. Container/browser proof for the new source remains pending.
 
 Capability unit adds bounded installed-target discovery, binary-derived machine/accelerator choices, separated unsupported recipes and backwards-compatible machine defaults. Before accepting new i386/arm/aarch64 choices, run the exact-image per-platform QMP start/status/stop regression. KVM is only eligible/unverified unless a real launch proves it.
+
+Onboarding/draft unit adds exact-step local new/edit drafts, persisted skip/save-later, first-machine setup route and browser-local pre-auth language/theme carried into new-owner setup. Latest native checks: eighteen pass, three runtime skips. New browser acceptance remains pending; capability image passed all four real platform launches.

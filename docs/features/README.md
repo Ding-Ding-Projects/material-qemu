@@ -13,3 +13,5 @@ The application includes task-oriented help for creating machines, controlling l
 - [Console controls and local presentation](console.md)
 
 - [Installed platform discovery and safe recipes](platforms.md)
+
+- [Onboarding and exact-step draft resume](onboarding.md)

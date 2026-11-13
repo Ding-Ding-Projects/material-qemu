@@ -1049,3 +1049,18 @@ h1 {
   overflow-wrap: anywhere;
   padding: 12px;
 }
+
+.auth-controls {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  align-items: end;
+}
+.auth-controls .field {
+  margin: 0;
+  min-width: 140px;
+  flex: 1;
+}
+.wizard-footer {
+  flex-wrap: wrap;
+}

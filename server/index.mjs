@@ -161,6 +161,10 @@ export async function createApplication(options = {}) {
             throw new Error("Owner setup has already completed.");
           state.owner = { name, ...password, credentials: [] };
           state.setup = { step: 2, complete: false };
+          if (["en", "yue", "both"].includes(body.preferences?.language))
+            state.settings.language = body.preferences.language;
+          if (["dark", "light", "system"].includes(body.preferences?.theme))
+            state.settings.theme = body.preferences.theme;
           event(state, "Owner account created.");
         });
         bootstrap = null;
@@ -302,7 +306,23 @@ export async function createApplication(options = {}) {
             const step = Number(body.setup.step);
             if (!Number.isInteger(step) || step < 2 || step > 8)
               throw new Error("Invalid setup step.");
-            s.setup = { step, complete: Boolean(body.setup.complete) };
+            if (body.setup.complete && step !== 8)
+              throw new Error(
+                "Complete onboarding from the final review step.",
+              );
+            const skipped = s.setup.skipped || [];
+            if (body.setup.skipStep !== undefined) {
+              if (![4, 5, 6, 7].includes(body.setup.skipStep))
+                throw new Error("This onboarding step is required.");
+              if (!skipped.includes(body.setup.skipStep))
+                skipped.push(body.setup.skipStep);
+            }
+            s.setup = {
+              step,
+              complete: Boolean(body.setup.complete),
+              skipped,
+              savedAt: new Date().toISOString(),
+            };
           }
           updateOrganization(s, body);
         });

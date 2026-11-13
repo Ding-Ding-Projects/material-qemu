@@ -1,3 +1,4 @@
+import { loadDraft, saveDraft, clearDraft } from "./drafts.js";
 import { platformFields } from "./capability-view.js";
 import { createViews } from "./views.js";
 import { uploadIso } from "./upload.js";
@@ -31,6 +32,7 @@ let session,
   noticeTimer,
   dialogOpener,
   dialogOpenerAction;
+let onboardingMachine = false;
 let previewTimer,
   previewSequence = 0;
 let consoleScale = localStorage.getItem("mq-console-scale") !== "false";
@@ -115,6 +117,10 @@ async function refresh(renderPage = true) {
   if (renderPage) render();
 }
 function applySettings() {
+  if (state?.settings) {
+    localStorage.setItem("mq-language", state.settings.language);
+    localStorage.setItem("mq-theme", state.settings.theme);
+  }
   const theme =
     state?.settings.theme || localStorage.getItem("mq-theme") || "dark";
   document.documentElement.dataset.theme =
@@ -149,7 +155,7 @@ function render() {
     renderAuth();
     return;
   }
-  if (!state.setup.complete) {
+  if (!state.setup.complete && !onboardingMachine) {
     renderOnboarding();
     return;
   }
@@ -173,14 +179,39 @@ function render() {
 function renderAuth() {
   const setup = session?.setupRequired;
   $("#app").innerHTML =
-    `<header class="topbar"><div class="brand"><span class="mark" aria-hidden="true"><span class="icon">memory</span></span>Material QEMU</div><span class="spacer"></span><small>0.1.0 · ${escape(session.updatedAt || t("Build time unavailable", "未能提供建置時間"))}</small></header><main class="auth"><div class="card auth-card"><section class="auth-intro"><div class="mark" aria-hidden="true"><span class="icon">memory</span></div><span class="pill">${t("Your machines. Your control.", "你的機器，由你掌控。")}</span><h1 style="margin-top:24px">${t("A quieter home for your virtual machines.", "虛擬機器的安心基地。")}</h1><p class="muted">${t("One workspace for QEMU. Manage, monitor and connect, with everything running on your own host.", "一個 QEMU 工作區，管理、監察及連線，全部在你的主機上運行。")}</p><p class="muted-line">${t("Private by default. No cloud account required.", "預設私人使用，毋須雲端帳戶。")}</p></section><section class="auth-form"><h2>${setup ? t("Welcome to your new workspace", "歡迎使用新工作區") : t("Welcome back", "歡迎回來")}</h2><p class="muted">${setup ? t("Create the owner account to begin guided setup.", "建立擁有人帳戶，開始設定。") : t("Unlock your local workspace.", "解鎖你的本機工作區。")}</p>${!setup ? button("passkey-login", t("Sign in with a passkey", "使用通行密鑰登入"), "primary", 'style="width:100%;margin-bottom:22px"') : ""}<form id="auth-form">${setup ? field("owner", t("Your name", "你的名字"), "", "text", 'required autocomplete="name"') + field("bootstrap", t("Setup authorization code", "設定授權碼"), "", "password", 'required autocomplete="off"') : ""}${field("password", t("Password", "密碼"), "", "password", `required minlength="12" maxlength="256" autocomplete="${setup ? "new-password" : "current-password"}"`)}<button class="${setup ? "primary" : ""}" type="submit" style="width:100%">${setup ? t("Create owner account", "建立擁有人帳戶") : t("Sign in with password", "使用密碼登入")}</button></form><p class="muted-line">${setup ? t("The setup authorization code is stored in the host data directory. Passwords need at least 12 characters.", "設定授權碼存於主機資料目錄，密碼最少需要十二個字元。") : t("Passkeys require HTTPS or localhost. Your password remains available as a recovery method.", "通行密鑰需要 HTTPS 或 localhost。密碼仍可用作復原登入。")}</p></section></div></main>`;
+    `<header class="topbar"><div class="brand"><span class="mark" aria-hidden="true"><span class="icon">memory</span></span>Material QEMU</div><span class="spacer"></span><small>0.1.0 · ${escape(session.updatedAt || t("Build time unavailable", "未能提供建置時間"))}</small><div class="auth-controls">${select(
+      "auth-language",
+      t("Language", "語言"),
+      [
+        ["en", "English"],
+        ["yue", "廣東話"],
+        ["both", "English + 廣東話"],
+      ],
+      localStorage.getItem("mq-language") || "en",
+    )}${select(
+      "auth-theme",
+      t("Theme", "主題"),
+      [
+        ["dark", t("Dark", "深色")],
+        ["light", t("Light", "淺色")],
+        ["system", t("Follow device", "跟隨裝置")],
+      ],
+      localStorage.getItem("mq-theme") || "dark",
+    )}</div></header><main class="auth"><div class="card auth-card"><section class="auth-intro"><div class="mark" aria-hidden="true"><span class="icon">memory</span></div><span class="pill">${t("Your machines. Your control.", "你的機器，由你掌控。")}</span><h1 style="margin-top:24px">${t("A quieter home for your virtual machines.", "虛擬機器的安心基地。")}</h1><p class="muted">${t("One workspace for QEMU. Manage, monitor and connect, with everything running on your own host.", "一個 QEMU 工作區，管理、監察及連線，全部在你的主機上運行。")}</p><p class="muted-line">${t("Private by default. No cloud account required.", "預設私人使用，毋須雲端帳戶。")}</p></section><section class="auth-form"><h2>${setup ? t("Welcome to your new workspace", "歡迎使用新工作區") : t("Welcome back", "歡迎回來")}</h2><p class="muted">${setup ? t("Create the owner account to begin guided setup.", "建立擁有人帳戶，開始設定。") : t("Unlock your local workspace.", "解鎖你的本機工作區。")}</p>${!setup ? button("passkey-login", t("Sign in with a passkey", "使用通行密鑰登入"), "primary", 'style="width:100%;margin-bottom:22px"') : ""}<form id="auth-form">${setup ? field("owner", t("Your name", "你的名字"), "", "text", 'required autocomplete="name"') + field("bootstrap", t("Setup authorization code", "設定授權碼"), "", "password", 'required autocomplete="off"') : ""}${field("password", t("Password", "密碼"), "", "password", `required minlength="12" maxlength="256" autocomplete="${setup ? "new-password" : "current-password"}"`)}<button class="${setup ? "primary" : ""}" type="submit" style="width:100%">${setup ? t("Create owner account", "建立擁有人帳戶") : t("Sign in with password", "使用密碼登入")}</button></form><p class="muted-line">${setup ? t("The setup authorization code is stored in the host data directory. Passwords need at least 12 characters.", "設定授權碼存於主機資料目錄，密碼最少需要十二個字元。") : t("Passkeys require HTTPS or localhost. Your password remains available as a recovery method.", "通行密鑰需要 HTTPS 或 localhost。密碼仍可用作復原登入。")}</p></section></div></main>`;
   $("#auth-form").onsubmit = async (e) => {
     e.preventDefault();
     const values = new FormData(e.target);
     try {
       const result = await api(
         setup ? "/setup" : "/login",
-        { name: values.get("owner"), password: values.get("password") },
+        {
+          name: values.get("owner"),
+          password: values.get("password"),
+          preferences: {
+            language: localStorage.getItem("mq-language") || "en",
+            theme: localStorage.getItem("mq-theme") || "dark",
+          },
+        },
         { bootstrap: values.get("bootstrap") },
       );
       session = { ...session, authenticated: true, csrf: result.csrf };
@@ -245,11 +276,11 @@ function renderOnboarding() {
   if (n === 6)
     content = `<h3>${t("Bring your installation media", "準備安裝媒體")}</h3><p>${t("Place your trusted ISO files in the data volume’s media directory. The host operator manages these files. A blank machine can be created without an ISO.", "將可信的 ISO 放進資料空間的 media 目錄，由主機管理者處理。也可先建立沒有 ISO 的空白機器。")}</p><div class="help">${state.media.length ? state.media.map(escape).join("<br>") : t("No ISO files found. You can add them later.", "尚未找到 ISO，可稍後新增。")}</div>${button("import-iso", t("Import ISO", "匯入 ISO"), "primary")}${button("refresh", t("Check again", "重新檢查"))}`;
   if (n === 7)
-    content = `<h3>${t("Your first machine is next", "下一步，建立第一部機器")}</h3><p>${t("The machine wizard will help you choose a platform, CPU, memory, private disk, network and display. Finish setup first, or continue with an empty workspace.", "機器精靈會帶你選擇平台、處理器、記憶體、磁碟、網絡及顯示。先完成設定，再建立機器。")}</p><p class="help">${t("Nothing starts automatically. Starting a machine is always an explicit action.", "機器不會自行啟動，每次啟動都需要你的操作。")}</p>`;
+    content = `<h3>${t("Your first machine is next", "下一步，建立第一部機器")}</h3><p>${t("The machine wizard will help you choose a platform, CPU, memory, private disk, network and display. Create it here, or continue with an empty workspace.", "機器精靈會帶你選擇平台、處理器、記憶體、磁碟、網絡及顯示。可以在這裡建立，也可以先使用空白工作區。")}</p><p class="help">${t("Create a machine now, or skip this optional step. Startup happens only when you select it.", "可以現在建立機器，或跳過這個可選步驟，只有選取啟動才會開機。")}</p>${button("setup-create", t("Create first machine", "建立第一部機器"), "primary")}`;
   if (n === 8)
     content = `<div class="empty"><div class="empty-icon">✓</div><h2>${t("Your workspace is ready", "工作區已準備好")}</h2><p>${t("Your owner account and preferences are saved. You can register a passkey in Settings and create your first machine.", "帳戶和偏好已儲存，可在設定登記通行密鑰，再建立第一部機器。")}</p></div>`;
   $("#app").innerHTML =
-    `<header class="topbar"><div class="brand"><span class="mark" aria-hidden="true"><span class="icon">memory</span></span>Material QEMU</div><span class="spacer"></span><span class="pill">${t("Setup saved automatically", "設定進度自動儲存")}</span></header><main class="main wizard">${views().heading(t("Make yourself at home", "設定你的工作區"), t("A few practical steps, then you are in.", "幾個實用步驟，完成即可開始。"))}${steps(setupNames, n)}<section class="card wizard-content"><h2>${t(...setupNames[n - 1])}</h2>${content}</section><div class="wizard-footer">${n > 2 ? button("setup-back", t("Back", "上一步")) : "<span></span>"}${button(n === 8 ? "setup-finish" : "setup-next", n === 8 ? t("Open workspace", "開啟工作區") : t("Save & continue", "儲存並繼續"), "primary")}</div></main>`;
+    `<header class="topbar"><div class="brand"><span class="mark" aria-hidden="true"><span class="icon">memory</span></span>Material QEMU</div><span class="spacer"></span><span class="pill">${t("Setup saved automatically", "設定進度自動儲存")}</span></header><main class="main wizard">${views().heading(t("Make yourself at home", "設定你的工作區"), t("A few practical steps, then you are in.", "幾個實用步驟，完成即可開始。"))}${steps(setupNames, n)}<section class="card wizard-content"><h2>${t(...setupNames[n - 1])}</h2>${content}</section><div class="wizard-footer"><div class="actions">${button("setup-save", t("Save and finish later", "儲存並稍後繼續"))}${[4, 5, 6, 7].includes(n) ? button("setup-skip", t("Skip this step", "跳過此步驟"), "ghost") : ""}</div>${n > 2 ? button("setup-back", t("Back", "上一步")) : "<span></span>"}${button(n === 8 ? "setup-finish" : "setup-next", n === 8 ? t("Open workspace", "開啟工作區") : t("Save & continue", "儲存並繼續"), "primary")}</div></main>`;
 }
 const machineSteps = [
   ["Preset", "預設"],
@@ -371,41 +402,41 @@ async function connectConsole() {
 }
 function startWizard(machine) {
   editing = Boolean(machine);
-  wizardStep = 1;
-  let draft = null;
-  if (!machine) {
-    try {
-      draft = JSON.parse(localStorage.getItem("mq-machine-draft"));
-    } catch {}
-  }
-  wizard = machine
-    ? { ...machine }
-    : draft || {
-        name: "",
-        arch:
-          Object.keys(state.capabilities).find(
-            (k) => state.capabilities[k].available,
-          ) || "x86_64",
-        cpus: 2,
-        memory: 2048,
-        diskGiB: 20,
-        network: "none",
-        iso: "",
-        folder: "",
-        notes: "",
-      };
+  const draft = loadDraft(localStorage, machine?.id);
+  wizardStep = draft?.step || 1;
+  const arch =
+    Object.keys(state.capabilities).find(
+      (key) => state.capabilities[key].available,
+    ) || "x86_64";
+  wizard = {
+    ...(machine || {
+      name: "",
+      arch,
+      machineType: state.capabilities[arch]?.machine,
+      accelerator: "tcg",
+      cpus: 2,
+      memory: 2048,
+      diskGiB: 20,
+      network: "none",
+      iso: "",
+      folder: "",
+      notes: "",
+    }),
+    ...(draft?.data || {}),
+  };
   page = "new";
   render();
 }
-function saveWizard() {
+function currentDraftData() {
   const form = $("#machine-form");
-  if (!form.reportValidity()) return false;
-  const values = Object.fromEntries(new FormData(form));
+  if (!form) return { ...wizard };
+  const values = Object.fromEntries(new FormData(form)),
+    data = { ...wizard };
   if (wizardStep === 1 && values.preset !== wizard.preset) {
     if (values.preset?.startsWith("desktop:")) {
       const arch = values.preset.slice(8);
       if (state.capabilities[arch]?.available)
-        Object.assign(wizard, {
+        Object.assign(data, {
           arch,
           machineType: state.capabilities[arch].machine,
           accelerator: "tcg",
@@ -416,12 +447,31 @@ function saveWizard() {
         });
     }
     if (values.preset === "small")
-      Object.assign(wizard, { cpus: 1, memory: 512, diskGiB: 8 });
+      Object.assign(data, { cpus: 1, memory: 512, diskGiB: 8 });
   }
-  Object.assign(wizard, values);
+  Object.assign(data, values);
   if (wizardStep === 8)
-    wizard.startAfterCreate = Boolean(form.elements.startAfterCreate?.checked);
-  localStorage.setItem("mq-machine-draft", JSON.stringify(wizard));
+    data.startAfterCreate = Boolean(form.elements.startAfterCreate?.checked);
+  return data;
+}
+function persistDraft() {
+  try {
+    saveDraft(
+      localStorage,
+      currentDraftData(),
+      wizardStep,
+      editing ? wizard.id : undefined,
+    );
+  } catch {
+    notify(
+      t("Draft could not be saved in this browser.", "此瀏覽器未能儲存草稿。"),
+    );
+  }
+}
+function saveWizard() {
+  if (!$("#machine-form").reportValidity()) return false;
+  wizard = currentDraftData();
+  persistDraft();
   return true;
 }
 function modal(title, content, confirm, callback) {
@@ -512,6 +562,12 @@ document.addEventListener("click", async (e) => {
       );
     }
     if (action.startsWith("page:")) {
+      if (onboardingMachine && action !== "page:new") {
+        persistDraft();
+        onboardingMachine = false;
+        render();
+        return;
+      }
       page = action.slice(5);
       if (page === "new") return startWizard();
       render();
@@ -520,6 +576,7 @@ document.addEventListener("click", async (e) => {
     if (action === "new") return startWizard();
     if (action === "refresh") return refresh();
     if (action === "logout") {
+      onboardingMachine=false;
       await api("/logout", {});
       session = await api("/session");
       state = null;
@@ -543,6 +600,26 @@ document.addEventListener("click", async (e) => {
       notify(t("Passkey added.", "通行密鑰已新增。"));
       return;
     }
+    if (action === "setup-create") {
+      onboardingMachine = true;
+      return startWizard();
+    }
+    if (action === "setup-save") {
+      const step = state.setup.step;
+      if (step === 2)
+        await api("/preferences", {
+          settings: {
+            language: $("#setup-language").value,
+            theme: $("#setup-theme").value,
+          },
+        });
+      await api("/preferences", { setup: { step, complete: false } });
+      await api("/logout", {});
+      session = await api("/session");
+      state = null;
+      render();
+      return;
+    }
     if (action.startsWith("setup-")) {
       let step = state.setup.step;
       if (step === 2) {
@@ -562,20 +639,34 @@ document.addEventListener("click", async (e) => {
                 ? 8
                 : step + 1,
           complete: action === "setup-finish",
+          skipStep: action === "setup-skip" ? step : undefined,
         },
       });
+      if(action==='setup-finish')page='overview';
       return refresh();
     }
     if (action === "wizard-next") {
       if (saveWizard()) {
         wizardStep++;
+        saveDraft(
+          localStorage,
+          wizard,
+          wizardStep,
+          editing ? wizard.id : undefined,
+        );
         render();
       }
       return;
     }
     if (action === "wizard-back") {
-      saveWizard();
+      wizard = currentDraftData();
       wizardStep--;
+      saveDraft(
+        localStorage,
+        wizard,
+        wizardStep,
+        editing ? wizard.id : undefined,
+      );
       render();
       return;
     }
@@ -586,7 +677,18 @@ document.addEventListener("click", async (e) => {
         editing ? `/machines/${wizard.id}` : "/machines",
         wizard,
       );
-      localStorage.removeItem("mq-machine-draft");
+      clearDraft(localStorage, editing ? wizard.id : undefined);
+      if (onboardingMachine) {
+        onboardingMachine = false;
+        await api("/preferences", { setup: { step: 8, complete: false } });
+        await refresh();
+        notify(
+          result.startError
+            ? result.startError
+            : t("First machine saved.", "第一部機器已儲存。"),
+        );
+        return;
+      }
       if (!editing && wizard.startAfterCreate && !result.startError) {
         selected = result.id;
         page = "console";
@@ -1115,7 +1217,31 @@ document.addEventListener("change", (event) => {
     wizard.arch = event.target.value;
     wizard.machineType = state.capabilities[wizard.arch]?.machine;
     wizard.accelerator = "tcg";
+    saveDraft(
+      localStorage,
+      wizard,
+      wizardStep,
+      editing ? wizard.id : undefined,
+    );
     render();
     $("#arch")?.focus();
+  }
+});
+
+document.addEventListener("input", (event) => {
+  if (event.target.closest("#machine-form")) persistDraft();
+});
+document.addEventListener("change", (event) => {
+  if (event.target.id === "auth-language" || event.target.id === "auth-theme") {
+    const remembered = Object.fromEntries(new FormData($("#auth-form")));
+    localStorage.setItem("mq-language", $("#auth-language").value);
+    localStorage.setItem("mq-theme", $("#auth-theme").value);
+    applySettings();
+    renderAuth();
+    for (const [name, value] of Object.entries(remembered)) {
+      const input = $("#auth-form").elements.namedItem(name);
+      if (input) input.value = value;
+    }
+    document.getElementById(event.target.id)?.focus();
   }
 });
