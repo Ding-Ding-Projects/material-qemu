@@ -7,3 +7,5 @@ Verified earlier candidate: e26461e387774b7ba47e294ef498a7e15b97440a with image 
 Next: verify the newer storage-preservation candidate, retain its exact image/source receipt, promote independently inspected runtime captures, update README and remote task records. Do not relabel old captures as new evidence. Physical passkeys, aarch64 guests, guest OS installation, full visual/locale parity and other 50 design boards remain unfinished. No release, appliance image, registry publication or LAN delivery is claimed.
 
 Task: https://github.com/Ding-Ding-Projects/material-qemu/issues/1
+
+New organization pass: saved-view deletion, folder rename preserving machine/view references, confirmed folder removal retaining machines in Unfiled, localized enum/review labels and modal keyboard focus. Nine local tests passed, QEMU lifecycle is skipped only on the native host. Build and browser proof for this source remains pending. Retain source/image binding for the independently verified 224048a virtual-authenticator and twelve-tuple browser proof.

@@ -7,7 +7,9 @@
 - [x] Verify password, CSRF, persistent preferences and real x86_64 QEMU lifecycle in focused tests.
 - [x] Independently exercise owner setup, onboarding, eight-step machine creation and genuine noVNC display on candidate e26461e.
 - [x] Verify 360 px and 1440 px body overflow on candidate e26461e.
-- [ ] Verify the final storage-preservation candidate and promote exact-source captures.
+- [x] Verify candidate 224048a storage preservation, virtual passkey registration/sign-in and twelve language/theme/width combinations.
+- [x] Add persistent folder rename/removal and saved-view deletion with negative-path tests.
+- [ ] Verify the newer organization dialogs, keyboard focus and exact-source captures.
 - [ ] Verify physical passkey devices, installed guest OS boot, aarch64 guests and ACPI guest shutdown.
 - [ ] Complete every six-workflow design detail, language tuple and keyboard/mobile action-parity check.
 - [ ] Publish an immutable container image and verify the intended LAN endpoint.

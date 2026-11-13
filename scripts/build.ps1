@@ -31,7 +31,9 @@ if ($LASTEXITCODE -ne 0) { throw 'Runtime build failed.' }
 if ($Container) {
     $source = git rev-parse HEAD
     $buildDate = [DateTime]::UtcNow.ToString('o')
-    docker build --build-arg "BUILD_DATE=$buildDate" --build-arg "SOURCE_REVISION=$source" -t material-qemu:0.1.0 .
+    $imageTag = if ($env:BUILD_IMAGE_TAG) { $env:BUILD_IMAGE_TAG } else { 'material-qemu:0.1.0' }
+    if ($imageTag -notmatch '^[a-z0-9][a-z0-9._/:@-]{0,180}$') { throw 'BUILD_IMAGE_TAG contains unsupported characters.' }
+    docker build --build-arg "BUILD_DATE=$buildDate" --build-arg "SOURCE_REVISION=$source" -t $imageTag .
     if ($LASTEXITCODE -ne 0) { throw 'Container build failed.' }
 }
 if ($Run) { Push-Location dist; try { node server/index.mjs; exit $LASTEXITCODE } finally { Pop-Location } }

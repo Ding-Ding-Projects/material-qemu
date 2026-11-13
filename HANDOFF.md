@@ -21,3 +21,9 @@ The other 50 boards, complete required-feature inventory, full regex tools, nati
 Task record: https://github.com/Ding-Ding-Projects/material-qemu/issues/1
 
 The coordinating reviewer owns final image verification, evidence promotion, README captures, remote integration and publication. Source changes alone do not claim a release.
+
+## Organization completion pass
+
+Added saved-view deletion, folder rename and explicitly confirmed removal to Unfiled. Rename preserves machine assignments and saved folder filters; removal preserves every machine and disk. Negative tests reject invalid names, collisions, stale references and incorrect confirmation atomically. Saved views now persist the folder filter as well as query and state. Filter/layout/status/review labels are localized, singular counts are corrected, and dialog focus restoration/Enter handling are implemented. Browser acceptance of this newer source remains pending.
+
+The coordinating browser review also verified candidate 224048a with an actual virtual WebAuthn authenticator, real lifecycle/console, twelve language/theme/width combinations and preference persistence. Physical authenticators remain unverified. Earlier evidence is not relabelled to this organization pass.

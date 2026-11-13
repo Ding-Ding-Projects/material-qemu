@@ -338,7 +338,7 @@ nav .bottom {
   flex-wrap: wrap;
 }
 .chips button {
-  min-height: 42px;
+  min-height: 48px;
   padding: 7px 14px;
   font-size: 12px;
 }
@@ -902,4 +902,39 @@ html[data-motion="off"] *:before {
   .actions button {
     padding: 10px 13px;
   }
+}
+.saved-view {
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  max-width: 100%;
+  flex-wrap: wrap;
+}
+.saved-view button {
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+.organization-list {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  max-height: 60vh;
+  overflow: auto;
+}
+.organization-list section {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+  border-bottom: 1px solid var(--line);
+  padding: 12px 0;
+}
+.organization-list strong {
+  overflow-wrap: anywhere;
+  flex: 1 1 100px;
+}
+.organization-list .actions {
+  margin-top: 0;
+  justify-content: flex-start;
 }

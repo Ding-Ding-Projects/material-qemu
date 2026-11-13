@@ -1,6 +1,7 @@
 # Runtime documentation
 
 - [Architecture, security boundaries and recovery](runtime.md)
+- [Folders and saved views](organization.md)
 - [Delivery status and remaining work](../../ROADMAP.md)
 - [Preserved design contract](../../design/HANDOFF.md)
 

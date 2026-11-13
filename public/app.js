@@ -11,7 +11,7 @@ const escape = (value) =>
       ],
   );
 const bytes = (value) =>
-  value == null ? "Unavailable" : `${(value / 1073741824).toFixed(1)} GiB`;
+  value == null ? t("Unavailable","未能提供") : `${(value / 1073741824).toFixed(1)} GiB`;
 let session,
   state,
   page = "overview",
@@ -24,7 +24,9 @@ let session,
   wizard = {},
   editing = false,
   rfb,
-  noticeTimer;
+  noticeTimer,
+  dialogOpener,
+  dialogOpenerAction;
 const names = {
   overview: ["Overview", "總覽"],
   machines: ["All machines", "所有機器"],
@@ -45,6 +47,27 @@ function t(en, yue = en) {
 }
 function label(key) {
   return t(...names[key]);
+}
+function enumLabel(value) {
+  const labels = {
+    all: ["All", "全部"],
+    favourites: ["Favourites", "最愛"],
+    running: ["Running", "運行中"],
+    paused: ["Paused", "已暫停"],
+    stopped: ["Stopped", "已停止"],
+    starting: ["Starting", "啟動中"],
+    error: ["Error", "錯誤"],
+    prelaunch: ["Ready to resume", "準備繼續"],
+    cards: ["Cards", "卡片"],
+    list: ["List", "清單"],
+    compact: ["Compact", "緊密"],
+    platform: ["Platform", "平台"],
+    memory: ["Memory", "記憶體"],
+    cpu: ["CPU", "處理器"],
+    none: ["Disconnected", "不連網"],
+    user: ["Restricted user network", "受限制使用者網絡"],
+  };
+  return labels[value] ? t(...labels[value]) : value;
 }
 function notify(message) {
   $("#notice").textContent = message;
@@ -98,7 +121,7 @@ function button(action, text, cls = "", extra = "") {
   return `<button type="button" data-action="${action}" class="${cls}" ${extra}>${text}</button>`;
 }
 function pill(machine) {
-  return `<span class="pill ${machine.state}">${escape(t(machine.state, { running: "運行中", paused: "已暫停", stopped: "已停止", starting: "啟動中", error: "錯誤" }[machine.state]))}</span>`;
+  return `<span class="pill ${machine.state}">${escape(enumLabel(machine.state))}</span>`;
 }
 function render() {
   if (rfb) {
@@ -263,14 +286,14 @@ function machineWizard() {
     content = `<h3>${t("Browser console", "瀏覽器主控台")}</h3><p>${t("VNC stays private inside the host and is proxied through your authenticated session. Scaling, fullscreen and key sequences are available in the live console.", "VNC 保持在主機內，經過已驗證登入的連線轉送。即時主控台支援縮放、全螢幕及按鍵組合。")}</p>${select("folder", t("Folder", "資料夾"), [["", t("Unfiled", "未分類")], ...state.folders.map((f) => [f, f])], wizard.folder || "")}${field("notes", t("Notes", "備註"), wizard.notes || "", "text", 'maxlength="2000"')}`;
   if (wizardStep === 8)
     content = `<dl>${[
-      ["Name", wizard.name],
-      ["Platform", wizard.arch],
-      ["CPU", `${wizard.cpus} vCPU`],
-      ["Memory", `${wizard.memory} MiB`],
-      ["Disk", `${wizard.diskGiB} GiB · QCOW2`],
-      ["Network", wizard.network],
-      ["ISO", wizard.iso || "None"],
-      ["Folder", wizard.folder || "Unfiled"],
+      [t("Name", "名稱"), wizard.name],
+      [t("Platform", "平台"), wizard.arch],
+      [t("CPU","處理器"), `${wizard.cpus} vCPU`],
+      [t("Memory", "記憶體"), `${wizard.memory} MiB`],
+      [t("Disk", "磁碟"), `${wizard.diskGiB} GiB · QCOW2`],
+      [t("Network", "網絡"), enumLabel(wizard.network)],
+      ["ISO", wizard.iso || t("None", "沒有")],
+      [t("Folder", "資料夾"), wizard.folder || t("Unfiled", "未分類")],
     ]
       .map(([k, v]) => `<dt>${k}</dt><dd>${escape(v)}</dd>`)
       .join(
@@ -360,15 +383,34 @@ function saveWizard() {
 }
 function modal(title, content, confirm, callback) {
   const d = $("#dialog");
-  d.innerHTML = `<h2>${title}</h2><form id="dialog-form">${content}<div class="actions">${button("dialog-close", t("Cancel", "取消"), "ghost")}<button class="primary" type="submit">${confirm}</button></div></form>`;
+  if (!d.open) {
+    dialogOpener = document.activeElement;
+    dialogOpenerAction = dialogOpener?.closest("[data-action]")?.dataset.action;
+  }
+  const opener = dialogOpener,
+    openerAction = dialogOpenerAction;
+  d.innerHTML = `<h2 id="dialog-title">${title}</h2><form id="dialog-form">${content}<div class="actions">${button("dialog-close", t("Cancel", "取消"), "ghost")}<button class="primary" type="submit">${confirm}</button></div></form>`;
+  d.setAttribute("aria-labelledby", "dialog-title");
+  d.onclose = () => {
+    const target = opener?.isConnected
+      ? opener
+      : openerAction
+        ? document.querySelector(`[data-action="${CSS.escape(openerAction)}"]`)
+        : null;
+    (target || $("#main"))?.focus();
+  };
   d.showModal();
   $("#dialog-form").onsubmit = async (e) => {
     e.preventDefault();
+    const submit = e.target.querySelector("[type=submit]");
+    submit.disabled = true;
     try {
       await callback(new FormData(e.target));
       d.close();
     } catch (error) {
       notify(error.message);
+    } finally {
+      submit.disabled = false;
     }
   };
 }
@@ -473,6 +515,7 @@ document.addEventListener("click", async (e) => {
       const view = state.views.find((v) => v.id === action.slice(5));
       query = view.query;
       filter = view.state;
+      folder = view.folder || "";
       render();
       return;
     }
@@ -489,11 +532,71 @@ document.addEventListener("click", async (e) => {
         t("Save", "儲存"),
         async (f) => {
           await api("/preferences", {
-            view: { name: f.get("viewName"), query, state: filter },
+            view: { name: f.get("viewName"), query, state: filter, folder },
           });
           await refresh();
         },
       );
+    if (action.startsWith("delete-view:")) {
+      const view = state.views.find((v) => v.id === action.slice(12));
+      return modal(
+        t("Delete saved view", "刪除已儲存檢視"),
+        `<p>${t("Delete", "刪除")} <strong>${escape(view.name)}</strong>?</p><p class="muted">${t("Only the saved filter is removed. Machines and folders stay unchanged.", "只會刪除已儲存篩選，機器和資料夾不會改變。")}</p>`,
+        t("Delete view", "刪除檢視"),
+        async () => {
+          await api("/preferences", { deleteView: view.id });
+          await refresh();
+        },
+      );
+    }
+    if (action === "manage-folders")
+      return modal(
+        t("Manage folders", "管理資料夾"),
+        `<div class="organization-list">${state.folders.map((name) => `<section><strong>${escape(name)}</strong><span class="muted">${state.machines.filter((m) => m.folder === name).length} ${t("assigned", "已分類")}</span><div class="actions">${button(`rename-folder:${escape(name)}`, t("Rename", "重新命名"))}${button(`delete-folder:${escape(name)}`, t("Remove", "移除"), "danger")}</div></section>`).join("") || `<p>${t("No folders yet. Create one from the machine toolbar.", "尚無資料夾，請從機器工具列建立。")}</p>`}</div>`,
+        t("Close", "關閉"),
+        async () => {},
+      );
+    if (action.startsWith("rename-folder:")) {
+      const from = action.slice(14);
+      return modal(
+        t("Rename folder", "重新命名資料夾"),
+        field(
+          "folderName",
+          t("New name", "新名稱"),
+          from,
+          "text",
+          'required maxlength="80"',
+        ) +
+          `<p class="muted">${t("Machine assignments and saved folder filters follow the new name.", "機器分類和已儲存篩選會跟隨新名稱。")}</p>`,
+        t("Rename", "重新命名"),
+        async (f) => {
+          const to = f.get("folderName").trim();
+          await api("/preferences", { renameFolder: { from, to } });
+          if (folder === from) folder = to;
+          await refresh();
+        },
+      );
+    }
+    if (action.startsWith("delete-folder:")) {
+      const name = action.slice(14),
+        count = state.machines.filter((m) => m.folder === name).length;
+      return modal(
+        t("Remove folder", "移除資料夾"),
+        `<p><strong>${escape(name)}</strong></p><p>${t(`${count} assigned ${count === 1 ? "machine moves" : "machines move"} to Unfiled. No machine or disk will be deleted. Saved views using this folder will include all folders.`, `${count} 部已分類機器會移至未分類，不會刪除任何機器或磁碟。使用此資料夾的已儲存檢視將包含所有資料夾。`)}</p>${field("confirmName", t("Type the exact folder name", "輸入完整資料夾名稱"), "", "text", 'required maxlength="80"')}<label class="check"><input name="unfiled" type="checkbox" required>${t("Keep all machines in Unfiled", "將所有機器保留在未分類")}</label>`,
+        t("Remove folder", "移除資料夾"),
+        async (f) => {
+          await api("/preferences", {
+            deleteFolder: {
+              name,
+              mode: f.get("unfiled") ? "unfiled" : "",
+              confirmName: f.get("confirmName"),
+            },
+          });
+          if (folder === name) folder = "";
+          await refresh();
+        },
+      );
+    }
     if (action === "folder")
       return modal(
         t("New folder", "新增資料夾"),
@@ -516,7 +619,7 @@ document.addEventListener("click", async (e) => {
         ["platform", "memory", "cpu"]
           .map(
             (c) =>
-              `<label class="check"><input type="checkbox" name="columns" value="${c}" ${state.settings.columns.includes(c) ? "checked" : ""}>${t(c, { platform: "平台", memory: "記憶體", cpu: "處理器" }[c])}</label>`,
+              `<label class="check"><input type="checkbox" name="columns" value="${c}" ${state.settings.columns.includes(c) ? "checked" : ""}>${enumLabel(c)}</label>`,
           )
           .join(""),
         t("Apply", "套用"),
@@ -583,7 +686,7 @@ document.addEventListener("click", async (e) => {
         try {
           await api(`/machines/${id}/action`, { action: verb });
           outcomes.push(
-            `${state.machines.find((m) => m.id === id)?.name}: requested`,
+            `${state.machines.find((m) => m.id === id)?.name}: ${t("requested","已請求")}`,
           );
         } catch (err) {
           outcomes.push(
@@ -717,5 +820,17 @@ function views() {
     select,
     button,
     pill,
+    enumLabel,
   });
 }
+
+document.addEventListener("submit", (event) => {
+  if (event.target.id === "machine-form") {
+    event.preventDefault();
+    document
+      .querySelector(
+        `[data-action="${wizardStep === 8 ? "wizard-create" : "wizard-next"}"]`,
+      )
+      ?.click();
+  }
+});

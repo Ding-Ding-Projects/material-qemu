@@ -14,13 +14,20 @@ import {
 import { Store, event } from "./store.mjs";
 import { Qemu, validateMachine, hostMetrics } from "./qemu.mjs";
 import { Sessions, hashPassword, checkPassword } from "./auth.mjs";
-import { dataDirectory } from './paths.mjs';
+import { updateOrganization, requireFolder } from "./organization.mjs";
+import { dataDirectory } from "./paths.mjs";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 export async function createApplication(options = {}) {
   const data = dataDirectory(root, options.data || process.env.DATA_DIR);
   let buildInfo = null;
-  try { buildInfo=JSON.parse(await readFile(path.join(root,'build-receipt.json'),'utf8')); } catch(error) { if(error.code!=='ENOENT')throw error; }
+  try {
+    buildInfo = JSON.parse(
+      await readFile(path.join(root, "build-receipt.json"), "utf8"),
+    );
+  } catch (error) {
+    if (error.code !== "ENOENT") throw error;
+  }
   const origin =
     options.origin || process.env.PUBLIC_ORIGIN || "http://localhost:8080";
   const expected = new URL(origin),
@@ -258,30 +265,7 @@ export async function createApplication(options = {}) {
               throw new Error("Invalid setup step.");
             s.setup = { step, complete: Boolean(body.setup.complete) };
           }
-          if (body.folder) {
-            const name = String(body.folder).trim().slice(0, 80);
-            if (name && !s.folders.includes(name)) s.folders.push(name);
-          }
-          if (body.view) {
-            if (s.views.length >= 50)
-              throw new Error("Saved view limit reached.");
-            s.views.push({
-              id: randomUUID(),
-              name: String(body.view.name).slice(0, 80),
-              query: String(body.view.query || "").slice(0, 200),
-              state: [
-                "all",
-                "running",
-                "paused",
-                "stopped",
-                "favourites",
-              ].includes(body.view.state)
-                ? body.view.state
-                : "all",
-            });
-          }
-          if (body.deleteView)
-            s.views = s.views.filter((v) => v.id !== body.deleteView);
+          updateOrganization(s, body);
         });
         return json(res, 200, { saved: true });
       }
@@ -342,6 +326,7 @@ export async function createApplication(options = {}) {
             if (s.machines.length >= 100)
               throw new Error("Machine limit reached.");
             await qemu.disk(machine.id, config.diskGiB);
+            requireFolder(s, machine.folder);
             s.machines.push(machine);
             event(s, `Created ${machine.name}.`);
           })
@@ -395,6 +380,7 @@ export async function createApplication(options = {}) {
           if (config.diskGiB !== machine.diskGiB)
             throw new Error("Disk resizing is not supported in this version.");
           await store.transaction((s) => {
+            requireFolder(s, config.folder);
             Object.assign(
               s.machines.find((m) => m.id === machine.id),
               config,
