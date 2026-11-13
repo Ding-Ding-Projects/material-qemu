@@ -1,5 +1,9 @@
 # Continuation
 
-Objective: connect the supplied six-screen QEMU design to a real authenticated runtime. Initial implementation is present on main, with verification ongoing. Preserve all existing design files.
+Objective: implement the supplied six-screen QEMU design as a real authenticated runtime, preserve the design and publish authorized source. Latest implementation includes actual QEMU lifecycle, private console transport, persistent configuration and separate generated-output storage.
 
-Next: run focused API/security/lifecycle checks, verify the actual container with browser interaction, fix findings, split frontend route responsibilities, update runtime evidence and completion records. No release or full design delivery has been claimed. The other 50 boards and native/appliance packaging remain unfinished.
+Verified earlier candidate: e26461e387774b7ba47e294ef498a7e15b97440a with image sha256:7ec6a3b1d964112cda302a921ef57d8bf9f134d0b6151885fb2eb8d5a9b16658. Six container tests and independent browser setup/create/start/console/pause/resume/stop passed; 360/1440 px body overflow passed. Blank SeaBIOS display is not guest OS boot evidence.
+
+Next: verify the newer storage-preservation candidate, retain its exact image/source receipt, promote independently inspected runtime captures, update README and remote task records. Do not relabel old captures as new evidence. Physical passkeys, aarch64 guests, guest OS installation, full visual/locale parity and other 50 design boards remain unfinished. No release, appliance image, registry publication or LAN delivery is claimed.
+
+Task: https://github.com/Ding-Ding-Projects/material-qemu/issues/1

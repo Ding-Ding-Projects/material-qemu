@@ -123,6 +123,7 @@ export class Qemu {
   async refreshStates() {
     await Promise.all(
       [...this.running].map(async ([id, r]) => {
+        if(r.state==='starting')return;
         try {
           const result = await this.command(id, "query-status");
           r.state = result.running
@@ -268,7 +269,7 @@ export class Qemu {
   async command(id, execute, args) {
     const r = this.running.get(id);
     if (!r) throw new Error("Machine is not running.");
-    return qmpCommand(r.qmp, execute, args);
+    return this.exclusive(`qmp:${id}`,()=>qmpCommand(r.qmp, execute, args));
   }
   async action(id, action) {
     const r = this.running.get(id);

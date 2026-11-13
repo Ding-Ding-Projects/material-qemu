@@ -14,12 +14,13 @@ import {
 import { Store, event } from "./store.mjs";
 import { Qemu, validateMachine, hostMetrics } from "./qemu.mjs";
 import { Sessions, hashPassword, checkPassword } from "./auth.mjs";
+import { dataDirectory } from './paths.mjs';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 export async function createApplication(options = {}) {
-  const data = path.resolve(
-    options.data || process.env.DATA_DIR || path.join(root, "data"),
-  );
+  const data = dataDirectory(root, options.data || process.env.DATA_DIR);
+  let buildInfo = null;
+  try { buildInfo=JSON.parse(await readFile(path.join(root,'build-receipt.json'),'utf8')); } catch(error) { if(error.code!=='ENOENT')throw error; }
   const origin =
     options.origin || process.env.PUBLIC_ORIGIN || "http://localhost:8080";
   const expected = new URL(origin),
@@ -62,7 +63,7 @@ export async function createApplication(options = {}) {
     setup: session ? store.state.setup : null,
     csrf: session?.csrf,
     version: "0.1.0",
-    updatedAt: process.env.BUILD_DATE || null,
+    updatedAt: process.env.BUILD_DATE || buildInfo?.builtAt || null,
     origin,
   });
   const server = http.createServer(async (req, res) => {
@@ -134,6 +135,7 @@ export async function createApplication(options = {}) {
           sessions.failure(req.socket.remoteAddress);
           return json(res, 401, { error: "The password was not accepted." });
         }
+        sessions.failures.delete(req.socket.remoteAddress);
         return login(res);
       }
       if (route === "/api/passkey/login-options" && req.method === "POST") {
