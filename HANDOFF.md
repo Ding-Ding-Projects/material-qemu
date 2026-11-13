@@ -39,3 +39,7 @@ Pinned local Roboto Flex and rounded symbol fonts replace generic font/glyph fal
 ## Creation and filtering unit
 
 The machine editor now displays a server-generated launch plan using the same fixed argument builder as execution. Placeholders are explicit and the preview never starts a process. Optional Start after creating performs actual startup, opens the console on success and retains the machine with a truthful error on startup failure. Needs attention/Recently used filters and direct/bulk folder moves are implemented. Unit tests cover argument boundaries and filter semantics; a container-only HTTP test covers inert preview, real immediate startup and moves while running. New browser proof remains pending.
+
+## Capability discovery unit
+
+Binary-derived machine/accelerator discovery now unions the supplied catalog with bounded PATH discovery. Supported PC/q35 and Arm virt recipes are separated from discovered unsupported boards. Version-success/capability-failure states remain honestly installed but incomplete. KVM device access only establishes labelled eligibility, never verified acceleration. The container adds Arm firmware for real i386/arm/aarch64 launch checks; final image results are still pending at this source checkpoint. Native tests pass sixteen cases and skip three runtime-dependent cases because QEMU is absent from this host.

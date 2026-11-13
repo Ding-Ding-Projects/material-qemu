@@ -81,9 +81,9 @@ This inventory covers the controls in the supplied Main, Onboarding, Overview, M
 | Supplied control | Current state and exact limit |
 | --- | --- |
 | Eight-step navigation | Implemented, with persisted draft and browser-safe Enter handling. Draft resumes at step one rather than its prior exact step. |
-| Presets | Blank, basic Linux resources and lightweight server resources implemented. Full Windows/cloud-init/microvm/Raspberry Pi/retro/confidential presets pending. |
-| All system targets | Two supported executable targets discovered; capability-derived broader inventory pending. |
-| Machine type and accelerator | Fixed supported defaults and TCG; selectable capability-derived choices pending. |
+| Presets | Blank, lightweight server and installed-platform Linux resource presets implemented. Windows/cloud-init/microvm/Raspberry Pi/retro/confidential presets retain specific unsupported reasons. |
+| All system targets | Supplied 29-target catalog plus bounded PATH discovery implemented. Actual installed targets, incomplete discovery and unavailable recipes are distinguished. No claim that all targets are installed. |
+| Machine type and accelerator | Binary-derived inventory and supported recipe selectors implemented. KVM eligibility is explicitly launch-unverified; other unsupported accelerators retain reasons. Final image launch acceptance pending. |
 | CPU/memory | Bounded actual allocations implemented; topology/NUMA/flags pending. |
 | Firmware | Fixed supported SeaBIOS/UEFI paths; Secure Boot, TPM and custom firmware pending. |
 | Storage | One managed QCOW2 disk, capacity and ISO selection implemented. Advanced devices, formats and resize pending. |

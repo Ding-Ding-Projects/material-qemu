@@ -11,3 +11,5 @@ The application includes task-oriented help for creating machines, controlling l
 - [Supplied six-board control inventory](design-coverage.md)
 
 - [Console controls and local presentation](console.md)
+
+- [Installed platform discovery and safe recipes](platforms.md)

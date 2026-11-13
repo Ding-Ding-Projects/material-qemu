@@ -15,3 +15,5 @@ ISO import unit is implemented and tested through real HTTP authorization bounda
 Console/presentation unit adds local licensed fonts/icons, non-overlapping narrow notifications, persistent observable console toggles, reset/key menu and explicit text/clipboard transfer. New candidate browser proof pending; no guest input acceptance is inferred.
 
 Creation/filter unit adds shared safe launch preview, optional immediate startup, error/recent views and direct/bulk folder moves. Local fourteen tests pass, two real-QEMU tests are explicitly skipped only on the native host. Container/browser proof for the new source remains pending.
+
+Capability unit adds bounded installed-target discovery, binary-derived machine/accelerator choices, separated unsupported recipes and backwards-compatible machine defaults. Before accepting new i386/arm/aarch64 choices, run the exact-image per-platform QMP start/status/stop regression. KVM is only eligible/unverified unless a real launch proves it.

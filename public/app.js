@@ -1,3 +1,4 @@
+import { platformFields } from "./capability-view.js";
 import { createViews } from "./views.js";
 import { uploadIso } from "./upload.js";
 const { startRegistration, startAuthentication } = window.SimpleWebAuthnBrowser;
@@ -263,31 +264,36 @@ const machineSteps = [
 function machineWizard() {
   let content = "";
   if (wizardStep === 1)
-    content = `${field("name", t("Machine name", "機器名稱"), wizard.name, "text", 'required maxlength="80"')}${select(
-      "preset",
-      t("Starting point", "起點"),
-      [
-        ["blank", t("Blank machine", "空白機器")],
-        ["linux", t("Linux workstation", "Linux 工作站")],
-        ["small", t("Lightweight server", "輕量伺服器")],
-      ],
-      wizard.preset || "blank",
-    )}<p class="help">${t("Presets choose resource defaults only. No operating system is downloaded or installed automatically.", "預設只選擇資源，不會自動下載或安裝作業系統。")}</p>`;
-  if (wizardStep === 2)
     content =
-      select(
-        "arch",
-        t("Architecture", "架構"),
-        Object.entries(state.capabilities)
-          .filter(([, c]) => c.available)
-          .map(([arch]) => [arch, arch]),
-        wizard.arch,
+      field(
+        "name",
+        t("Machine name", "機器名稱"),
+        wizard.name,
+        "text",
+        'required maxlength="80"',
       ) +
-      `<div class="help">${t("Only installed system emulators are offered. This release uses TCG acceleration.", "只會列出已安裝的模擬器，目前版本使用 TCG 加速。")}</div>`;
+      select(
+        "preset",
+        t("Starting point", "起點"),
+        [
+          ["blank", t("Blank machine", "空白機器")],
+          ["small", t("Lightweight server resources", "輕量伺服器資源")],
+          ...Object.entries(state.capabilities)
+            .filter(([, cap]) => cap.available)
+            .map(([arch]) => [
+              `desktop:${arch}`,
+              `${t("Linux desktop resources", "Linux 桌面資源")} · ${arch}`,
+            ]),
+        ],
+        wizard.preset || "blank",
+      ) +
+      `<p class="help">${t("Presets select an installed platform and resource defaults, not an operating system installation. Network access stays disconnected until you choose it.", "預設只選擇已安裝平台和資源，不會安裝作業系統。網絡保持不連線，直至你選擇。")}</p><details><summary>${t("Presets not yet supported", "尚未支援的預設")}</summary><ul><li>${t("Windows 11: Secure Boot and TPM setup is not implemented.", "Windows 11：尚未提供安全啟動及 TPM 設定。")}</li><li>${t("MicroVM and Raspberry Pi: direct kernel and board-specific boot media are not implemented.", "MicroVM 及 Raspberry Pi：尚未提供直接核心及板型專用啟動媒體。")}</li><li>${t("Retro PC: legacy audio, floppy and ISA device recipes are not implemented.", "懷舊電腦：尚未提供舊式音效、軟碟及 ISA 裝置。")}</li><li>${t("Confidential guests: encrypted-memory hardware setup is not implemented.", "機密客體：尚未提供加密記憶體硬件設定。")}</li></ul></details>`;
+  if (wizardStep === 2)
+    content = platformFields({ state, wizard, t, select, escape });
   if (wizardStep === 3)
     content = `<div class="form-grid">${field("cpus", t("Virtual CPUs", "虛擬處理器"), wizard.cpus, "number", 'min="1" max="16" required')}${field("memory", t("Memory (MiB)", "記憶體（MiB）"), wizard.memory, "number", 'min="128" max="32768" step="128" required')}</div><p class="help">${t("Available host memory", "主機可用記憶體")}: ${bytes(state.metrics.memoryTotal - state.metrics.memoryUsed)}. ${t("Leave room for the host and other machines.", "請為主機和其他機器預留空間。")}</p>`;
   if (wizardStep === 4)
-    content = `<h3>${wizard.arch === "aarch64" ? "UEFI" : "SeaBIOS"}</h3><p>${t("The supported firmware is selected by the platform. Secure Boot and TPM configuration are not implemented in this release.", "韌體按平台選定。此版本尚未提供安全啟動和 TPM 設定。")}</p><div class="help">${wizard.arch === "aarch64" ? "virt · cortex-a57 · UEFI" : "q35 · max CPU · SeaBIOS"}</div>`;
+    content = `<h3>${["aarch64", "arm"].includes(wizard.arch) ? "UEFI" : "SeaBIOS"}</h3><p>${t("The supported firmware is selected by the platform. Secure Boot and TPM configuration are not implemented in this release.", "韌體按平台選定。此版本尚未提供安全啟動和 TPM 設定。")}</p><div class="help">${escape(wizard.machineType || state.capabilities[wizard.arch]?.machine || "")} · ${escape((wizard.accelerator || "tcg").toUpperCase())} · ${["aarch64", "arm"].includes(wizard.arch) ? "UEFI" : "SeaBIOS"}</div>`;
   if (wizardStep === 5)
     content = `${field("diskGiB", t("Virtual disk capacity (GiB)", "虛擬磁碟容量（GiB）"), wizard.diskGiB, "number", `min="1" max="256" required ${editing ? "readonly" : ""}`)}${select("iso", t("Installation ISO", "安裝 ISO"), [["", t("No installation media", "沒有安裝媒體")], ...state.media.map((f) => [f, f])], wizard.iso || "")}${button("import-iso", t("Import ISO", "匯入 ISO"))}<p class="help">${t("A sparse QCOW2 disk is created inside managed storage. No existing host disk is touched. Disk resizing is not yet available.", "QCOW2 磁碟只會在管理空間內建立，不會觸碰現有主機磁碟。目前未提供調整容量。")}</p>`;
   if (wizardStep === 6)
@@ -307,7 +313,10 @@ function machineWizard() {
   if (wizardStep === 8)
     content = `<dl>${[
       [t("Name", "名稱"), wizard.name],
-      [t("Platform", "平台"), wizard.arch],
+      [
+        t("Platform", "平台"),
+        `${wizard.arch} · ${wizard.machineType || state.capabilities[wizard.arch]?.machine} · ${(wizard.accelerator || "tcg").toUpperCase()}`,
+      ],
       [t("CPU", "處理器"), `${wizard.cpus} vCPU`],
       [t("Memory", "記憶體"), `${wizard.memory} MiB`],
       [t("Disk", "磁碟"), `${wizard.diskGiB} GiB · QCOW2`],
@@ -393,8 +402,19 @@ function saveWizard() {
   if (!form.reportValidity()) return false;
   const values = Object.fromEntries(new FormData(form));
   if (wizardStep === 1 && values.preset !== wizard.preset) {
-    if (values.preset === "linux")
-      Object.assign(wizard, { cpus: 2, memory: 4096, diskGiB: 32 });
+    if (values.preset?.startsWith("desktop:")) {
+      const arch = values.preset.slice(8);
+      if (state.capabilities[arch]?.available)
+        Object.assign(wizard, {
+          arch,
+          machineType: state.capabilities[arch].machine,
+          accelerator: "tcg",
+          cpus: 2,
+          memory: 2048,
+          diskGiB: 32,
+          network: "none",
+        });
+    }
     if (values.preset === "small")
       Object.assign(wizard, { cpus: 1, memory: 512, diskGiB: 8 });
   }
@@ -1087,5 +1107,15 @@ document.addEventListener("input", (event) => {
   if (event.target.closest("#machine-form")) {
     clearTimeout(previewTimer);
     previewTimer = setTimeout(requestPreview, 250);
+  }
+});
+
+document.addEventListener("change", (event) => {
+  if (event.target.id === "arch" && page === "new") {
+    wizard.arch = event.target.value;
+    wizard.machineType = state.capabilities[wizard.arch]?.machine;
+    wizard.accelerator = "tcg";
+    render();
+    $("#arch")?.focus();
   }
 });

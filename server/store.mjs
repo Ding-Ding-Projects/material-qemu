@@ -89,7 +89,7 @@ function validateState(state) {
       (m) =>
         !/^[a-f0-9-]{36}$/.test(m.id) ||
         typeof m.name !== "string" ||
-        !["x86_64", "aarch64"].includes(m.arch) ||
+        !["x86_64", "i386", "aarch64", "arm"].includes(m.arch) ||
         !Number.isInteger(m.memory) ||
         !Number.isInteger(m.cpus),
     )

@@ -6,19 +6,34 @@ import net from "node:net";
 import os from "node:os";
 
 const exec = promisify(execFile);
-const targets = {
-  x86_64: { executable: "qemu-system-x86_64", machine: "q35", cpu: "max" },
-  aarch64: {
-    executable: "qemu-system-aarch64",
-    machine: "virt",
-    cpu: "cortex-a57",
-  },
-};
-export function validateMachine(input) {
+import {
+  targets,
+  discoverCapabilities,
+  supportedMachine,
+} from "./capabilities.mjs";
+export function validateMachine(input, capabilities) {
   const name = String(input.name || "").trim();
   if (!name || name.length > 80 || /[\x00-\x1f]/.test(name))
     throw new Error("Use a machine name between 1 and 80 characters.");
   if (!targets[input.arch]) throw new Error("Unsupported architecture.");
+  const machineType = input.machineType || targets[input.arch].machine;
+  const accelerator = input.accelerator || "tcg";
+  if (
+    !supportedMachine(input.arch, machineType) ||
+    !["tcg", "kvm"].includes(accelerator)
+  )
+    throw new Error("Unsupported machine recipe or accelerator.");
+  if (capabilities) {
+    const cap = capabilities[input.arch];
+    if (!cap?.available)
+      throw new Error(cap?.reason || "Target is unavailable.");
+    if (!cap.selectableRecipes.some((item) => item.machineType === machineType))
+      throw new Error("Machine type was not discovered as a supported recipe.");
+    if (
+      !cap.accelerators.some((item) => item.name === accelerator && item.usable)
+    )
+      throw new Error("Accelerator is not usable on this host.");
+  }
   const memory = Number(input.memory),
     cpus = Number(input.cpus),
     diskGiB = Number(input.diskGiB);
@@ -35,6 +50,8 @@ export function validateMachine(input) {
   return {
     name,
     arch: input.arch,
+    machineType,
+    accelerator,
     memory,
     cpus,
     diskGiB,
@@ -68,11 +85,11 @@ export function launchPlan(
     "-name",
     machine.name.replaceAll(",", ",,"),
     "-machine",
-    target.machine,
+    machine.machineType || target.machine,
     "-accel",
-    "tcg",
+    machine.accelerator || "tcg",
     "-cpu",
-    target.cpu,
+    machine.accelerator === "kvm" ? "host" : target.cpu,
     "-m",
     String(machine.memory),
     "-smp",
@@ -86,10 +103,10 @@ export function launchPlan(
     "-display",
     "none",
   ];
-  if (machine.arch === "aarch64")
+  if (target.firmware)
     args.push(
       "-bios",
-      "/usr/share/qemu-efi-aarch64/QEMU_EFI.fd",
+      target.firmware,
       "-device",
       "virtio-gpu-pci",
       "-device",
@@ -124,24 +141,7 @@ export class Qemu {
         recursive: true,
         mode: 0o700,
       });
-    for (const [arch, target] of Object.entries(targets)) {
-      try {
-        const { stdout } = await exec(target.executable, ["--version"], {
-          timeout: 5000,
-        });
-        this.capabilities[arch] = {
-          available: true,
-          version: stdout.split("\n")[0],
-          accelerator: "tcg",
-          machine: target.machine,
-        };
-      } catch {
-        this.capabilities[arch] = {
-          available: false,
-          reason: `${target.executable} is not available on this host.`,
-        };
-      }
-    }
+    this.capabilities = await discoverCapabilities();
     return this;
   }
   async media() {
@@ -199,6 +199,7 @@ export class Qemu {
     return this.exclusive("all-starts", () => this.startReserved(machine));
   }
   async startReserved(machine) {
+    machine = validateMachineWithIdentity(machine, this.capabilities);
     if (this.running.has(machine.id))
       throw new Error("Machine is already active.");
     if (!this.capabilities[machine.arch]?.available)
@@ -439,4 +440,8 @@ export async function hostMetrics() {
     diskIO: null,
     networkIO: null,
   };
+}
+
+function validateMachineWithIdentity(machine, capabilities) {
+  return { ...machine, ...validateMachine(machine, capabilities) };
 }

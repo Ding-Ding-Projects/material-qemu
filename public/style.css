@@ -1038,3 +1038,14 @@ h1 {
   font-size: 12px;
   max-width: 100%;
 }
+
+.capability-details summary {
+  min-height: 48px;
+  cursor: pointer;
+}
+.capability-details > div {
+  max-height: 320px;
+  overflow: auto;
+  overflow-wrap: anywhere;
+  padding: 12px;
+}

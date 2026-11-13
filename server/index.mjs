@@ -276,6 +276,7 @@ export async function createApplication(options = {}) {
           views: store.state.views,
           events: store.state.events,
           capabilities: qemu.capabilities,
+          capabilityDiscovery: qemu.capabilities.inventory,
           media: await qemu.media(),
           mediaMaxBytes: MAX_ISO_BYTES,
           metrics: await hostMetrics(),
@@ -349,7 +350,7 @@ export async function createApplication(options = {}) {
         return json(res, 200, { registered: true });
       }
       if (route === "/api/machine-preview" && req.method === "POST") {
-        const config = validateMachine(body);
+        const config = validateMachine(body, qemu.capabilities);
         return json(res, 200, {
           ...launchPlan(config),
           available: Boolean(qemu.capabilities[config.arch]?.available),
@@ -358,7 +359,7 @@ export async function createApplication(options = {}) {
         });
       }
       if (route === "/api/machines" && req.method === "POST") {
-        const config = validateMachine(body);
+        const config = validateMachine(body, qemu.capabilities);
         if (!qemu.capabilities[config.arch]?.available)
           throw new Error(
             "This architecture is unavailable. Install its QEMU system emulator first.",
@@ -444,7 +445,10 @@ export async function createApplication(options = {}) {
           );
           if (!metadataOnly && qemu.status(machine.id).state !== "stopped")
             throw new Error("Stop the machine before editing hardware.");
-          const config = validateMachine({ ...machine, ...body });
+          const config = validateMachine(
+            { ...machine, ...body },
+            qemu.capabilities,
+          );
           if (config.diskGiB !== machine.diskGiB)
             throw new Error("Disk resizing is not supported in this version.");
           await store.transaction((s) => {
