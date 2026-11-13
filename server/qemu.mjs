@@ -52,6 +52,64 @@ export async function containedFile(directory, name) {
     throw new Error("File is outside managed storage.");
   return resolved;
 }
+
+export function launchPlan(
+  machine,
+  {
+    disk = "<managed disk>",
+    qmp = "<private QMP port>",
+    vnc = "<private VNC display>",
+    iso = "<managed ISO>",
+  } = {},
+) {
+  const target = targets[machine.arch];
+  if (!target) throw new Error("Unsupported architecture.");
+  const args = [
+    "-name",
+    machine.name.replaceAll(",", ",,"),
+    "-machine",
+    target.machine,
+    "-accel",
+    "tcg",
+    "-cpu",
+    target.cpu,
+    "-m",
+    String(machine.memory),
+    "-smp",
+    String(machine.cpus),
+    "-drive",
+    `file=${disk.replaceAll(",", ",,")},format=qcow2,if=virtio`,
+    "-qmp",
+    `tcp:127.0.0.1:${qmp},server=on,wait=off`,
+    "-vnc",
+    `127.0.0.1:${typeof vnc === "number" ? vnc - 5900 : vnc}`,
+    "-display",
+    "none",
+  ];
+  if (machine.arch === "aarch64")
+    args.push(
+      "-bios",
+      "/usr/share/qemu-efi-aarch64/QEMU_EFI.fd",
+      "-device",
+      "virtio-gpu-pci",
+      "-device",
+      "qemu-xhci",
+      "-device",
+      "usb-kbd",
+      "-device",
+      "usb-tablet",
+    );
+  if (machine.network === "user")
+    args.push(
+      "-netdev",
+      "user,id=net0,restrict=on",
+      "-device",
+      "virtio-net-pci,netdev=net0",
+    );
+  else args.push("-nic", "none");
+  if (machine.iso) args.push("-cdrom", iso, "-boot", "order=d");
+  return { executable: target.executable, args };
+}
 export class Qemu {
   constructor(directory) {
     this.directory = directory;
@@ -123,7 +181,7 @@ export class Qemu {
   async refreshStates() {
     await Promise.all(
       [...this.running].map(async ([id, r]) => {
-        if(r.state==='starting')return;
+        if (r.state === "starting") return;
         try {
           const result = await this.command(id, "query-status");
           r.state = result.running
@@ -138,7 +196,7 @@ export class Qemu {
     );
   }
   async start(machine) {
-    return this.exclusive('all-starts',()=>this.startReserved(machine));
+    return this.exclusive("all-starts", () => this.startReserved(machine));
   }
   async startReserved(machine) {
     if (this.running.has(machine.id))
@@ -167,56 +225,10 @@ export class Qemu {
       vnc = await port();
     if (vnc === qmp || vnc < 5900)
       throw new Error("No valid private console port available.");
-    const args = [
-      "-name",
-      machine.name,
-      "-machine",
-      target.machine,
-      "-accel",
-      "tcg",
-      "-cpu",
-      target.cpu,
-      "-m",
-      String(machine.memory),
-      "-smp",
-      String(machine.cpus),
-      "-drive",
-      `file=${disk.replaceAll(",", ",,")},format=qcow2,if=virtio`,
-      "-qmp",
-      `tcp:127.0.0.1:${qmp},server=on,wait=off`,
-      "-vnc",
-      `127.0.0.1:${vnc - 5900}`,
-      "-display",
-      "none",
-    ];
-    if (machine.arch === "aarch64")
-      args.push(
-        "-bios",
-        "/usr/share/qemu-efi-aarch64/QEMU_EFI.fd",
-        "-device",
-        "virtio-gpu-pci",
-        "-device",
-        "qemu-xhci",
-        "-device",
-        "usb-kbd",
-        "-device",
-        "usb-tablet",
-      );
-    if (machine.network === "user")
-      args.push(
-        "-netdev",
-        "user,id=net0,restrict=on",
-        "-device",
-        "virtio-net-pci,netdev=net0",
-      );
-    else args.push("-nic", "none");
-    if (machine.iso)
-      args.push(
-        "-cdrom",
-        await containedFile(path.join(this.directory, "media"), machine.iso),
-        "-boot",
-        "order=d",
-      );
+    const iso = machine.iso
+      ? await containedFile(path.join(this.directory, "media"), machine.iso)
+      : "";
+    const { args } = launchPlan(machine, { disk, qmp, vnc, iso });
     const child = spawn(target.executable, args, {
       stdio: ["ignore", "ignore", "pipe"],
       windowsHide: true,
@@ -248,13 +260,18 @@ export class Qemu {
         resolve();
       }),
     );
-    const deadline=Date.now()+10000;
-    for (let i = 0; i < 30 && Date.now()<deadline; i++) {
+    const deadline = Date.now() + 10000;
+    for (let i = 0; i < 30 && Date.now() < deadline; i++) {
       await new Promise((resolve) => setTimeout(resolve, 100));
       if (r.state === "error" || !this.running.has(machine.id))
         throw new Error(r.error || "QEMU exited before becoming ready.");
       try {
-        const result = await qmpCommand(qmp, "query-status", undefined, Math.max(1,deadline-Date.now()));
+        const result = await qmpCommand(
+          qmp,
+          "query-status",
+          undefined,
+          Math.max(1, deadline - Date.now()),
+        );
         r.state = result.running ? "running" : "paused";
         return this.status(machine.id);
       } catch {
@@ -262,14 +279,12 @@ export class Qemu {
       }
     }
     child.kill();
-    throw new Error(
-      r.error || "QEMU did not become ready within ten seconds.",
-    );
+    throw new Error(r.error || "QEMU did not become ready within ten seconds.");
   }
   async command(id, execute, args) {
     const r = this.running.get(id);
     if (!r) throw new Error("Machine is not running.");
-    return this.exclusive(`qmp:${id}`,()=>qmpCommand(r.qmp, execute, args));
+    return this.exclusive(`qmp:${id}`, () => qmpCommand(r.qmp, execute, args));
   }
   async action(id, action) {
     const r = this.running.get(id);

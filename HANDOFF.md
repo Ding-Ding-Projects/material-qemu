@@ -35,3 +35,7 @@ Authenticated ISO import now streams directly into exclusive managed temporary f
 ## Console and presentation unit
 
 Pinned local Roboto Flex and rounded symbol fonts replace generic font/glyph fallbacks; licenses are retained. Narrow notifications reserve layout space and can be dismissed. Console scaling and input show persistent actual state. Reset confirmation, expanded key sequences and explicit clipboard/type-text controls are implemented without claiming guest acceptance. This newer candidate still needs independent browser verification.
+
+## Creation and filtering unit
+
+The machine editor now displays a server-generated launch plan using the same fixed argument builder as execution. Placeholders are explicit and the preview never starts a process. Optional Start after creating performs actual startup, opens the console on success and retains the machine with a truthful error on startup failure. Needs attention/Recently used filters and direct/bulk folder moves are implemented. Unit tests cover argument boundaries and filter semantics; a container-only HTTP test covers inert preview, real immediate startup and moves while running. New browser proof remains pending.

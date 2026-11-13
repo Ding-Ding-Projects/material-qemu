@@ -1024,3 +1024,17 @@ h1 {
     top: var(--notice-height, 0px);
   }
 }
+.command-plan {
+  margin-top: 20px;
+}
+.command-plan summary {
+  min-height: 48px;
+  cursor: pointer;
+  font-weight: 650;
+}
+.command-plan pre {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  font-size: 12px;
+  max-width: 100%;
+}

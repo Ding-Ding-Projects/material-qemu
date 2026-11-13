@@ -62,9 +62,15 @@ export function updateOrganization(state, body) {
     if (typeof body.view.query !== "string" || body.view.query.length > 200)
       throw new Error("Saved query must contain at most 200 characters.");
     if (
-      !["all", "running", "paused", "stopped", "favourites"].includes(
-        body.view.state,
-      )
+      ![
+        "all",
+        "running",
+        "paused",
+        "stopped",
+        "favourites",
+        "attention",
+        "recent",
+      ].includes(body.view.state)
     )
       throw new Error("Invalid saved view state.");
     const folder = body.view.folder || "";

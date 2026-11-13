@@ -30,6 +30,8 @@ let session,
   noticeTimer,
   dialogOpener,
   dialogOpenerAction;
+let previewTimer,
+  previewSequence = 0;
 let consoleScale = localStorage.getItem("mq-console-scale") !== "false";
 let consoleInput = localStorage.getItem("mq-console-input") !== "false";
 const names = {
@@ -57,6 +59,8 @@ function enumLabel(value) {
   const labels = {
     all: ["All", "全部"],
     favourites: ["Favourites", "最愛"],
+    attention: ["Needs attention", "需要處理"],
+    recent: ["Recently used", "最近使用"],
     running: ["Running", "運行中"],
     paused: ["Paused", "已暫停"],
     stopped: ["Stopped", "已停止"],
@@ -154,6 +158,7 @@ function render() {
     updateConsoleControls();
     connectConsole();
   }
+  if (page === "new") requestPreview();
   const search = $("#global-search");
   search?.addEventListener("input", (e) => {
     query = e.target.value;
@@ -313,7 +318,7 @@ function machineWizard() {
       .map(([k, v]) => `<dt>${k}</dt><dd>${escape(v)}</dd>`)
       .join(
         "",
-      )}</dl><div class="help">${t("Review before saving. The machine will remain stopped until you explicitly start it.", "儲存前請檢查。機器會保持停止，直至你親自啟動。")}</div>`;
+      )}</dl><label class="check"><input name="startAfterCreate" type="checkbox" ${wizard.startAfterCreate ? "checked" : ""}>${t("Start after creating", "建立後啟動")}</label><div class="help">${t("Review before saving. The machine starts only when Start after creating is selected.", "儲存前請檢查。只有選取建立後啟動，機器才會啟動。")}</div>`;
   return (
     views().heading(
       editing ? t("Edit machine", "編輯機器") : label("new"),
@@ -322,7 +327,7 @@ function machineWizard() {
         "由基本設定開始，每個選擇只屬於這部機器。",
       ),
     ) +
-    `<div class="wizard">${steps(machineSteps, wizardStep)}<form id="machine-form"><section class="card wizard-content"><h2>${t(...machineSteps[wizardStep - 1])}</h2>${content}</section><div class="wizard-footer"><div class="actions">${button("page:machines", t("Cancel", "取消"), "ghost")}${wizardStep > 1 ? button("wizard-back", t("Back", "上一步")) : ""}</div>${button(wizardStep === 8 ? "wizard-create" : "wizard-next", wizardStep === 8 ? t("Save machine", "儲存機器") : t("Continue", "繼續"), "primary")}</div></form></div>`
+    `<div class="wizard">${steps(machineSteps, wizardStep)}<form id="machine-form"><section class="card wizard-content"><h2>${t(...machineSteps[wizardStep - 1])}</h2>${content}</section><div class="wizard-footer"><div class="actions">${button("page:machines", t("Cancel", "取消"), "ghost")}${wizardStep > 1 ? button("wizard-back", t("Back", "上一步")) : ""}</div>${button(wizardStep === 8 ? "wizard-create" : "wizard-next", wizardStep === 8 ? t("Save machine", "儲存機器") : t("Continue", "繼續"), "primary")}</div></form><details class="card command-plan" open><summary>${t("Server-generated launch preview", "伺服器產生的啟動預覽")}</summary><pre id="command-preview" aria-live="polite"></pre><p class="muted">${t("Placeholders represent private paths and ports assigned at launch. This preview executes nothing.", "佔位文字代表啟動時分配的私人路徑和端口，預覽不會執行任何指令。")}</p></details></div>`
   );
 }
 
@@ -394,6 +399,8 @@ function saveWizard() {
       Object.assign(wizard, { cpus: 1, memory: 512, diskGiB: 8 });
   }
   Object.assign(wizard, values);
+  if (wizardStep === 8)
+    wizard.startAfterCreate = Boolean(form.elements.startAfterCreate?.checked);
   localStorage.setItem("mq-machine-draft", JSON.stringify(wizard));
   return true;
 }
@@ -553,12 +560,26 @@ document.addEventListener("click", async (e) => {
       return;
     }
     if (action === "wizard-create") {
+      if (!saveWizard()) return;
       b.disabled = true;
-      await api(editing ? `/machines/${wizard.id}` : "/machines", wizard);
+      const result = await api(
+        editing ? `/machines/${wizard.id}` : "/machines",
+        wizard,
+      );
       localStorage.removeItem("mq-machine-draft");
-      page = "machines";
+      if (!editing && wizard.startAfterCreate && !result.startError) {
+        selected = result.id;
+        page = "console";
+      } else page = "machines";
       await refresh();
-      notify(t("Machine saved.", "機器已儲存。"));
+      notify(
+        result.startError
+          ? t(
+              `Machine saved, but start did not complete: ${result.startError}`,
+              `機器已儲存，但啟動未完成：${result.startError}`,
+            )
+          : t("Machine saved.", "機器已儲存。"),
+      );
       return;
     }
     if (action.startsWith("filter:")) {
@@ -712,6 +733,43 @@ document.addEventListener("click", async (e) => {
       page = "console";
       render();
       return;
+    }
+    if (action.startsWith("move:") || action === "bulk-move") {
+      const ids = action === "bulk-move" ? [...checked] : [action.slice(5)];
+      return modal(
+        t("Move machines to folder", "將機器移至資料夾"),
+        select(
+          "destination",
+          t("Destination folder", "目的資料夾"),
+          [
+            ["", t("Unfiled", "未分類")],
+            ...state.folders.map((name) => [name, name]),
+          ],
+          "",
+        ) +
+          `<p class="muted">${t("Only organization changes. Machine state and disks are preserved.", "只更改分類，機器狀態及磁碟會保留。")}</p>`,
+        t("Move", "移動"),
+        async (f) => {
+          const outcomes = [];
+          for (const id of ids) {
+            const name = state.machines.find((m) => m.id === id)?.name || id;
+            try {
+              await api(`/machines/${id}`, { folder: f.get("destination") });
+              outcomes.push(`${name}: ${t("moved", "已移動")}`);
+            } catch (error) {
+              outcomes.push(`${name}: ${error.message}`);
+            }
+          }
+          await refresh();
+          modal(
+            t("Move results", "移動結果"),
+            `<ul>${outcomes.map((value) => `<li>${escape(value)}</li>`).join("")}</ul>`,
+            t("Close", "關閉"),
+            async () => {},
+          );
+          return false;
+        },
+      );
     }
     if (action.startsWith("edit:"))
       return startWizard(state.machines.find((m) => m.id === action.slice(5)));
@@ -1006,3 +1064,28 @@ new ResizeObserver(() =>
       : "0px",
   ),
 ).observe($("#notice"));
+
+async function requestPreview() {
+  const sequence = ++previewSequence,
+    form = $("#machine-form"),
+    output = $("#command-preview");
+  if (!form || !output) return;
+  const config = { ...wizard, ...Object.fromEntries(new FormData(form)) };
+  try {
+    const plan = await api("/machine-preview", config);
+    if (sequence !== previewSequence || !$("#command-preview")) return;
+    $("#command-preview").textContent = [
+      plan.executable,
+      ...plan.args.map((value) => JSON.stringify(value)),
+    ].join(" ");
+  } catch (error) {
+    if (sequence === previewSequence && $("#command-preview"))
+      $("#command-preview").textContent = error.message;
+  }
+}
+document.addEventListener("input", (event) => {
+  if (event.target.closest("#machine-form")) {
+    clearTimeout(previewTimer);
+    previewTimer = setTimeout(requestPreview, 250);
+  }
+});

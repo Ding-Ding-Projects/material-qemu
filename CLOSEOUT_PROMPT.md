@@ -13,3 +13,5 @@ New organization pass: saved-view deletion, folder rename preserving machine/vie
 ISO import unit is implemented and tested through real HTTP authorization boundaries and streamed storage fixtures. New source browser acceptance remains pending. The exact residual inventory is docs/features/design-coverage.md; this remains an unfinished full-design objective.
 
 Console/presentation unit adds local licensed fonts/icons, non-overlapping narrow notifications, persistent observable console toggles, reset/key menu and explicit text/clipboard transfer. New candidate browser proof pending; no guest input acceptance is inferred.
+
+Creation/filter unit adds shared safe launch preview, optional immediate startup, error/recent views and direct/bulk folder moves. Local fourteen tests pass, two real-QEMU tests are explicitly skipped only on the native host. Container/browser proof for the new source remains pending.

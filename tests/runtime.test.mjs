@@ -264,3 +264,94 @@ test("real QEMU lifecycle creates a disk and negotiates QMP", async (t) => {
     await rm(dir, { recursive: true, force: true });
   }
 });
+
+test("HTTP preview is inert, start-after-create launches, and live folder moves preserve runtime", async (t) => {
+  const dir = await mkdtemp(path.join(os.tmpdir(), "mq-create-start-")),
+    origin = "http://localhost:18438";
+  const app = await createApplication({ data: dir, origin });
+  await new Promise((resolve) =>
+    app.server.listen(18438, "127.0.0.1", resolve),
+  );
+  try {
+    if (!app.qemu.capabilities.x86_64.available)
+      return t.skip("QEMU is absent; run inside the runtime container.");
+    const call = (route, body, headers = {}) =>
+      fetch(origin + "/api" + route, {
+        method: body === undefined ? "GET" : "POST",
+        headers: {
+          Origin: origin,
+          "Content-Type": "application/json",
+          ...headers,
+        },
+        body: body === undefined ? undefined : JSON.stringify(body),
+      });
+    const code = (await readFile(path.join(dir, "setup-code"), "utf8")).trim();
+    const response = await call(
+      "/setup",
+      { name: "Fixture", password: "a sufficiently long fixture password" },
+      { "X-Setup-Token": code },
+    );
+    const cookie = response.headers.get("set-cookie").split(";")[0],
+      { csrf } = await response.json();
+    const headers = { Cookie: cookie, "X-CSRF-Token": csrf };
+    const config = {
+      name: "Start after create fixture",
+      arch: "x86_64",
+      memory: 128,
+      cpus: 1,
+      diskGiB: 1,
+      network: "none",
+      startAfterCreate: true,
+    };
+    const preview = await (
+      await call("/machine-preview", config, headers)
+    ).json();
+    assert.equal(preview.executed, false);
+    assert.equal(app.qemu.running.size, 0);
+    assert.equal(app.store.state.machines.length, 0);
+    const createdResponse = await call("/machines", config, headers);
+    assert.equal(createdResponse.status, 201);
+    const machine = await createdResponse.json();
+    assert.equal(machine.state, "running");
+    assert.equal(machine.startError, undefined);
+    assert.equal(
+      (await call("/preferences", { folder: "Running folder" }, headers))
+        .status,
+      200,
+    );
+    assert.equal(
+      (
+        await call(
+          `/machines/${machine.id}`,
+          { folder: "Running folder" },
+          headers,
+        )
+      ).status,
+      200,
+    );
+    assert.equal(app.qemu.status(machine.id).state, "running");
+    assert.equal(app.store.state.machines[0].folder, "Running folder");
+    assert.equal(
+      (await call(`/machines/${machine.id}`, { folder: "Missing" }, headers))
+        .status,
+      400,
+    );
+    assert.equal(app.store.state.machines[0].folder, "Running folder");
+    assert.equal(
+      (
+        await call(
+          `/machines/${machine.id}/action`,
+          { action: "stop" },
+          headers,
+        )
+      ).status,
+      200,
+    );
+    const reloaded = await new Store(dir).open();
+    assert.equal(reloaded.state.machines[0].id, machine.id);
+    assert.ok(reloaded.state.machines[0].lastUsed);
+  } finally {
+    await app.close();
+    await rm(dir, { recursive: true, force: true });
+  }
+});

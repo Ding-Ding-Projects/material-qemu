@@ -12,7 +12,7 @@ import {
   verifyAuthenticationResponse,
 } from "@simplewebauthn/server";
 import { Store, event } from "./store.mjs";
-import { Qemu, validateMachine, hostMetrics } from "./qemu.mjs";
+import { Qemu, validateMachine, hostMetrics, launchPlan } from "./qemu.mjs";
 import { Sessions, hashPassword, checkPassword } from "./auth.mjs";
 import { updateOrganization, requireFolder } from "./organization.mjs";
 import { receiveIso, MAX_ISO_BYTES } from "./media.mjs";
@@ -348,6 +348,15 @@ export async function createApplication(options = {}) {
         });
         return json(res, 200, { registered: true });
       }
+      if (route === "/api/machine-preview" && req.method === "POST") {
+        const config = validateMachine(body);
+        return json(res, 200, {
+          ...launchPlan(config),
+          available: Boolean(qemu.capabilities[config.arch]?.available),
+          executed: false,
+          placeholders: true,
+        });
+      }
       if (route === "/api/machines" && req.method === "POST") {
         const config = validateMachine(body);
         if (!qemu.capabilities[config.arch]?.available)
@@ -374,7 +383,24 @@ export async function createApplication(options = {}) {
             );
             throw error;
           });
-        return json(res, 201, machine);
+        if (body.startAfterCreate === true) {
+          try {
+            await qemu.exclusive(machine.id, () => qemu.start(machine));
+            await store.transaction((s) => {
+              s.machines.find((m) => m.id === machine.id).lastUsed =
+                new Date().toISOString();
+              event(s, `${machine.name}: started after creation.`);
+            });
+            return json(res, 201, { ...machine, ...qemu.status(machine.id) });
+          } catch (error) {
+            return json(res, 201, {
+              ...machine,
+              ...qemu.status(machine.id),
+              startError: error.message,
+            });
+          }
+        }
+        return json(res, 201, { ...machine, ...qemu.status(machine.id) });
       }
       const match = route.match(
         /^\/api\/machines\/([a-f0-9-]{36})(?:\/(action|keys))?$/,

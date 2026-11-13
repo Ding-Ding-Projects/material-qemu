@@ -65,15 +65,15 @@ This inventory covers the controls in the supplied Main, Onboarding, Overview, M
 | Supplied control | Current state and exact limit |
 | --- | --- |
 | All/Favourites/Running | Implemented; Paused/Stopped also available. |
-| Needs attention/Recently used | Pending. |
+| Needs attention/Recently used | Implemented from actual error state and last-use timestamps; recent means the last seven days, newest first. |
 | Search, list/compact/cards, columns | Implemented text search and three layouts. Full regex builder pending. |
 | Folder creation, rename/removal | Implemented; rename preserves machine and view assignments; removal explicitly retains machines in Unfiled. |
 | Persisted collapsible folder groups | Pending; current folder chips filter without groups. |
-| Drag to folder / Move to folder menu | Pending direct and bulk controls. Editor folder selection is implemented. |
+| Drag to folder / Move to folder menu | Direct and bulk Move to folder controls implemented, preserving running state; drag-and-drop remains pending. |
 | Saved views and deletion | Implemented query/state/folder persistence and confirmed deletion. |
 | Details panel and favourites | Implemented. Firmware/network/snapshot/tag details beyond current supported hardware remain pending. |
 | Bulk Start/Pause | Implemented with individual outcomes. |
-| Bulk Snapshot/Shut down/Move/Delete | Pending. No disk or machine deletion is currently exposed. |
+| Bulk Snapshot/Shut down/Move/Delete | Move implemented with individual outcomes. Snapshot, shutdown and deletion remain pending. |
 | Import | Pending. |
 
 ## New machine
@@ -90,9 +90,9 @@ This inventory covers the controls in the supplied Main, Onboarding, Overview, M
 | Network | Disconnected/restricted user mode implemented; bridges, forwarding and custom NICs pending. |
 | Display/devices | Authenticated VNC with platform defaults; selectable display/audio/USB devices pending. |
 | Name and UUID | Name implemented; UUID generated server-side. User override pending. |
-| Start after creating | Pending. |
+| Start after creating | Implemented explicit opt-in, real QEMU startup and console navigation. Failed startup retains the saved machine and reports the actual error. |
 | Readconfig/cloud image/cloud-init import | Pending. Browser-supplied arbitrary command strings are not accepted. |
-| Live command preview | Pending a server-generated allowlisted preview. |
+| Live command preview | Implemented using the same server-owned argument builder as execution, with labelled placeholders for private paths and ports. Preview executes nothing. |
 
 ## Console
 
