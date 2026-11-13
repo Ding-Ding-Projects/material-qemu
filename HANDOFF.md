@@ -51,3 +51,7 @@ Exact-step new/edit drafts, backwards-compatible draft loading, explicit onboard
 ## Media boundary repair
 
 Installation media now has an explicit raw/read-only virtual SCSI CD backend on all supported platforms, preventing uploaded headers from selecting another storage format. The launch-plan regression rejects the old implicit CD path. The per-platform runtime regression uses harmless blank CD bytes; no hostile media is generated. HTTP upload and JSON deadlines are explicit, and successful file storage is reported separately from an activity-write warning. Native tests pass eighteen with three runtime-dependent skips; exact-image verification follows.
+
+## Main authentication unit
+
+Password sign-in now requires the owner username. Existing accounts without a username field retain their saved owner name; anonymous metadata does not disclose it. Five unsuccessful attempts impose fifteen minutes of cooldown, with two in-flight checks maximum and no concurrent sixth attempt while the fifth is pending. Focused limiter and HTTP migration/authentication checks pass; the new username field needs the updated browser journey. This remains a single-owner runtime, and password-disable settings remain pending.

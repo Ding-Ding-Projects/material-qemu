@@ -135,6 +135,37 @@ test("HTTP owner claim, sessions, CSRF and persistence boundaries", async () => 
     assert.match(created.headers.get("set-cookie"), /HttpOnly/);
     assert.match(created.headers.get("set-cookie"), /SameSite=Strict/);
     assert.equal(
+      (
+        await request("/login", {
+          username: "Another owner",
+          password: "a long fixture-only password",
+        })
+      ).status,
+      401,
+    );
+    assert.equal(
+      (
+        await request("/login", {
+          username: "Fixture owner",
+          password: "a long fixture-only password",
+        })
+      ).status,
+      200,
+    );
+    await app.store.transaction((value) => {
+      delete value.owner.username;
+    });
+    assert.equal(
+      (
+        await request("/login", {
+          username: "Fixture owner",
+          password: "a long fixture-only password",
+        })
+      ).status,
+      200,
+    );
+    assert.equal("owner" in (await (await request("/session")).json()), false);
+    assert.equal(
       (await request("/preferences", { folder: "Test" }, { Cookie: cookie }))
         .status,
       403,

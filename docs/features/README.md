@@ -15,3 +15,5 @@ The application includes task-oriented help for creating machines, controlling l
 - [Installed platform discovery and safe recipes](platforms.md)
 
 - [Onboarding and exact-step draft resume](onboarding.md)
+
+- [Owner authentication and cooldown](authentication.md)

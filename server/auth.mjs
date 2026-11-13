@@ -21,9 +21,11 @@ export async function checkPassword(password, owner) {
   return timingSafeEqual(actual, Buffer.from(owner.hash, "hex"));
 }
 export class Sessions {
-  constructor() {
+  constructor(now = Date.now) {
+    this.now = now;
     this.items = new Map();
     this.failures = new Map();
+    this.inflight = new Map();
   }
   issue() {
     const id = randomBytes(32).toString("base64url");
@@ -49,16 +51,30 @@ export class Sessions {
   }
   allow(address) {
     const state = this.failures.get(address);
-    return !state || state.until < Date.now() || state.count < 8;
+    const active = this.inflight.get(address) || 0;
+    const failures = state && state.until > this.now() ? state.count : 0;
+    return failures + active < 5 && active < 2;
   }
   failure(address) {
     const old = this.failures.get(address);
     this.failures.set(address, {
-      count: old && old.until > Date.now() ? old.count + 1 : 1,
-      until: Date.now() + 15 * 60 * 1000,
+      count: old && old.until > this.now() ? old.count + 1 : 1,
+      until: this.now() + 15 * 60 * 1000,
     });
     if (this.failures.size > 10000)
       this.failures.delete(this.failures.keys().next().value);
+  }
+  reserve(address) {
+    if (!this.allow(address)) return false;
+    this.inflight.set(address, (this.inflight.get(address) || 0) + 1);
+    return true;
+  }
+  finish(address, success) {
+    const count = (this.inflight.get(address) || 1) - 1;
+    if (count) this.inflight.set(address, count);
+    else this.inflight.delete(address);
+    if (success) this.failures.delete(address);
+    else this.failure(address);
   }
   cookie(id, secure) {
     return `mq_session=${id}; HttpOnly; SameSite=Strict; Path=/; Max-Age=28800${secure ? "; Secure" : ""}`;

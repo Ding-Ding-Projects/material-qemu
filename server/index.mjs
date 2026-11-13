@@ -168,7 +168,7 @@ export async function createApplication(options = {}) {
         await store.transaction((state) => {
           if (state.owner)
             throw new Error("Owner setup has already completed.");
-          state.owner = { name, ...password, credentials: [] };
+          state.owner = { name, username: name, ...password, credentials: [] };
           state.setup = { step: 2, complete: false };
           if (["en", "yue", "both"].includes(body.preferences?.language))
             state.settings.language = body.preferences.language;
@@ -181,19 +181,30 @@ export async function createApplication(options = {}) {
         return login(res);
       }
       if (route === "/api/login" && req.method === "POST") {
-        if (!sessions.allow(req.socket.remoteAddress))
+        const address = req.socket.remoteAddress;
+        if (!sessions.reserve(address))
           return json(res, 429, {
-            error: "Too many attempts. Try again in 15 minutes.",
+            error:
+              "Sign-in is temporarily limited. After five unsuccessful attempts, wait fifteen minutes.",
           });
-        if (
-          !store.state.owner ||
-          !(await checkPassword(body.password, store.state.owner))
-        ) {
-          sessions.failure(req.socket.remoteAddress);
-          return json(res, 401, { error: "The password was not accepted." });
+        let successful = false;
+        try {
+          const owner = store.state.owner;
+          const passwordMatches = owner
+            ? await checkPassword(body.password, owner)
+            : false;
+          const usernameMatches =
+            typeof body.username === "string" &&
+            body.username.trim() === (owner?.username || owner?.name);
+          if (!owner || !usernameMatches || !passwordMatches)
+            return json(res, 401, {
+              error: "The sign-in details were not accepted.",
+            });
+          successful = true;
+          return login(res);
+        } finally {
+          sessions.finish(address, successful);
         }
-        sessions.failures.delete(req.socket.remoteAddress);
-        return login(res);
       }
       if (route === "/api/passkey/login-options" && req.method === "POST") {
         if (!sessions.allow(req.socket.remoteAddress))
@@ -220,42 +231,49 @@ export async function createApplication(options = {}) {
         return json(res, 200, { id, options });
       }
       if (route === "/api/passkey/login" && req.method === "POST") {
-        if (!sessions.allow(req.socket.remoteAddress))
-          return json(res, 429, { error: "Too many attempts." });
-        sessions.failure(req.socket.remoteAddress);
-        const challenge = takeChallenge(body.id, "login");
-        const credential = store.state.owner?.credentials.find(
-          (c) => c.id === body.response?.id,
-        );
-        if (!credential) throw new Error("Unknown passkey.");
-        const result = await verifyAuthenticationResponse({
-          response: body.response,
-          expectedChallenge: challenge,
-          expectedOrigin: origin,
-          expectedRPID: expected.hostname,
-          credential: {
-            ...credential,
-            publicKey: Uint8Array.from(
-              Buffer.from(credential.publicKey, "base64"),
-            ),
-          },
-          requireUserVerification: true,
-        });
-        if (!result.verified) {
-          sessions.failure(req.socket.remoteAddress);
-          throw new Error("Passkey verification failed.");
-        }
-        await store.transaction((s) => {
-          const current = s.owner.credentials.find(
-            (c) => c.id === credential.id,
+        const address = req.socket.remoteAddress;
+        if (!sessions.reserve(address))
+          return json(res, 429, {
+            error:
+              "Sign-in is temporarily limited. After five unsuccessful attempts, wait fifteen minutes.",
+          });
+        let successful = false;
+        try {
+          const challenge = takeChallenge(body.id, "login");
+          const credential = store.state.owner?.credentials.find(
+            (c) => c.id === body.response?.id,
           );
-          const next = result.authenticationInfo.newCounter;
-          if ((current.counter > 0 || next > 0) && next <= current.counter)
-            throw new Error("Passkey counter did not advance.");
-          current.counter = next;
-        });
-        sessions.failures.delete(req.socket.remoteAddress);
-        return login(res);
+          if (!credential) throw new Error("Unknown passkey.");
+          const result = await verifyAuthenticationResponse({
+            response: body.response,
+            expectedChallenge: challenge,
+            expectedOrigin: origin,
+            expectedRPID: expected.hostname,
+            credential: {
+              ...credential,
+              publicKey: Uint8Array.from(
+                Buffer.from(credential.publicKey, "base64"),
+              ),
+            },
+            requireUserVerification: true,
+          });
+          if (!result.verified) {
+            throw new Error("Passkey verification failed.");
+          }
+          await store.transaction((s) => {
+            const current = s.owner.credentials.find(
+              (c) => c.id === credential.id,
+            );
+            const next = result.authenticationInfo.newCounter;
+            if ((current.counter > 0 || next > 0) && next <= current.counter)
+              throw new Error("Passkey counter did not advance.");
+            current.counter = next;
+          });
+          successful = true;
+          return login(res);
+        } finally {
+          sessions.finish(address, successful);
+        }
       }
       if (!session) return json(res, 401, { error: "Sign in to continue." });
       if (route === "/api/logout" && req.method === "POST") {

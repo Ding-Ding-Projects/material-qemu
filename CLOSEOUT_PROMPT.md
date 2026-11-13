@@ -21,3 +21,5 @@ Capability unit adds bounded installed-target discovery, binary-derived machine/
 Onboarding/draft unit adds exact-step local new/edit drafts, persisted skip/save-later, first-machine setup route and browser-local pre-auth language/theme carried into new-owner setup. Latest native checks: eighteen pass, three runtime skips. New browser acceptance remains pending; capability image passed all four real platform launches.
 
 Priority media repair pins raw/read-only CD format, aligns upload deadline, and separates successful storage from audit failure. Native eighteen tests pass with three QEMU skips. Before accepting the repair image, run all four platform launches with harmless blank CD fixture bytes.
+
+Main auth unit now requires #username for password sign-in, using the original #owner name for existing single-owner records. Five-attempt cooldown and in-flight bounds have focused tests. Next browser password-login must fill the known owner name; no anonymous identity lookup exists.
