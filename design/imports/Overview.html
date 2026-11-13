@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8">
+<title>Overview dashboard</title>
+<script src="80c3434c-9407-4727-ad1c-e6e716b3a248"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com"><style>/* fallback */
+@font-face {
+  font-family: 'Material Symbols Rounded';
+  font-style: normal;
+  font-weight: 300 600;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/materialsymbolsrounded/v386/sykd-zNym6YjUruM-QrEh7-nyTnjDwKNJ_190FjpZIvLgyidOK7BDB_QddX2jbB-.woff2) format('woff2');
+}
+/* cyrillic-ext */
+@font-face {
+  font-family: 'Roboto Flex';
+  font-style: normal;
+  font-weight: 300 900;
+  font-stretch: 100%;
+  font-display: swap;
+  src: url("ef207bff-32ac-4589-bc05-3c0e5d42d605") format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+/* cyrillic */
+@font-face {
+  font-family: 'Roboto Flex';
+  font-style: normal;
+  font-weight: 300 900;
+  font-stretch: 100%;
+  font-display: swap;
+  src: url("19d7d8c6-8535-49c1-b95a-5acc56dc40df") format('woff2');
+  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+/* greek */
+@font-face {
+  font-family: 'Roboto Flex';
+  font-style: normal;
+  font-weight: 300 900;
+  font-stretch: 100%;
+  font-display: swap;
+  src: url("4d4eaefb-0862-45e5-b5a3-7328cece8506") format('woff2');
+  unicode-range: U+0370-0377, U+037A-037F, U+0384-038A, U+038C, U+038E-03A1, U+03A3-03FF;
+}
+/* vietnamese */
+@font-face {
+  font-family: 'Roboto Flex';
+  font-style: normal;
+  font-weight: 300 900;
+  font-stretch: 100%;
+  font-display: swap;
+  src: url("e47a1821-417e-4c85-8c2c-e8bde5b882b5") format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329, U+1EA0-1EF9, U+20AB;
+}
+/* latin-ext */
+@font-face {
+  font-family: 'Roboto Flex';
+  font-style: normal;
+  font-weight: 300 900;
+  font-stretch: 100%;
+  font-display: swap;
+  src: url("48e3fa76-05ad-406e-bc6b-142fd1b76a5f") format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'Roboto Flex';
+  font-style: normal;
+  font-weight: 300 900;
+  font-stretch: 100%;
+  font-display: swap;
+  src: url("e09fa623-2a80-4b20-965f-4a24540326a9") format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+/* cyrillic-ext */
+@font-face {
+  font-family: 'Roboto Mono';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("c2f9fd8c-2562-4267-a85a-a4ea1f042385") format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+/* cyrillic */
+@font-face {
+  font-family: 'Roboto Mono';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("d2c177f7-5042-44f2-bf39-d24fc584f116") format('woff2');
+  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+/* greek */
+@font-face {
+  font-family: 'Roboto Mono';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("22ab4dcf-f102-43e2-a175-3389cdc8335c") format('woff2');
+  unicode-range: U+0370-0377, U+037A-037F, U+0384-038A, U+038C, U+038E-03A1, U+03A3-03FF;
+}
+/* vietnamese */
+@font-face {
+  font-family: 'Roboto Mono';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("0e9e38b2-04cb-47ec-abd7-e1c359f2d157") format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329, U+1EA0-1EF9, U+20AB;
+}
+/* latin-ext */
+@font-face {
+  font-family: 'Roboto Mono';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("880281d7-d49a-457e-89b1-5f540436257d") format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'Roboto Mono';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("2b3515be-fe7a-43ba-8a02-2885a81316e1") format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+/* cyrillic-ext */
+@font-face {
+  font-family: 'Roboto Mono';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("c2f9fd8c-2562-4267-a85a-a4ea1f042385") format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+/* cyrillic */
+@font-face {
+  font-family: 'Roboto Mono';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("d2c177f7-5042-44f2-bf39-d24fc584f116") format('woff2');
+  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+/* greek */
+@font-face {
+  font-family: 'Roboto Mono';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("22ab4dcf-f102-43e2-a175-3389cdc8335c") format('woff2');
+  unicode-range: U+0370-0377, U+037A-037F, U+0384-038A, U+038C, U+038E-03A1, U+03A3-03FF;
+}
+/* vietnamese */
+@font-face {
+  font-family: 'Roboto Mono';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("0e9e38b2-04cb-47ec-abd7-e1c359f2d157") format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329, U+1EA0-1EF9, U+20AB;
+}
+/* latin-ext */
+@font-face {
+  font-family: 'Roboto Mono';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("880281d7-d49a-457e-89b1-5f540436257d") format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'Roboto Mono';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("2b3515be-fe7a-43ba-8a02-2885a81316e1") format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+.material-symbols-rounded {
+  font-family: 'Material Symbols Rounded';
+  font-weight: normal;
+  font-style: normal;
+  font-size: 24px;
+  line-height: 1;
+  letter-spacing: normal;
+  text-transform: none;
+  display: inline-block;
+  white-space: nowrap;
+  word-wrap: normal;
+  direction: ltr;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+}
+</style>
+<style>
+body{margin:0;background:#0F0E0E}
+a{color:#FF8A4C}a:hover{color:#FFB38A}
+.app{--primary:#C2410C;--primary2:#EA580C;--on-primary:#FFFFFF;--pc:#FFE4D4;--on-pc:#3B1300;--sec:#6B5E57;--sc:#EFE7E2;--on-sc:#2A1D16;
+--ter:#0F766E;--tc:#CCF5EE;--on-tc:#05302B;--err:#B42318;--ec:#FEE4E2;--on-ec:#55160C;--ok:#067647;--okc:#DCFAE6;--warn:#93370D;--wc:#FEF0C7;
+--s:#F5F4F2;--s0:#FFFFFF;--s1:#EFEDEB;--s2:#E9E6E3;--s3:#E2DEDA;--s4:#D9D4D0;--on-s:#1A1817;--on-sv:#5C5651;--ol:#8B847E;--olv:#E0DBD7;
+--glass:rgba(255,255,255,.72);--glow:rgba(234,88,12,.10);
+--shadow:0 1px 1px rgba(26,24,23,.04),0 2px 6px rgba(26,24,23,.05),0 12px 32px -12px rgba(26,24,23,.10);--lift:0 2px 4px rgba(26,24,23,.06),0 20px 44px -16px rgba(26,24,23,.28);
+font-family:"Roboto Flex",system-ui,sans-serif;color:var(--on-s);background:var(--s);min-height:100%;font-size:14px;line-height:1.45;font-feature-settings:"tnum" 1;
+background-image:radial-gradient(900px 420px at 85% -120px,var(--glow),transparent 70%),radial-gradient(700px 380px at -10% 110%,rgba(15,118,110,.07),transparent 70%)}
+.app.dark{--primary:#FF8A4C;--primary2:#FFB070;--on-primary:#2A0E00;--pc:#4A2310;--on-pc:#FFDCC8;--sec:#C9B8AE;--sc:#2D2826;--on-sc:#F4EAE4;
+--ter:#5EEAD4;--tc:#0D3A35;--on-tc:#B6F7EC;--err:#FF8A80;--ec:#4A1512;--on-ec:#FFDAD4;--ok:#6CE9A6;--okc:#0E3A25;--warn:#FDB022;--wc:#4A3005;
+--s:#0F0E0E;--s0:#181615;--s1:#1C1A19;--s2:#232120;--s3:#2B2827;--s4:#35312F;--on-s:#EEEAE7;--on-sv:#ADA6A1;--ol:#7A736E;--olv:#2F2B29;
+--glass:rgba(24,22,21,.72);--glow:rgba(255,138,76,.13);
+--shadow:0 1px 0 rgba(255,255,255,.04) inset,0 1px 2px rgba(0,0,0,.5),0 16px 36px -18px rgba(0,0,0,.7);--lift:0 1px 0 rgba(255,255,255,.06) inset,0 24px 50px -18px rgba(0,0,0,.85)}
+.ms{font-family:"Material Symbols Rounded";font-weight:normal;font-style:normal;font-size:20px;line-height:1;letter-spacing:normal;text-transform:none;display:inline-block;white-space:nowrap;direction:ltr;-webkit-font-smoothing:antialiased;font-variation-settings:"FILL" 1,"wght" 500,"opsz" 20;flex:none;width:20px;overflow:hidden}
+.ms.o{font-variation-settings:"FILL" 0,"wght" 400,"opsz" 20}
+.mono{font-family:"Roboto Mono",ui-monospace,monospace;font-size:12.5px}
+.topbar{display:flex;flex-wrap:wrap;align-items:center;gap:12px;padding:10px 20px;background:var(--glass);backdrop-filter:blur(20px) saturate(1.4);-webkit-backdrop-filter:blur(20px) saturate(1.4);border-bottom:1px solid var(--olv);position:sticky;top:0;z-index:5}
+.brand{display:flex;align-items:center;gap:10px;font-weight:720;font-size:17px;letter-spacing:-.02em;font-variation-settings:"opsz" 36}
+.brand .mark,.mark{width:34px;height:34px;border-radius:11px;background:linear-gradient(135deg,var(--primary2),var(--primary));color:var(--on-primary);display:grid;place-items:center;box-shadow:0 6px 16px -6px var(--primary)}
+.search{flex:1 1 320px;display:flex;align-items:center;gap:8px;background:var(--s2);border:1px solid var(--olv);border-radius:16px;padding:4px 6px 4px 14px;min-width:0;max-width:640px;transition:border-color .2s,box-shadow .2s}
+.search:hover{border-color:var(--ol)}
+.search input{flex:1;min-width:0;border:0;background:transparent;font:inherit;color:var(--on-s);padding:8px 0;outline:none}
+.search input::placeholder{color:var(--on-sv)}
+.rx{border:0;background:var(--s4);color:var(--on-s);border-radius:10px;font:600 12px "Roboto Mono",monospace;padding:6px 10px;cursor:pointer;min-height:30px;transition:background .2s,transform .2s}
+.rx:hover{background:var(--pc);color:var(--on-pc)}
+.kbd{font:500 11px "Roboto Mono",monospace;padding:3px 7px;border-radius:7px;background:var(--s0);border:1px solid var(--olv);box-shadow:0 1px 0 var(--olv);color:var(--on-sv);white-space:nowrap}
+.ib{width:42px;height:42px;border-radius:14px;border:0;background:transparent;color:var(--on-sv);display:grid;place-items:center;cursor:pointer;position:relative;transition:background .2s,border-radius .3s cubic-bezier(.3,1.4,.5,1),color .2s}
+.ib:hover{background:var(--s3);color:var(--on-s);border-radius:21px}
+.ib .dot{position:absolute;top:9px;right:9px;width:8px;height:8px;border-radius:4px;background:var(--primary);box-shadow:0 0 0 2px var(--s1)}
+.avatar{width:36px;height:36px;border-radius:12px;background:linear-gradient(135deg,var(--ter),#2DD4BF);color:#03241F;display:grid;place-items:center;font-weight:750;font-size:13px;flex:none}
+.pill{display:inline-flex;align-items:center;gap:6px;padding:5px 11px;border-radius:999px;background:var(--s3);font-size:12px;font-weight:600;color:var(--on-sv);white-space:nowrap;letter-spacing:.01em}
+.pill.ok{background:color-mix(in srgb,var(--ok) 16%,transparent);color:var(--ok)}.pill.warn{background:color-mix(in srgb,var(--warn) 18%,transparent);color:var(--warn)}.pill.err{background:color-mix(in srgb,var(--err) 16%,transparent);color:var(--err)}.pill.pri{background:color-mix(in srgb,var(--primary) 18%,transparent);color:var(--primary)}.pill.ter{background:color-mix(in srgb,var(--ter) 16%,transparent);color:var(--ter)}
+.live{width:7px;height:7px;border-radius:4px;background:currentColor;flex:none;animation:pulse 1.8s ease-out infinite}
+.body{display:flex;flex-wrap:wrap;align-items:stretch;min-height:calc(100vh - 63px)}
+.tabs{flex:1 1 236px;max-width:264px;padding:14px 10px;display:flex;flex-direction:column;gap:2px;box-sizing:border-box;border-right:1px solid var(--olv)}
+.tabs .tg{display:flex;align-items:center;gap:8px;margin:14px 8px 4px;font-size:11px;font-weight:650;letter-spacing:.08em;text-transform:uppercase;color:var(--on-sv)}
+.tabs .tg i{width:8px;height:8px;border-radius:4px;display:inline-block}
+.tabs .tg .ms{font-size:16px;width:16px}
+.tab{display:flex;align-items:center;gap:12px;min-height:40px;padding:0 6px 0 12px;border-radius:14px;color:var(--on-sv);text-decoration:none;font-weight:540;position:relative;transition:background .25s,color .25s,border-radius .35s cubic-bezier(.3,1.4,.5,1)}
+.tab:hover{background:var(--s2);color:var(--on-s);border-radius:20px}
+.tab span.l{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tab.on{background:var(--pc);color:var(--on-pc);border-radius:20px;font-weight:650}
+.tab.on::before{content:"";position:absolute;left:-10px;top:10px;bottom:10px;width:4px;border-radius:0 4px 4px 0;background:var(--primary)}
+.tab .x{width:28px;height:28px;border-radius:10px;border:0;background:transparent;color:inherit;display:none;place-items:center;cursor:pointer}
+.tab .x:hover{background:color-mix(in srgb,currentColor 12%,transparent)}
+.tab.on .x,.tab:hover .x{display:grid}
+.tab .st{width:7px;height:7px;border-radius:4px;flex:none;box-shadow:0 0 0 3px color-mix(in srgb,currentColor 0%,transparent)}
+.tabfoot{margin-top:auto;padding-top:14px;display:flex;flex-direction:column;gap:6px}
+.main{flex:999 1 560px;min-width:0;padding:28px 32px 48px;box-sizing:border-box;display:flex;flex-direction:column;gap:20px}
+.crumb{display:flex;align-items:center;gap:4px;color:var(--on-sv);font-size:12.5px;flex-wrap:wrap;font-weight:500}
+.crumb .ms{font-size:16px;width:16px}
+.h1{font-size:36px;font-weight:720;letter-spacing:-.035em;margin:0;font-variation-settings:"opsz" 96;line-height:1.08}
+.h2{font-size:16px;font-weight:660;margin:0;letter-spacing:-.01em}
+.h3{font-size:13.5px;font-weight:660;margin:0}
+.sub{color:var(--on-sv);margin:6px 0 0;font-size:14.5px}
+.row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.sp{flex:1}
+.grid{display:grid;gap:16px}
+.g2{grid-template-columns:repeat(auto-fit,minmax(min(100%,380px),1fr))}
+.g3{grid-template-columns:repeat(auto-fit,minmax(min(100%,280px),1fr))}
+.g4{grid-template-columns:repeat(auto-fit,minmax(min(100%,210px),1fr))}
+.card{background:var(--s0);border:1px solid var(--olv);border-radius:28px;padding:20px 22px;box-shadow:var(--shadow);display:flex;flex-direction:column;gap:14px;transition:transform .45s cubic-bezier(.2,0,0,1),box-shadow .45s,border-color .3s;min-width:0;position:relative}
+.card:hover{transform:translateY(-3px);box-shadow:var(--lift);border-color:color-mix(in srgb,var(--primary) 30%,var(--olv))}
+.card.tonal{background:var(--s1);box-shadow:none}
+.card.pri{background:linear-gradient(145deg,color-mix(in srgb,var(--primary) 22%,var(--s0)),var(--s0) 70%);border-color:color-mix(in srgb,var(--primary) 35%,var(--olv))}
+.card.ter{background:linear-gradient(145deg,color-mix(in srgb,var(--ter) 18%,var(--s0)),var(--s0) 70%)}
+.ch{display:flex;align-items:center;gap:12px}
+.ch>.ms:first-child{width:36px;height:36px;border-radius:12px;display:grid;place-items:center;background:color-mix(in srgb,var(--primary) 14%,transparent);color:var(--primary);font-size:20px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:40px;padding:0 18px;border-radius:999px;border:0;font:620 14px "Roboto Flex",sans-serif;cursor:pointer;white-space:nowrap;transition:transform .25s cubic-bezier(.3,1.4,.5,1),border-radius .3s cubic-bezier(.3,1.4,.5,1),background .2s,box-shadow .25s,filter .2s;text-decoration:none;letter-spacing:-.005em}
+.btn:active{transform:scale(.96);border-radius:12px}
+.btn.f{background:linear-gradient(180deg,var(--primary2),var(--primary));color:var(--on-primary);box-shadow:0 1px 0 rgba(255,255,255,.25) inset,0 8px 20px -8px var(--primary)}.btn.f:hover{filter:brightness(1.06);box-shadow:0 1px 0 rgba(255,255,255,.25) inset,0 12px 26px -8px var(--primary)}
+.btn.t{background:var(--s3);color:var(--on-s)}.btn.t:hover{background:var(--s4)}
+.btn.o{background:transparent;color:var(--on-s);box-shadow:inset 0 0 0 1px var(--olv)}.btn.o:hover{background:var(--s2)}
+.btn.x{background:transparent;color:var(--primary);padding:0 12px}.btn.x:hover{background:color-mix(in srgb,var(--primary) 10%,transparent)}
+.btn.d{background:var(--err);color:#fff}
+.app.dark .btn.d{color:#3A0A06}
+.btn.lg{min-height:56px;padding:0 28px;font-size:16px}
+.btn.sm{min-height:32px;padding:0 13px;font-size:13px}
+.seg{display:inline-flex;gap:3px;padding:3px;background:var(--s2);border-radius:16px;flex-wrap:nowrap;overflow-x:auto;max-width:100%;scrollbar-width:none;box-sizing:border-box}
+.seg button{flex:none;border:0;background:transparent;color:var(--on-sv);font:560 13px "Roboto Flex",sans-serif;min-height:36px;padding:0 14px;display:flex;align-items:center;gap:6px;cursor:pointer;border-radius:12px;transition:background .25s,color .25s,border-radius .35s cubic-bezier(.3,1.4,.5,1)}
+.seg button:hover{background:var(--s3);color:var(--on-s)}
+.seg button.on{background:var(--s0);color:var(--on-s);border-radius:999px;box-shadow:0 1px 2px rgba(0,0,0,.12),0 4px 10px -4px rgba(0,0,0,.18);font-weight:650}
+.seg button.on .ms{color:var(--primary)}
+.field{display:flex;flex-direction:column;gap:6px;min-width:0}
+.field label{font-size:12px;font-weight:620;color:var(--on-sv);display:flex;align-items:center;gap:4px;letter-spacing:.01em}
+.field input,.field select{font:inherit;color:var(--on-s);background:var(--s1);border:1px solid var(--olv);border-radius:14px;padding:10px 14px;min-height:44px;box-sizing:border-box;width:100%;transition:border-color .2s,box-shadow .2s}
+.field input:hover{border-color:var(--ol)}
+.field input:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 4px color-mix(in srgb,var(--primary) 18%,transparent)}
+.field .hint{font-size:12px;color:var(--on-sv)}
+.info{width:22px;height:22px;border-radius:11px;border:0;background:transparent;color:var(--on-sv);display:inline-grid;place-items:center;cursor:pointer;padding:0}
+.info .ms{font-size:15px;width:15px;color:var(--on-sv)}
+.sw{width:50px;height:30px;border-radius:15px;border:0;background:var(--s4);position:relative;cursor:pointer;flex:none;padding:0;transition:background .3s}
+.sw::after{content:"";position:absolute;top:5px;left:5px;width:20px;height:20px;border-radius:10px;background:var(--s0);box-shadow:0 1px 3px rgba(0,0,0,.3);transition:all .4s cubic-bezier(.3,1.5,.5,1)}
+.sw:active::after{width:26px}
+.sw.on{background:linear-gradient(180deg,var(--primary2),var(--primary))}
+.sw.on::after{left:25px;background:#fff}
+.opt{display:flex;align-items:center;gap:14px;min-height:54px;padding:6px 0;border-bottom:1px solid var(--olv)}
+.opt:last-child{border-bottom:0}
+.opt{flex-wrap:wrap}
+.opt .t{flex:1 1 200px;min-width:0}
+.opt .t b{display:block;font-weight:600}
+.opt .t small{display:block;color:var(--on-sv);font-size:12.5px;margin-top:1px}
+.slider{flex:1 1 140px;max-width:240px;height:40px;position:relative;display:flex;align-items:center}
+.slider .tr{height:8px;border-radius:4px;background:var(--s4);flex:1;position:relative;overflow:hidden}
+.slider .fi{position:absolute;left:0;top:0;bottom:0;background:linear-gradient(90deg,var(--primary),var(--primary2));border-radius:4px}
+.slider .th{position:absolute;top:10px;width:20px;height:20px;margin-left:-8px;border-radius:10px;background:#fff;box-shadow:0 0 0 4px color-mix(in srgb,var(--primary) 30%,transparent),0 2px 6px rgba(0,0,0,.3)}
+.chip{display:inline-flex;align-items:center;gap:6px;min-height:32px;padding:0 12px;border-radius:10px;border:1px solid var(--olv);font-size:12.5px;font-weight:560;background:var(--s1);color:var(--on-s);white-space:nowrap;cursor:pointer;transition:background .2s,border-radius .3s cubic-bezier(.3,1.4,.5,1),border-color .2s}
+.chip:hover{background:var(--s3);border-radius:16px}
+.chip.on{background:color-mix(in srgb,var(--primary) 16%,var(--s0));border-color:color-mix(in srgb,var(--primary) 45%,transparent);color:var(--on-s)}
+.chip.on .ms{color:var(--primary);font-size:16px;width:16px}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.tbl{width:100%;border-collapse:separate;border-spacing:0;font-size:13.5px}
+.tbl th{text-align:left;font-size:11px;font-weight:650;color:var(--on-sv);padding:8px 12px;white-space:nowrap;text-transform:uppercase;letter-spacing:.06em}
+.tbl td{padding:11px 12px;vertical-align:middle;border-top:1px solid var(--olv)}
+.tbl tr td:first-child{border-radius:14px 0 0 14px}.tbl tr td:last-child{border-radius:0 14px 14px 0}
+.tbl tbody tr{transition:background .2s}
+.tbl tbody tr:hover td{background:var(--s1);border-top-color:transparent}
+.scroll{overflow-x:auto;max-width:100%}
+.stat{display:flex;flex-direction:column;gap:2px}
+.stat b{font-size:30px;font-weight:720;letter-spacing:-.04em;font-variation-settings:"opsz" 72;line-height:1.05}
+.stat small{color:var(--on-sv);font-size:12px;font-weight:540}
+.bar{height:6px;border-radius:3px;background:var(--s3);overflow:hidden}
+.bar i{display:block;height:100%;border-radius:3px;background:linear-gradient(90deg,var(--primary),var(--primary2))}
+.bar.sh i{background:linear-gradient(90deg,var(--primary),var(--ter),var(--primary2),var(--primary));background-size:300% 100%;animation:shimmer 2.4s linear infinite}
+.term{background:#0A0908;color:#EEEAE7;border:1px solid #2F2B29;border-radius:18px;padding:14px 16px;font:12.5px/1.65 "Roboto Mono",monospace;overflow:auto;white-space:pre;box-shadow:0 1px 0 rgba(255,255,255,.04) inset}
+.term .c{color:#FFB38A}.term .g{color:#6CE9A6}.term .m{color:#7A736E}.term .y{color:#FDB022}.term .b{color:#5EEAD4}
+.screen{background:#0A0908;border-radius:20px;aspect-ratio:16/10;position:relative;overflow:hidden;display:grid;place-items:center;box-shadow:0 0 0 1px rgba(255,255,255,.06) inset}
+.note{font-size:12.5px;color:var(--on-sv)}
+.divider{height:1px;background:var(--olv);border:0;margin:0}
+.ovl{position:absolute;background:var(--glass);backdrop-filter:blur(24px) saturate(1.5);-webkit-backdrop-filter:blur(24px) saturate(1.5);border:1px solid var(--olv);border-radius:24px;box-shadow:var(--lift);padding:10px;z-index:6}
+.menu{display:flex;flex-direction:column;min-width:240px;gap:2px}
+.menu .mi{display:flex;align-items:center;gap:12px;min-height:42px;padding:0 12px;border-radius:12px;font-weight:540;transition:background .15s}
+.menu .mi:hover,.menu .mi.hl{background:color-mix(in srgb,var(--primary) 12%,transparent)}
+.menu .mi .k{margin-left:auto}
+.chart{width:100%;height:auto;display:block}
+.chart .ln{fill:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:1400;animation:draw 1.6s cubic-bezier(.2,0,0,1) both}
+.chart .gd{stroke:var(--olv);stroke-width:1;stroke-dasharray:3 5}
+.chart .pd{animation:pulse2 1.8s ease-out infinite;transform-box:fill-box;transform-origin:center}
+.badge{display:inline-grid;place-items:center;min-width:20px;height:20px;padding:0 6px;border-radius:10px;background:var(--primary);color:var(--on-primary);font-size:11px;font-weight:700;box-sizing:border-box}
+.kv{display:grid;grid-template-columns:minmax(110px,auto) 1fr;gap:9px 16px;font-size:13.5px}
+.kv dt{color:var(--on-sv)}.kv dd{margin:0;font-weight:560;min-width:0;overflow-wrap:anywhere}
+.steps{display:flex;gap:6px;flex-wrap:wrap}
+.step{display:flex;align-items:center;gap:8px;padding:5px 14px 5px 5px;border-radius:999px;background:var(--s2);font-weight:560;font-size:13px;color:var(--on-sv)}
+.step i{width:26px;height:26px;border-radius:13px;display:grid;place-items:center;font-style:normal;font-weight:720;background:var(--s4);font-size:12px;color:var(--on-s)}
+.step.done{color:var(--on-s)}.step.done i{background:var(--ter);color:#03241F}.step.on{background:color-mix(in srgb,var(--primary) 18%,var(--s0));color:var(--on-s);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--primary) 45%,transparent)}.step.on i{background:linear-gradient(135deg,var(--primary2),var(--primary));color:var(--on-primary)}
+.tree{display:flex;flex-direction:column;gap:2px;font-size:13.5px}
+.tree .n{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:14px;transition:background .2s}
+.tree .n:hover{background:var(--s2)}
+.tree .n.on{background:color-mix(in srgb,var(--primary) 14%,transparent);color:var(--on-s)}
+.tree .n.on .ms{color:var(--primary)}
+.tree .n .note{white-space:nowrap}
+.fab{position:fixed;right:28px;bottom:28px;min-height:60px;padding:0 24px;border-radius:20px;background:linear-gradient(135deg,var(--primary2),var(--primary));color:var(--on-primary);border:0;display:flex;align-items:center;gap:10px;font:650 15px "Roboto Flex",sans-serif;box-shadow:0 16px 36px -10px var(--primary);cursor:pointer;transition:border-radius .35s cubic-bezier(.3,1.4,.5,1),transform .3s}
+.fab:hover{border-radius:30px;transform:translateY(-2px)}
+.card>.search,.field>.search,.ovl>.search,.menu>.search{flex:0 0 auto;max-width:none}
+.field .search input{border:0;background:transparent;min-height:0;padding:8px 0;outline:none;box-shadow:none}
+.card .g3{grid-template-columns:repeat(auto-fit,minmax(min(100%,150px),1fr))}
+.card .g2{grid-template-columns:repeat(auto-fit,minmax(min(100%,210px),1fr))}
+.note.row{flex-wrap:nowrap}
+.ovl .g2,.ovl .g3{grid-template-columns:repeat(auto-fit,minmax(min(100%,150px),1fr))}
+.card>.slider,.ovl>.slider{flex:0 0 40px;max-width:none}
+.rise{animation:rise .7s cubic-bezier(.2,0,0,1) both;animation-delay:calc(var(--i,0) * 55ms)}
+.pop{animation:pop .5s cubic-bezier(.34,1.56,.64,1) both}
+.slide{animation:slidein .55s cubic-bezier(.2,0,0,1) both}
+@keyframes rise{from{opacity:0;transform:translateY(18px) scale(.98);filter:blur(4px)}to{opacity:1;transform:none;filter:none} }
+@keyframes pop{from{opacity:0;transform:scale(.9)}to{opacity:1;transform:none} }
+@keyframes slidein{from{opacity:0;transform:translateX(28px)}to{opacity:1;transform:none} }
+@keyframes pulse{0%{box-shadow:0 0 0 0 currentColor}70%{box-shadow:0 0 0 7px transparent}100%{box-shadow:0 0 0 0 transparent} }
+@keyframes pulse2{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.7);opacity:.3} }
+@keyframes shimmer{from{background-position:300% 0}to{background-position:0 0} }
+@keyframes draw{from{stroke-dashoffset:1400}to{stroke-dashoffset:0} }
+.calm *,.calm *::after,.calm *::before{animation:none!important;transition:none!important}
+@media (prefers-reduced-motion: reduce){.app *,.app *::after,.app *::before{animation:none!important;transition:none!important} }
+@media (max-width:720px){.tabs{max-width:none;flex-direction:row;overflow-x:auto;border-right:0;border-bottom:1px solid var(--olv)}.tabs .tg,.tabfoot,.tab.on::before{display:none}.main{padding:16px}.h1{font-size:28px} }
+</style>
+</helmet>
+<div class="app {{themeClass}} {{motionClass}}">
+<header class="topbar">
+<div class="brand"><span class="mark"><span class="ms " aria-hidden="true">memory</span></span><span>Material QEMU</span></div>
+<div class="search" role="search"><span class="ms o" aria-hidden="true">search</span><input aria-label="Search" placeholder="Search machines, disks, settings, QMP commands"><button class="rx" aria-label="Open regex builder for this search">.*</button><span class="kbd">Ctrl+Shift+F</span></div>
+<span class="sp"></span>
+<span class="pill ok"><span class="live"></span>Appliance healthy · http://192.168.1.40:8006/</span>
+<button class="ib" aria-label="Command palette"><span class="ms o" aria-hidden="true">terminal</span></button>
+<button class="ib" aria-label="Notifications, 3 unread"><span class="ms o" aria-hidden="true">notifications</span><span class="dot"></span></button>
+<button class="ib" aria-label="Help and documentation"><span class="ms o" aria-hidden="true">help</span></button>
+<span class="avatar" aria-label="Signed in as owner">SM</span>
+</header>
+<div class="body">
+<nav class="tabs" aria-label="Open tabs">
+<a class="tab on" href="#" aria-current="page"><span class="ms " aria-hidden="true">dashboard</span><span class="l">Overview</span><span class="ms " aria-hidden="true">keep</span><button class="x" aria-label="Close Overview tab"><span class="ms o" aria-hidden="true">close</span></button></a>
+<div class="tg"><i style="background:var(--primary)"></i>Machines<span class="sp"></span><span class="ms o" aria-hidden="true">expand_less</span></div>
+<a class="tab" href="#"><span class="ms o" aria-hidden="true">computer</span><span class="l">ubuntu-24.04</span><span class="st" style="background:var(--ok)"></span><button class="x" aria-label="Close ubuntu-24.04 tab"><span class="ms o" aria-hidden="true">close</span></button></a>
+<a class="tab" href="#"><span class="ms o" aria-hidden="true">desktop_windows</span><span class="l">win11-dev</span><span class="st" style="background:var(--ok)"></span><button class="x" aria-label="Close win11-dev tab"><span class="ms o" aria-hidden="true">close</span></button></a>
+<a class="tab" href="#"><span class="ms o" aria-hidden="true">router</span><span class="l">alpine-router</span><span class="st" style="background:var(--warn)"></span><button class="x" aria-label="Close alpine-router tab"><span class="ms o" aria-hidden="true">close</span></button></a>
+<a class="tab" href="#"><span class="ms o" aria-hidden="true">developer_board</span><span class="l">riscv-lab</span><span class="st" style="background:var(--ol)"></span><button class="x" aria-label="Close riscv-lab tab"><span class="ms o" aria-hidden="true">close</span></button></a>
+<a class="tab" href="#"><span class="ms o" aria-hidden="true">view_list</span><span class="l">All machines</span><button class="x" aria-label="Close All machines tab"><span class="ms o" aria-hidden="true">close</span></button></a>
+<div class="tg"><i style="background:var(--ter)"></i>Host<span class="sp"></span><span class="ms o" aria-hidden="true">expand_less</span></div>
+<a class="tab" href="#"><span class="ms o" aria-hidden="true">hard_drive</span><span class="l">Storage &amp; disks</span><button class="x" aria-label="Close Storage &amp; disks tab"><span class="ms o" aria-hidden="true">close</span></button></a>
+<a class="tab" href="#"><span class="ms o" aria-hidden="true">album</span><span class="l">ISO &amp; templates</span><button class="x" aria-label="Close ISO &amp; templates tab"><span class="ms o" aria-hidden="true">close</span></button></a>
+<a class="tab" href="#"><span class="ms o" aria-hidden="true">lan</span><span class="l">Networks</span><button class="x" aria-label="Close Networks tab"><span class="ms o" aria-hidden="true">close</span></button></a>
+<a class="tab" href="#"><span class="ms o" aria-hidden="true">dns</span><span class="l">Host &amp; appliance</span><button class="x" aria-label="Close Host &amp; appliance tab"><span class="ms o" aria-hidden="true">close</span></button></a>
+<div class="tg"><i style="background:var(--sec)"></i>Tools<span class="sp"></span><span class="ms o" aria-hidden="true">expand_less</span></div>
+<a class="tab" href="#"><span class="ms o" aria-hidden="true">terminal</span><span class="l">QMP monitor</span><button class="x" aria-label="Close QMP monitor tab"><span class="ms o" aria-hidden="true">close</span></button></a>
+<a class="tab" href="#"><span class="ms o" aria-hidden="true">bug_report</span><span class="l">Debug &amp; trace</span><button class="x" aria-label="Close Debug &amp; trace tab"><span class="ms o" aria-hidden="true">close</span></button></a>
+<a class="tab" href="#"><span class="ms o" aria-hidden="true">sync</span><span class="l">Jobs &amp; backups</span><button class="x" aria-label="Close Jobs &amp; backups tab"><span class="ms o" aria-hidden="true">close</span></button></a>
+<a class="tab" href="#"><span class="ms o" aria-hidden="true">memory_alt</span><span class="l">User-mode</span><button class="x" aria-label="Close User-mode tab"><span class="ms o" aria-hidden="true">close</span></button></a>
+<div class="tg"><i style="background:var(--ol)"></i>You<span class="sp"></span><span class="ms o" aria-hidden="true">expand_less</span></div>
+<a class="tab" href="#"><span class="ms o" aria-hidden="true">settings</span><span class="l">Settings</span><button class="x" aria-label="Close Settings tab"><span class="ms o" aria-hidden="true">close</span></button></a>
+<a class="tab" href="#"><span class="ms o" aria-hidden="true">history</span><span class="l">History</span><button class="x" aria-label="Close History tab"><span class="ms o" aria-hidden="true">close</span></button></a>
+<a class="tab" href="#"><span class="ms o" aria-hidden="true">menu_book</span><span class="l">Docs &amp; changelog</span><button class="x" aria-label="Close Docs &amp; changelog tab"><span class="ms o" aria-hidden="true">close</span></button></a>
+<div class="tabfoot"><button class="btn t sm"><span class="ms " aria-hidden="true">tab</span>Open every tab</button><button class="btn x sm"><span class="ms " aria-hidden="true">add</span>New tab</button></div>
+</nav>
+<main class="main">
+<div class="rise" style="--i:0;display:flex;flex-direction:column;gap:8px">
+<div class="crumb">Overview</div>
+<div class="row" style="align-items:flex-end"><div style="flex:1 1 420px;min-width:0"><h1 class="h1">Good evening</h1><p class="sub">4 machines, 2 running. Everything on this appliance at a glance.</p></div><div class="row"><button class="btn f "><span class="ms " aria-hidden="true">add</span>New machine</button><button class="btn o "><span class="ms " aria-hidden="true">upload</span>Import</button></div></div>
+</div><div class="grid g4">
+<section class="card rise " style="--i:1;"><div class="ch"><span class="ms " aria-hidden="true">speed</span><b>Host CPU</b><span class="sp"></span><span class="pill ok"><span class="live"></span>live</span></div><svg class="chart" sc-camel-view-box="0 0 360 120" role="img" aria-label="Host CPU percent, live, now 30%">
+<defs><linearGradient id="g1" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="var(--primary)" stop-opacity=".28"></stop><stop offset="100%" stop-color="var(--primary)" stop-opacity="0"></stop></linearGradient></defs>
+<line class="gd" x1="0" x2="360" y1="14" y2="14"></line><line class="gd" x1="0" x2="360" y1="57.0" y2="57.0"></line><line class="gd" x1="0" x2="360" y1="100" y2="100"></line><path d="M8.0,14.0 C9.2,14.8 12.8,16.3 15.1,18.5 C17.5,20.8 19.9,24.2 22.3,27.6 C24.7,31.0 27.0,36.3 29.4,38.9 C31.8,41.5 34.2,42.3 36.6,43.4 C39.0,44.6 41.3,45.7 43.7,45.7 C46.1,45.7 48.5,43.4 50.9,43.4 C53.2,43.4 55.6,43.8 58.0,45.7 C60.4,47.6 62.8,50.6 65.1,54.7 C67.5,58.9 69.9,65.3 72.3,70.6 C74.7,75.9 77.0,81.9 79.4,86.4 C81.8,90.9 84.2,95.5 86.6,97.7 C89.0,100.0 91.3,101.1 93.7,100.0 C96.1,98.9 98.5,95.5 100.9,90.9 C103.2,86.4 105.6,78.5 108.0,72.8 C110.4,67.2 112.8,61.9 115.1,57.0 C117.5,52.1 119.9,46.4 122.3,43.4 C124.7,40.4 127.0,39.3 129.4,38.9 C131.8,38.5 134.2,40.8 136.6,41.2 C139.0,41.5 141.3,41.5 143.7,41.2 C146.1,40.8 148.5,40.4 150.9,38.9 C153.2,37.4 155.6,34.7 158.0,32.1 C160.4,29.5 162.8,25.7 165.1,23.1 C167.5,20.4 169.9,16.6 172.3,16.3 C174.7,15.9 177.0,17.8 179.4,20.8 C181.8,23.8 184.2,28.7 186.6,34.4 C189.0,40.0 191.3,48.3 193.7,54.7 C196.1,61.1 198.5,67.6 200.9,72.8 C203.2,78.1 205.6,83.4 208.0,86.4 C210.4,89.4 212.8,90.9 215.1,90.9 C217.5,90.9 219.9,88.7 222.3,86.4 C224.7,84.2 227.0,80.0 229.4,77.4 C231.8,74.7 234.2,72.1 236.6,70.6 C239.0,69.1 241.3,68.3 243.7,68.3 C246.1,68.3 248.5,69.8 250.9,70.6 C253.2,71.3 256.8,72.5 258.0,72.8 L258.0,108 L8.0,108 Z" fill="url(#g1)"></path><path class="ln" d="M8.0,14.0 C9.2,14.8 12.8,16.3 15.1,18.5 C17.5,20.8 19.9,24.2 22.3,27.6 C24.7,31.0 27.0,36.3 29.4,38.9 C31.8,41.5 34.2,42.3 36.6,43.4 C39.0,44.6 41.3,45.7 43.7,45.7 C46.1,45.7 48.5,43.4 50.9,43.4 C53.2,43.4 55.6,43.8 58.0,45.7 C60.4,47.6 62.8,50.6 65.1,54.7 C67.5,58.9 69.9,65.3 72.3,70.6 C74.7,75.9 77.0,81.9 79.4,86.4 C81.8,90.9 84.2,95.5 86.6,97.7 C89.0,100.0 91.3,101.1 93.7,100.0 C96.1,98.9 98.5,95.5 100.9,90.9 C103.2,86.4 105.6,78.5 108.0,72.8 C110.4,67.2 112.8,61.9 115.1,57.0 C117.5,52.1 119.9,46.4 122.3,43.4 C124.7,40.4 127.0,39.3 129.4,38.9 C131.8,38.5 134.2,40.8 136.6,41.2 C139.0,41.5 141.3,41.5 143.7,41.2 C146.1,40.8 148.5,40.4 150.9,38.9 C153.2,37.4 155.6,34.7 158.0,32.1 C160.4,29.5 162.8,25.7 165.1,23.1 C167.5,20.4 169.9,16.6 172.3,16.3 C174.7,15.9 177.0,17.8 179.4,20.8 C181.8,23.8 184.2,28.7 186.6,34.4 C189.0,40.0 191.3,48.3 193.7,54.7 C196.1,61.1 198.5,67.6 200.9,72.8 C203.2,78.1 205.6,83.4 208.0,86.4 C210.4,89.4 212.8,90.9 215.1,90.9 C217.5,90.9 219.9,88.7 222.3,86.4 C224.7,84.2 227.0,80.0 229.4,77.4 C231.8,74.7 234.2,72.1 236.6,70.6 C239.0,69.1 241.3,68.3 243.7,68.3 C246.1,68.3 248.5,69.8 250.9,70.6 C253.2,71.3 256.8,72.5 258.0,72.8" stroke="var(--primary)"></path>
+<circle class="pd" cx="258.0" cy="72.8" r="9" fill="var(--primary)" opacity=".25"></circle><circle cx="258.0" cy="72.8" r="4.5" fill="var(--primary)"></circle>
+<rect x="268.0" y="58.8" width="42" height="26" rx="13" fill="var(--primary)"></rect><text x="289.0" y="76.8" text-anchor="middle" font-size="13" font-weight="700" fill="var(--s0)" font-family="Roboto Flex">30%</text>
+</svg></section>
+<section class="card rise " style="--i:2;"><div class="ch"><span class="ms " aria-hidden="true">memory</span><b>Memory</b><span class="sp"></span><span class="pill ok"><span class="live"></span>live</span></div><svg class="chart" sc-camel-view-box="0 0 360 120" role="img" aria-label="Host memory percent, live, now 63%">
+<defs><linearGradient id="g2" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="var(--ter)" stop-opacity=".28"></stop><stop offset="100%" stop-color="var(--ter)" stop-opacity="0"></stop></linearGradient></defs>
+<line class="gd" x1="0" x2="360" y1="14" y2="14"></line><line class="gd" x1="0" x2="360" y1="57.0" y2="57.0"></line><line class="gd" x1="0" x2="360" y1="100" y2="100"></line><path d="M8.0,31.2 C9.2,32.2 12.8,35.0 15.1,36.9 C17.5,38.8 19.9,41.7 22.3,42.7 C24.7,43.6 27.0,42.7 29.4,42.7 C31.8,42.7 34.2,41.7 36.6,42.7 C39.0,43.6 41.3,45.5 43.7,48.4 C46.1,51.3 48.5,55.1 50.9,59.9 C53.2,64.6 55.6,71.3 58.0,77.1 C60.4,82.8 62.8,90.4 65.1,94.3 C67.5,98.1 69.9,101.0 72.3,100.0 C74.7,99.0 77.0,93.3 79.4,88.5 C81.8,83.8 84.2,77.1 86.6,71.3 C89.0,65.6 91.3,59.9 93.7,54.1 C96.1,48.4 98.5,41.7 100.9,36.9 C103.2,32.2 105.6,27.4 108.0,25.5 C110.4,23.6 112.8,24.5 115.1,25.5 C117.5,26.4 119.9,30.2 122.3,31.2 C124.7,32.2 127.0,32.2 129.4,31.2 C131.8,30.2 134.2,27.4 136.6,25.5 C139.0,23.6 141.3,21.6 143.7,19.7 C146.1,17.8 148.5,15.0 150.9,14.0 C153.2,13.0 155.6,12.1 158.0,14.0 C160.4,15.9 162.8,20.7 165.1,25.5 C167.5,30.2 169.9,36.0 172.3,42.7 C174.7,49.4 177.0,58.9 179.4,65.6 C181.8,72.3 184.2,79.0 186.6,82.8 C189.0,86.6 191.3,87.6 193.7,88.5 C196.1,89.5 198.5,90.4 200.9,88.5 C203.2,86.6 205.6,80.9 208.0,77.1 C210.4,73.2 212.8,68.5 215.1,65.6 C217.5,62.7 219.9,60.8 222.3,59.9 C224.7,58.9 227.0,59.9 229.4,59.9 C231.8,59.9 234.2,59.9 236.6,59.9 C239.0,59.9 241.3,61.8 243.7,59.9 C246.1,58.0 248.5,53.2 250.9,48.4 C253.2,43.6 256.8,34.1 258.0,31.2 L258.0,108 L8.0,108 Z" fill="url(#g2)"></path><path class="ln" d="M8.0,31.2 C9.2,32.2 12.8,35.0 15.1,36.9 C17.5,38.8 19.9,41.7 22.3,42.7 C24.7,43.6 27.0,42.7 29.4,42.7 C31.8,42.7 34.2,41.7 36.6,42.7 C39.0,43.6 41.3,45.5 43.7,48.4 C46.1,51.3 48.5,55.1 50.9,59.9 C53.2,64.6 55.6,71.3 58.0,77.1 C60.4,82.8 62.8,90.4 65.1,94.3 C67.5,98.1 69.9,101.0 72.3,100.0 C74.7,99.0 77.0,93.3 79.4,88.5 C81.8,83.8 84.2,77.1 86.6,71.3 C89.0,65.6 91.3,59.9 93.7,54.1 C96.1,48.4 98.5,41.7 100.9,36.9 C103.2,32.2 105.6,27.4 108.0,25.5 C110.4,23.6 112.8,24.5 115.1,25.5 C117.5,26.4 119.9,30.2 122.3,31.2 C124.7,32.2 127.0,32.2 129.4,31.2 C131.8,30.2 134.2,27.4 136.6,25.5 C139.0,23.6 141.3,21.6 143.7,19.7 C146.1,17.8 148.5,15.0 150.9,14.0 C153.2,13.0 155.6,12.1 158.0,14.0 C160.4,15.9 162.8,20.7 165.1,25.5 C167.5,30.2 169.9,36.0 172.3,42.7 C174.7,49.4 177.0,58.9 179.4,65.6 C181.8,72.3 184.2,79.0 186.6,82.8 C189.0,86.6 191.3,87.6 193.7,88.5 C196.1,89.5 198.5,90.4 200.9,88.5 C203.2,86.6 205.6,80.9 208.0,77.1 C210.4,73.2 212.8,68.5 215.1,65.6 C217.5,62.7 219.9,60.8 222.3,59.9 C224.7,58.9 227.0,59.9 229.4,59.9 C231.8,59.9 234.2,59.9 236.6,59.9 C239.0,59.9 241.3,61.8 243.7,59.9 C246.1,58.0 248.5,53.2 250.9,48.4 C253.2,43.6 256.8,34.1 258.0,31.2" stroke="var(--ter)"></path>
+<circle class="pd" cx="258.0" cy="31.2" r="9" fill="var(--ter)" opacity=".25"></circle><circle cx="258.0" cy="31.2" r="4.5" fill="var(--ter)"></circle>
+<rect x="268.0" y="17.2" width="42" height="26" rx="13" fill="var(--ter)"></rect><text x="289.0" y="35.2" text-anchor="middle" font-size="13" font-weight="700" fill="var(--s0)" font-family="Roboto Flex">63%</text>
+</svg></section>
+<section class="card rise " style="--i:3;"><div class="ch"><span class="ms " aria-hidden="true">hard_drive</span><b>Disk I/O</b><span class="sp"></span><span class="pill ok"><span class="live"></span>live</span></div><svg class="chart" sc-camel-view-box="0 0 360 120" role="img" aria-label="Disk megabytes per second, live, now 212 MB/s">
+<defs><linearGradient id="g3" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="var(--sec)" stop-opacity=".28"></stop><stop offset="100%" stop-color="var(--sec)" stop-opacity="0"></stop></linearGradient></defs>
+<line class="gd" x1="0" x2="360" y1="14" y2="14"></line><line class="gd" x1="0" x2="360" y1="57.0" y2="57.0"></line><line class="gd" x1="0" x2="360" y1="100" y2="100"></line><path d="M8.0,57.6 C9.2,57.4 12.8,56.2 15.1,56.4 C17.5,56.6 19.9,57.0 22.3,58.8 C24.7,60.6 27.0,63.7 29.4,67.3 C31.8,70.9 34.2,76.4 36.6,80.6 C39.0,84.9 41.3,89.5 43.7,92.7 C46.1,96.0 48.5,99.4 50.9,100.0 C53.2,100.6 55.6,99.2 58.0,96.4 C60.4,93.5 62.8,88.5 65.1,83.0 C67.5,77.6 69.9,69.7 72.3,63.7 C74.7,57.6 77.0,51.1 79.4,46.7 C81.8,42.3 84.2,39.0 86.6,37.0 C89.0,35.0 91.3,34.6 93.7,34.6 C96.1,34.6 98.5,36.0 100.9,37.0 C103.2,38.0 105.6,40.0 108.0,40.6 C110.4,41.3 112.8,41.5 115.1,40.6 C117.5,39.8 119.9,37.6 122.3,35.8 C124.7,34.0 127.0,31.0 129.4,29.7 C131.8,28.5 134.2,27.5 136.6,28.5 C139.0,29.5 141.3,32.2 143.7,35.8 C146.1,39.4 148.5,44.7 150.9,50.3 C153.2,56.0 155.6,63.5 158.0,69.7 C160.4,76.0 162.8,83.4 165.1,87.9 C167.5,92.3 169.9,95.2 172.3,96.4 C174.7,97.6 177.0,96.8 179.4,95.2 C181.8,93.5 184.2,89.9 186.6,86.7 C189.0,83.4 191.3,79.0 193.7,75.8 C196.1,72.5 198.5,69.3 200.9,67.3 C203.2,65.3 205.6,64.1 208.0,63.7 C210.4,63.3 212.8,64.9 215.1,64.9 C217.5,64.9 219.9,64.7 222.3,63.7 C224.7,62.7 227.0,61.6 229.4,58.8 C231.8,56.0 234.2,51.3 236.6,46.7 C239.0,42.1 241.3,35.6 243.7,31.0 C246.1,26.3 248.5,21.7 250.9,18.8 C253.2,16.0 256.8,14.8 258.0,14.0 L258.0,108 L8.0,108 Z" fill="url(#g3)"></path><path class="ln" d="M8.0,57.6 C9.2,57.4 12.8,56.2 15.1,56.4 C17.5,56.6 19.9,57.0 22.3,58.8 C24.7,60.6 27.0,63.7 29.4,67.3 C31.8,70.9 34.2,76.4 36.6,80.6 C39.0,84.9 41.3,89.5 43.7,92.7 C46.1,96.0 48.5,99.4 50.9,100.0 C53.2,100.6 55.6,99.2 58.0,96.4 C60.4,93.5 62.8,88.5 65.1,83.0 C67.5,77.6 69.9,69.7 72.3,63.7 C74.7,57.6 77.0,51.1 79.4,46.7 C81.8,42.3 84.2,39.0 86.6,37.0 C89.0,35.0 91.3,34.6 93.7,34.6 C96.1,34.6 98.5,36.0 100.9,37.0 C103.2,38.0 105.6,40.0 108.0,40.6 C110.4,41.3 112.8,41.5 115.1,40.6 C117.5,39.8 119.9,37.6 122.3,35.8 C124.7,34.0 127.0,31.0 129.4,29.7 C131.8,28.5 134.2,27.5 136.6,28.5 C139.0,29.5 141.3,32.2 143.7,35.8 C146.1,39.4 148.5,44.7 150.9,50.3 C153.2,56.0 155.6,63.5 158.0,69.7 C160.4,76.0 162.8,83.4 165.1,87.9 C167.5,92.3 169.9,95.2 172.3,96.4 C174.7,97.6 177.0,96.8 179.4,95.2 C181.8,93.5 184.2,89.9 186.6,86.7 C189.0,83.4 191.3,79.0 193.7,75.8 C196.1,72.5 198.5,69.3 200.9,67.3 C203.2,65.3 205.6,64.1 208.0,63.7 C210.4,63.3 212.8,64.9 215.1,64.9 C217.5,64.9 219.9,64.7 222.3,63.7 C224.7,62.7 227.0,61.6 229.4,58.8 C231.8,56.0 234.2,51.3 236.6,46.7 C239.0,42.1 241.3,35.6 243.7,31.0 C246.1,26.3 248.5,21.7 250.9,18.8 C253.2,16.0 256.8,14.8 258.0,14.0" stroke="var(--sec)"></path>
+<circle class="pd" cx="258.0" cy="14.0" r="9" fill="var(--sec)" opacity=".25"></circle><circle cx="258.0" cy="14.0" r="4.5" fill="var(--sec)"></circle>
+<rect x="268.0" y="2.0" width="82" height="26" rx="13" fill="var(--sec)"></rect><text x="309.0" y="19.0" text-anchor="middle" font-size="13" font-weight="700" fill="var(--s0)" font-family="Roboto Flex">212 MB/s</text>
+</svg></section>
+<section class="card rise " style="--i:4;"><div class="ch"><span class="ms " aria-hidden="true">lan</span><b>Network</b><span class="sp"></span><span class="pill ok"><span class="live"></span>live</span></div><svg class="chart" sc-camel-view-box="0 0 360 120" role="img" aria-label="Network megabits per second, live, now 84 Mb/s">
+<defs><linearGradient id="g4" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="var(--primary)" stop-opacity=".28"></stop><stop offset="100%" stop-color="var(--primary)" stop-opacity="0"></stop></linearGradient></defs>
+<line class="gd" x1="0" x2="360" y1="14" y2="14"></line><line class="gd" x1="0" x2="360" y1="57.0" y2="57.0"></line><line class="gd" x1="0" x2="360" y1="100" y2="100"></line><path d="M8.0,68.4 C9.2,70.2 12.8,75.1 15.1,78.9 C17.5,82.7 19.9,87.7 22.3,91.2 C24.7,94.7 27.0,98.8 29.4,100.0 C31.8,101.2 34.2,100.3 36.6,98.2 C39.0,96.2 41.3,92.7 43.7,87.7 C46.1,82.7 48.5,74.8 50.9,68.4 C53.2,62.0 55.6,54.7 58.0,49.1 C60.4,43.5 62.8,38.3 65.1,35.1 C67.5,31.8 69.9,30.4 72.3,29.8 C74.7,29.2 77.0,30.4 79.4,31.6 C81.8,32.7 84.2,35.4 86.6,36.8 C89.0,38.3 91.3,40.0 93.7,40.3 C96.1,40.6 98.5,39.7 100.9,38.6 C103.2,37.4 105.6,34.5 108.0,33.3 C110.4,32.1 112.8,31.3 115.1,31.6 C117.5,31.8 119.9,32.1 122.3,35.1 C124.7,38.0 127.0,43.5 129.4,49.1 C131.8,54.7 134.2,62.3 136.6,68.4 C139.0,74.6 141.3,81.0 143.7,86.0 C146.1,90.9 148.5,95.9 150.9,98.2 C153.2,100.6 155.6,100.9 158.0,100.0 C160.4,99.1 162.8,96.5 165.1,93.0 C167.5,89.5 169.9,83.3 172.3,78.9 C174.7,74.6 177.0,69.6 179.4,66.7 C181.8,63.7 184.2,62.6 186.6,61.4 C189.0,60.2 191.3,59.9 193.7,59.6 C196.1,59.3 198.5,59.9 200.9,59.6 C203.2,59.3 205.6,59.9 208.0,57.9 C210.4,55.8 212.8,51.1 215.1,47.3 C217.5,43.5 219.9,39.4 222.3,35.1 C224.7,30.7 227.0,24.5 229.4,21.0 C231.8,17.5 234.2,14.6 236.6,14.0 C239.0,13.4 241.3,14.6 243.7,17.5 C246.1,20.4 248.5,26.0 250.9,31.6 C253.2,37.1 256.8,47.6 258.0,50.9 L258.0,108 L8.0,108 Z" fill="url(#g4)"></path><path class="ln" d="M8.0,68.4 C9.2,70.2 12.8,75.1 15.1,78.9 C17.5,82.7 19.9,87.7 22.3,91.2 C24.7,94.7 27.0,98.8 29.4,100.0 C31.8,101.2 34.2,100.3 36.6,98.2 C39.0,96.2 41.3,92.7 43.7,87.7 C46.1,82.7 48.5,74.8 50.9,68.4 C53.2,62.0 55.6,54.7 58.0,49.1 C60.4,43.5 62.8,38.3 65.1,35.1 C67.5,31.8 69.9,30.4 72.3,29.8 C74.7,29.2 77.0,30.4 79.4,31.6 C81.8,32.7 84.2,35.4 86.6,36.8 C89.0,38.3 91.3,40.0 93.7,40.3 C96.1,40.6 98.5,39.7 100.9,38.6 C103.2,37.4 105.6,34.5 108.0,33.3 C110.4,32.1 112.8,31.3 115.1,31.6 C117.5,31.8 119.9,32.1 122.3,35.1 C124.7,38.0 127.0,43.5 129.4,49.1 C131.8,54.7 134.2,62.3 136.6,68.4 C139.0,74.6 141.3,81.0 143.7,86.0 C146.1,90.9 148.5,95.9 150.9,98.2 C153.2,100.6 155.6,100.9 158.0,100.0 C160.4,99.1 162.8,96.5 165.1,93.0 C167.5,89.5 169.9,83.3 172.3,78.9 C174.7,74.6 177.0,69.6 179.4,66.7 C181.8,63.7 184.2,62.6 186.6,61.4 C189.0,60.2 191.3,59.9 193.7,59.6 C196.1,59.3 198.5,59.9 200.9,59.6 C203.2,59.3 205.6,59.9 208.0,57.9 C210.4,55.8 212.8,51.1 215.1,47.3 C217.5,43.5 219.9,39.4 222.3,35.1 C224.7,30.7 227.0,24.5 229.4,21.0 C231.8,17.5 234.2,14.6 236.6,14.0 C239.0,13.4 241.3,14.6 243.7,17.5 C246.1,20.4 248.5,26.0 250.9,31.6 C253.2,37.1 256.8,47.6 258.0,50.9" stroke="var(--primary)"></path>
+<circle class="pd" cx="258.0" cy="50.9" r="9" fill="var(--primary)" opacity=".25"></circle><circle cx="258.0" cy="50.9" r="4.5" fill="var(--primary)"></circle>
+<rect x="268.0" y="36.9" width="74" height="26" rx="13" fill="var(--primary)"></rect><text x="305.0" y="54.9" text-anchor="middle" font-size="13" font-weight="700" fill="var(--s0)" font-family="Roboto Flex">84 Mb/s</text>
+</svg></section>
+</div>
+<div class="row rise" style="--i:5"><h2 class="h2">Machines</h2><span class="sp"></span><div class="chips"><button class="chip on"><span class="ms " aria-hidden="true">check</span>All</button><button class="chip">Running</button><button class="chip">Paused</button><button class="chip">Stopped</button><button class="chip">x86_64</button><button class="chip">aarch64</button><button class="chip">riscv64</button></div><button class="rx">.*</button></div>
+<div class="grid g4">
+<section class="card rise" style="--i:6;padding:0;overflow:hidden">
+<div class="screen" style="border-radius:0;aspect-ratio:16/8;background:#1b2433"><span class="mono" style="color:#82D5C8">Ubuntu 24.04 · live</span></div>
+<div style="padding:14px 16px;display:flex;flex-direction:column;gap:10px">
+<div class="row"><b>ubuntu-24.04</b><span class="sp"></span><span class="pill ok"><span class="live"></span>Running</span></div>
+<div class="note">x86_64 · q35 · KVM · 4 vCPU</div>
+<div class="row" style="gap:16px"><span class="note" style="flex:1">CPU 41%</span><span class="note" style="flex:1">RAM 6.1 / 8 GiB</span></div>
+<div class="bar"><i style="width:41%"></i></div>
+<div class="row" style="gap:4px"><button class="ib" aria-label="Open console"><span class="ms o" aria-hidden="true">desktop_windows</span></button><button class="ib" aria-label="Pause"><span class="ms o" aria-hidden="true">pause</span></button><button class="ib" aria-label="Snapshot"><span class="ms o" aria-hidden="true">photo_camera</span></button><button class="ib" aria-label="More actions"><span class="ms o" aria-hidden="true">more_vert</span></button></div>
+</div></section>
+<section class="card rise" style="--i:7;padding:0;overflow:hidden">
+<div class="screen" style="border-radius:0;aspect-ratio:16/8;background:#1b2433"><span class="mono" style="color:#82D5C8">Windows 11 24H2 · live</span></div>
+<div style="padding:14px 16px;display:flex;flex-direction:column;gap:10px">
+<div class="row"><b>win11-dev</b><span class="sp"></span><span class="pill ok"><span class="live"></span>Running</span></div>
+<div class="note">x86_64 · q35 · KVM · OVMF + TPM 2.0</div>
+<div class="row" style="gap:16px"><span class="note" style="flex:1">CPU 63%</span><span class="note" style="flex:1">RAM 12 / 16 GiB</span></div>
+<div class="bar"><i style="width:63%"></i></div>
+<div class="row" style="gap:4px"><button class="ib" aria-label="Open console"><span class="ms o" aria-hidden="true">desktop_windows</span></button><button class="ib" aria-label="Pause"><span class="ms o" aria-hidden="true">pause</span></button><button class="ib" aria-label="Snapshot"><span class="ms o" aria-hidden="true">photo_camera</span></button><button class="ib" aria-label="More actions"><span class="ms o" aria-hidden="true">more_vert</span></button></div>
+</div></section>
+<section class="card rise" style="--i:8;padding:0;overflow:hidden">
+<div class="screen" style="border-radius:0;aspect-ratio:16/8;background:#120d0b"><span class="mono" style="color:#A08D86">Paused</span></div>
+<div style="padding:14px 16px;display:flex;flex-direction:column;gap:10px">
+<div class="row"><b>alpine-router</b><span class="sp"></span><span class="pill warn">Paused</span></div>
+<div class="note">x86_64 · microvm · KVM</div>
+<div class="row" style="gap:16px"><span class="note" style="flex:1">CPU 0%</span><span class="note" style="flex:1">RAM 0.3 / 0.5 GiB</span></div>
+<div class="bar"><i style="width:0%"></i></div>
+<div class="row" style="gap:4px"><button class="ib" aria-label="Open console"><span class="ms o" aria-hidden="true">desktop_windows</span></button><button class="ib" aria-label="Pause"><span class="ms o" aria-hidden="true">pause</span></button><button class="ib" aria-label="Snapshot"><span class="ms o" aria-hidden="true">photo_camera</span></button><button class="ib" aria-label="More actions"><span class="ms o" aria-hidden="true">more_vert</span></button></div>
+</div></section>
+<section class="card rise" style="--i:9;padding:0;overflow:hidden">
+<div class="screen" style="border-radius:0;aspect-ratio:16/8;background:#120d0b"><span class="mono" style="color:#A08D86">Stopped</span></div>
+<div style="padding:14px 16px;display:flex;flex-direction:column;gap:10px">
+<div class="row"><b>riscv-lab</b><span class="sp"></span><span class="pill ">Stopped</span></div>
+<div class="note">riscv64 · virt · TCG</div>
+<div class="row" style="gap:16px"><span class="note" style="flex:1">CPU 0%</span><span class="note" style="flex:1">RAM — / 4 GiB</span></div>
+<div class="bar"><i style="width:0%"></i></div>
+<div class="row" style="gap:4px"><button class="ib" aria-label="Open console"><span class="ms o" aria-hidden="true">desktop_windows</span></button><button class="ib" aria-label="Pause"><span class="ms o" aria-hidden="true">pause</span></button><button class="ib" aria-label="Snapshot"><span class="ms o" aria-hidden="true">photo_camera</span></button><button class="ib" aria-label="More actions"><span class="ms o" aria-hidden="true">more_vert</span></button></div>
+</div></section>
+</div>
+<div class="grid g3">
+<section class="card rise " style="--i:10;"><div class="ch"><span class="ms " aria-hidden="true">history</span><h2 class="h2">Recent activity</h2><span class="sp"></span></div><div class="tree">
+<div class="n"><span class="ms o" aria-hidden="true">photo_camera</span>Snapshot “before-update” saved on win11-dev<span class="sp"></span><span class="note">2 min</span></div>
+<div class="n"><span class="ms o" aria-hidden="true">sync</span>Incremental backup of ubuntu-24.04 finished, 1.8 GiB<span class="sp"></span><span class="note">14 min</span></div>
+<div class="n"><span class="ms o" aria-hidden="true">swap_horiz</span>alpine-router paused by watchdog policy<span class="sp"></span><span class="note">1 h</span></div>
+</div></section>
+<section class="card rise " style="--i:11;"><div class="ch"><span class="ms " aria-hidden="true">sync</span><h2 class="h2">Running jobs</h2><span class="sp"></span></div><div class="row"><b>mirror</b> win11-dev disk0 → nvme pool<span class="sp"></span><span class="note">62%</span></div><div class="bar sh"><i style="width:62%"></i></div>
+<div class="row"><b>commit</b> ubuntu-24.04 overlay → base<span class="sp"></span><span class="note">18%</span></div><div class="bar sh"><i style="width:18%"></i></div></section>
+<section class="card rise tonal" style="--i:12;"><div class="ch"><span class="ms " aria-hidden="true">dns</span><h2 class="h2">Appliance</h2><span class="sp"></span></div><dl class="kv"><dt>LAN URL</dt><dd><a href="#">http://192.168.1.40:8006/</a></dd><dt>QEMU</dt><dd>10.1.2 (24 system targets)</dd><dt>Accelerators</dt><dd>KVM, TCG</dd><dt>Pool</dt><dd>fast-nvme · 1.1 / 1.8 TB</dd><dt>Updates</dt><dd>OS + image current</dd></dl></section>
+</div>
+
+</main>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script="" data-props="{&quot;dark&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true},&quot;motion&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true},&quot;$preview&quot;:{&quot;width&quot;:1440,&quot;height&quot;:1500} }">
+class Component extends DCLogic {
+renderVals() {
+const dark = this.props.dark ?? true;
+const motion = this.props.motion ?? true;
+return { themeClass: dark ? 'dark' : 'light', motionClass: motion ? 'moving' : 'calm' };
+}
+}
+</script>
+
+
+</body></html>

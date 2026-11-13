@@ -1,9 +1,17 @@
-param([switch]$Run, [switch]$Silent, [switch]$Container)
 $ErrorActionPreference = 'Stop'
+$options = @($args | ForEach-Object { $_.ToString().ToLowerInvariant() })
+$Silent = ($options -contains '/s') -or ($options -contains '--silent') -or ($options -contains '-silent') -or ($env:SILENT -eq '1')
+$Run = ($options -contains '/run') -or ($options -contains '--run') -or ($options -contains '-run') -or ($env:RUN_AFTER_BUILD -eq '1')
+$Container = ($options -contains '--container') -or ($options -contains '-container')
 Set-Location (Split-Path $PSScriptRoot -Parent)
 if (-not (Get-Command node -ErrorAction SilentlyContinue)) {
     $isAdmin = ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
-    if (-not $isAdmin) { throw 'Node.js is missing. Automatic Chocolatey acquisition needs native administrator consent. Run this build interactively from an elevated shell; no consent is automated.' }
+    if (-not $isAdmin) {
+        if ($Silent) { throw 'Node.js is missing. Silent mode cannot request native elevation consent. Build is incomplete.' }
+        $forward = @('-NoProfile','-ExecutionPolicy','Bypass','-File',('"' + $PSCommandPath + '"')) + $args
+        $child = Start-Process powershell -Verb RunAs -ArgumentList $forward -Wait -PassThru
+        exit $child.ExitCode
+    }
     if (-not (Get-Command choco -ErrorAction SilentlyContinue)) {
         $installer = Invoke-WebRequest -UseBasicParsing 'https://community.chocolatey.org/install.ps1'
         & ([scriptblock]::Create($installer.Content))
@@ -14,12 +22,16 @@ if (-not (Get-Command node -ErrorAction SilentlyContinue)) {
 }
 node --version
 if ($LASTEXITCODE -ne 0) { throw 'Node.js verification failed.' }
+$verifiedVersion = & node -p 'process.versions.node'
+if (([version]$verifiedVersion).Major -lt 22) { throw 'Node.js >=22 is required. The existing older installation was preserved.' }
 npm ci --ignore-scripts
 if ($LASTEXITCODE -ne 0) { throw 'Dependency installation failed.' }
 npm run build
 if ($LASTEXITCODE -ne 0) { throw 'Runtime build failed.' }
 if ($Container) {
-    docker build -t material-qemu:0.1.0 .
+    $source = git rev-parse HEAD
+    $buildDate = [DateTime]::UtcNow.ToString('o')
+    docker build --build-arg "BUILD_DATE=$buildDate" --build-arg "SOURCE_REVISION=$source" -t material-qemu:0.1.0 .
     if ($LASTEXITCODE -ne 0) { throw 'Container build failed.' }
 }
-if ($Run) { npm start; exit $LASTEXITCODE }
+if ($Run) { Push-Location dist; try { node server/index.mjs; exit $LASTEXITCODE } finally { Pop-Location } }

@@ -1,112 +1,721 @@
+import { createViews } from "./views.js";
 const { startRegistration, startAuthentication } = window.SimpleWebAuthnBrowser;
 
-const $ = selector => document.querySelector(selector);
-const escape = value => String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const bytes = value => value == null ? 'Unavailable' : `${(value / 1073741824).toFixed(1)} GiB`;
-let session, state, page = 'overview', query = '', filter = 'all', folder = '', selected = '', checked = new Set(), wizardStep = 1, wizard = {}, editing = false, rfb, noticeTimer;
-const names = { overview:['Overview','總覽'], machines:['All machines','所有機器'], new:['New machine','新增機器'], settings:['Settings','設定'], docs:['Help & documentation','說明文件'], history:['Activity','活動記錄'], console:['Console','主控台'] };
-function t(en, yue = en) { const mode=state?.settings.language || localStorage.getItem('mq-language') || 'en';return mode==='yue'?yue:mode==='both'&&en!==yue?`${en} · ${yue}`:en; }
-function label(key){return t(...names[key]);}
-function notify(message){$('#notice').textContent=message;clearTimeout(noticeTimer);noticeTimer=setTimeout(()=>$('#notice').textContent='',6500);}
-async function api(route, body, options={}) {
-  const response=await fetch(`/api${route}`,{method:body===undefined?'GET':'POST',headers:body===undefined?{}:{'Content-Type':'application/json','X-CSRF-Token':session?.csrf||'','X-Setup-Token':options.bootstrap||''},body:body===undefined?undefined:JSON.stringify(body)});
-  const data=await response.json();if(!response.ok)throw new Error(data.error||'Request failed.');return data;
+const $ = (selector) => document.querySelector(selector);
+const escape = (value) =>
+  String(value ?? "").replace(
+    /[&<>"']/g,
+    (c) =>
+      ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[
+        c
+      ],
+  );
+const bytes = (value) =>
+  value == null ? "Unavailable" : `${(value / 1073741824).toFixed(1)} GiB`;
+let session,
+  state,
+  page = "overview",
+  query = "",
+  filter = "all",
+  folder = "",
+  selected = "",
+  checked = new Set(),
+  wizardStep = 1,
+  wizard = {},
+  editing = false,
+  rfb,
+  noticeTimer;
+const names = {
+  overview: ["Overview", "總覽"],
+  machines: ["All machines", "所有機器"],
+  new: ["New machine", "新增機器"],
+  settings: ["Settings", "設定"],
+  docs: ["Help & documentation", "說明文件"],
+  history: ["Activity", "活動記錄"],
+  console: ["Console", "主控台"],
+};
+function t(en, yue = en) {
+  const mode =
+    state?.settings.language || localStorage.getItem("mq-language") || "en";
+  return mode === "yue"
+    ? yue
+    : mode === "both" && en !== yue
+      ? `${en} · ${yue}`
+      : en;
 }
-async function refresh(renderPage=true){state=await api('/state');session.csrf=state.csrf;applySettings();if(renderPage)render();}
-function applySettings(){const theme=state?.settings.theme||localStorage.getItem('mq-theme')||'dark';document.documentElement.dataset.theme=theme==='system'?(matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light'):theme;document.documentElement.dataset.motion=state?.settings.motion===false?'off':'on';document.documentElement.lang=state?.settings.language==='yue'?'zh-HK':'en';}
-function field(name,title,value='',type='text',extra=''){return `<div class="field"><label for="${name}">${title}</label><input id="${name}" name="${name}" type="${type}" value="${escape(value)}" ${extra}></div>`;}
-function select(name,title,options,value){return `<div class="field"><label for="${name}">${title}</label><select id="${name}" name="${name}">${options.map(([v,l])=>`<option value="${escape(v)}" ${v===value?'selected':''}>${escape(l)}</option>`).join('')}</select></div>`;}
-function button(action,text,cls='',extra=''){return `<button type="button" data-action="${action}" class="${cls}" ${extra}>${text}</button>`;}
-function pill(machine){return `<span class="pill ${machine.state}">${escape(t(machine.state,{running:'運行中',paused:'已暫停',stopped:'已停止',starting:'啟動中',error:'錯誤'}[machine.state]))}</span>`;}
-function render(){
-  if(rfb){rfb.disconnect();rfb=null;}
-  if(!session?.authenticated){renderAuth();return;}
-  if(!state.setup.complete){renderOnboarding();return;}
-  $('#app').innerHTML=`<header class="topbar"><div class="brand"><span class="mark" aria-hidden="true">▧</span>Material QEMU</div><div class="search"><input id="global-search" aria-label="${t('Search machines','搜尋機器')}" placeholder="${t('Search machines, folders and notes','搜尋機器、資料夾和備註')}" value="${escape(query)}"></div><span class="spacer"></span><span class="pill healthy health">● ${t('Host connected','主機已連線')}</span>${button('logout',t('Sign out','登出'),'ghost')}</header><div class="shell"><nav aria-label="${t('Workspace','工作區')}">${['overview','machines','new'].map(k=>button(`page:${k}`,`<span aria-hidden="true">${{overview:'▦',machines:'▤',new:'＋'}[k]}</span><span>${label(k)}</span>`,page===k?'active':'')).join('')}<div class="group">${t('Machines','機器')}</div>${state.machines.map(m=>button(`console:${m.id}`,`<span aria-hidden="true">▣</span><span class="nav-name">${escape(m.name)}</span>`,'machine-nav')).join('')}<div class="group">${t('Your workspace','你的工作區')}</div>${['settings','history','docs'].map(k=>button(`page:${k}`,label(k),page===k?'active':'')).join('')}<div class="bottom">Material QEMU 0.1.0<br>${t('Updated','更新日期')} 2026-11-13<br>${escape(state.owner.name)}</div></nav><main class="main" id="main" tabindex="-1">${({overview:overview,machines:machines,new:machineWizard,settings:settings,history:history,docs:docs,console:consolePage}[page]||overview)()}</main></div>`;
-  if(page==='console')connectConsole();
-  const search=$('#global-search');search?.addEventListener('input',e=>{query=e.target.value;if(page!=='machines'){page='machines';render();$('#global-search').focus();}else $('#machine-results').innerHTML=machineResults();});
+function label(key) {
+  return t(...names[key]);
 }
-function renderAuth(){
-  const setup=session?.setupRequired;
-  $('#app').innerHTML=`<header class="topbar"><div class="brand"><span class="mark">▧</span>Material QEMU</div><span class="spacer"></span><small>0.1.0 · 2026-11-13</small></header><main class="auth"><div class="card auth-card"><section class="auth-intro"><div class="mark" aria-hidden="true">▧</div><span class="pill">${t('Your machines. Your control.','你的機器，由你掌控。')}</span><h1 style="margin-top:24px">${t('A quieter home for your virtual machines.','虛擬機器的安心基地。')}</h1><p class="muted">${t('One workspace for QEMU. Manage, monitor and connect, with everything running on your own host.','一個 QEMU 工作區，管理、監察及連線，全部在你的主機上運行。')}</p><p class="muted-line">${t('Private by default. No cloud account required.','預設私人使用，毋須雲端帳戶。')}</p></section><section class="auth-form"><h2>${setup?t('Welcome to your new workspace','歡迎使用新工作區'):t('Welcome back','歡迎回來')}</h2><p class="muted">${setup?t('Create the owner account to begin guided setup.','建立擁有人帳戶，開始設定。'):t('Unlock your local workspace.','解鎖你的本機工作區。')}</p>${!setup?button('passkey-login',t('Sign in with a passkey','使用通行密鑰登入'),'primary','style="width:100%;margin-bottom:22px"'):''}<form id="auth-form">${setup?field('owner',t('Your name','你的名字'),'','text','required autocomplete="name"')+field('bootstrap',t('Setup authorization code','設定授權碼'),'','password','required autocomplete="off"'):''}${field('password',t('Password','密碼'),'','password',`required minlength="12" maxlength="256" autocomplete="${setup?'new-password':'current-password'}"`)}<button class="${setup?'primary':''}" type="submit" style="width:100%">${setup?t('Create owner account','建立擁有人帳戶'):t('Sign in with password','使用密碼登入')}</button></form><p class="muted-line">${setup?t('The setup authorization code is stored in the host data directory. Passwords need at least 12 characters.','設定授權碼存於主機資料目錄，密碼最少需要十二個字元。'):t('Passkeys require HTTPS or localhost. Your password remains available as a recovery method.','通行密鑰需要 HTTPS 或 localhost。密碼仍可用作復原登入。')}</p></section></div></main>`;
-  $('#auth-form').onsubmit=async e=>{e.preventDefault();const values=new FormData(e.target);try{const result=await api(setup?'/setup':'/login',{name:values.get('owner'),password:values.get('password')},{bootstrap:values.get('bootstrap')});session={...session,authenticated:true,csrf:result.csrf};await refresh();}catch(error){notify(error.message);}};
+function notify(message) {
+  $("#notice").textContent = message;
+  clearTimeout(noticeTimer);
+  noticeTimer = setTimeout(() => ($("#notice").textContent = ""), 6500);
 }
-function metrics(){const m=state.metrics;return `<div class="grid metrics">${[[t('Host CPU','主機處理器'),m.cpuPercent===null?t('Sampling…','取樣中…'):`${m.cpuPercent}%`,`${m.cpuCount} ${t('logical processors','邏輯處理器')}`,m.cpuPercent],[t('Memory','記憶體'),bytes(m.memoryUsed),`${t('of','共')} ${bytes(m.memoryTotal)}`,100*m.memoryUsed/m.memoryTotal],[t('Machines','機器'),state.machines.length,`${state.machines.filter(x=>x.state==='running').length} ${t('running','運行中')}`,null],[t('Host uptime','主機運行時間'),`${Math.floor(m.uptime/3600)}h ${Math.floor(m.uptime%3600/60)}m`,`${m.platform} · ${m.arch}`,null]].map(([name,value,sub,amount])=>`<section class="card"><div class="card-title"><h3>${name}</h3><span class="pill">${t('Live','即時')}</span></div><div class="metric-value">${value}</div><p class="muted">${sub}</p>${amount!==null?`<div class="meter"><span style="width:${Math.max(0,Math.min(100,amount||0))}%"></span></div>`:''}</section>`).join('')}</div>`;}
-function heading(title,description,actions=''){return `<div class="crumb">${t('Workspace','工作區')} / ${title}</div><div class="heading"><div><h1>${title}</h1><p>${description}</p></div><div class="actions">${actions}</div></div>`;}
-function overview(){return heading(t('Everything at a glance','一眼掌握所有狀態'),t('Your host and machines, measured in real time.','主機和機器狀態，全部即時量度。'),button('new',`＋ ${label('new')}`,'primary'))+metrics()+`<div class="toolbar"><h2>${t('Machines','機器')}</h2>${button('page:machines',t('View all machines','查看所有機器'),'ghost')}</div>${state.machines.length?`<div class="grid">${state.machines.slice(0,6).map(machineCard).join('')}</div>`:empty()}<div class="grid lower"><section class="card"><h2>${t('Recent activity','最近活動')}</h2>${eventList(5)}</section><section class="card"><h2>${t('Your host','你的主機')}</h2><dl><dt>QEMU</dt><dd>${Object.entries(state.capabilities).filter(([,c])=>c.available).map(([a])=>a).join(', ')||t('Unavailable','未能使用')}</dd><dt>${t('Acceleration','加速方式')}</dt><dd>TCG</dd><dt>${t('Connection','連線')}</dt><dd>${escape(location.origin)}</dd><dt>${t('Disk and network rates','磁碟及網絡速率')}</dt><dd>${t('Not collected','尚未收集')}</dd></dl></section></div>`;}
-function empty(){return `<section class="card empty"><div class="empty-icon" aria-hidden="true">▣</div><h2>${t('A home for your first machine','為第一部機器安個家')}</h2><p>${t('Create a machine with a private virtual disk, choose your resources, then open its live console. No sample machines are shown.','建立私人虛擬磁碟，選擇資源，再打開即時主控台。這裡不會顯示假機器。')}</p>${button('new',`＋ ${label('new')}`,'primary')}</section>`;}
-function machineCard(m){return `<article class="card machine"><div class="preview ${m.state}">${m.state==='running'?t('Live console available','即時主控台可用'):escape(t(m.state,{stopped:'已停止',paused:'已暫停',error:'錯誤'}[m.state]))}</div><div class="info"><div class="card-title"><h3>${escape(m.name)}</h3>${pill(m)}</div><p class="spec">${escape(m.arch)} · TCG · ${m.cpus} vCPU · ${m.memory} MiB</p>${m.error?`<p class="error-text">${escape(m.error)}</p>`:''}<div class="actions">${button(`console:${m.id}`,label('console'))}${button(`lifecycle:${m.id}:${m.state==='stopped'?'start':m.state==='paused'?'resume':'pause'}`,t(m.state==='stopped'?'Start':m.state==='paused'?'Resume':'Pause',{stopped:'啟動',paused:'繼續'}[m.state]||'暫停'))}${button(`details:${m.id}`,t('Details','詳細資料'),'ghost')}</div></div></article>`;}
-function filtered(){return state.machines.filter(m=>(!query||`${m.name} ${m.notes} ${m.folder} ${m.arch}`.toLowerCase().includes(query.toLowerCase()))&&(filter==='all'||filter==='favourites'&&m.favourite||m.state===filter)&&(!folder||m.folder===folder));}
-function machines(){return heading(label('machines'),t('Organize your workspace. Keep the important machines close.','整理工作區，重要機器隨手可用。'),button('new',`＋ ${label('new')}`,'primary'))+`<div class="toolbar"><div class="chips">${['all','favourites','running','paused','stopped'].map(f=>button(`filter:${f}`,t(f,{all:'全部',favourites:'最愛',running:'運行中',paused:'已暫停',stopped:'已停止'}[f]),filter===f?'selected':'')).join('')}</div><div class="actions">${button('save-view',t('Save view','儲存檢視'))}${button('folder',t('New folder','新增資料夾'))}${button('columns',t('Columns','欄位'))}</div></div><div class="toolbar"><div class="chips">${button('folder-filter:',t('All folders','所有資料夾'),folder?'':'selected')}${state.folders.map(f=>button(`folder-filter:${escape(f)}`,escape(f),folder===f?'selected':'')).join('')}${state.views.map(v=>button(`view:${v.id}`,escape(v.name),'ghost')).join('')}</div><div class="chips">${['cards','list','compact'].map(v=>button(`layout:${v}`,t(v,{cards:'卡片',list:'清單',compact:'緊密'}[v]),state.settings.layout===v?'selected':'')).join('')}</div></div><div id="machine-results">${machineResults()}</div>`;}
-function machineResults(){const list=filtered();const m=state.machines.find(m=>m.id===selected);return `<div class="toolbar"><span class="muted">${list.length} ${t('machines','部機器')}</span><div class="actions"><span class="selected-count">${checked.size?`${checked.size} ${t('selected','已選取')}`:''}</span>${button('select-all',t('Select visible','選取可見機器'))}${checked.size?button('bulk:start',t('Start selected','啟動已選機器'))+button('bulk:pause',t('Pause selected','暫停已選機器')):''}</div></div><div class="${m?'split':''}"><div>${!list.length?`<section class="card empty"><h2>${t('No matching machines','沒有符合的機器')}</h2><p>${t('Try another search or create your first machine.','試試另一個搜尋，或建立第一部機器。')}</p>${button('new',label('new'),'primary')}</section>`:state.settings.layout==='cards'?`<div class="grid">${list.map(m=>`<div><label class="check"><input type="checkbox" data-check="${m.id}" ${checked.has(m.id)?'checked':''}>${t('Select','選取')} ${escape(m.name)}</label>${machineCard(m)}</div>`).join('')}</div>`:`<div class="card table-wrap ${state.settings.layout}"><table><thead><tr><th>${t('Select','選取')}</th><th>${t('Machine','機器')}</th>${state.settings.columns.map(c=>`<th>${t(c,{platform:'平台',memory:'記憶體',cpu:'處理器'}[c])}</th>`).join('')}<th>${t('State','狀態')}</th><th>${t('Actions','操作')}</th></tr></thead><tbody>${list.map(m=>`<tr><td><input type="checkbox" aria-label="Select ${escape(m.name)}" data-check="${m.id}" ${checked.has(m.id)?'checked':''}></td><td>${button(`details:${m.id}`,escape(m.name),'table-name')}<br><small>${escape(m.folder||'')}</small></td>${state.settings.columns.map(c=>`<td>${c==='platform'?m.arch:c==='memory'?m.memory+' MiB':m.cpus+' vCPU'}</td>`).join('')}<td>${pill(m)}</td><td>${button(`console:${m.id}`,label('console'))}</td></tr>`).join('')}</tbody></table></div>`}</div>${m?details(m):''}</div>`;}
-function details(m){return `<aside class="card details"><div class="card-title"><h2>${escape(m.name)}</h2>${button('details:',t('Close','關閉'),'ghost')}</div>${pill(m)}<dl style="margin-top:20px"><dt>${t('Architecture','架構')}</dt><dd>${m.arch}</dd><dt>${t('Memory','記憶體')}</dt><dd>${m.memory} MiB</dd><dt>CPU</dt><dd>${m.cpus}</dd><dt>${t('Disk','磁碟')}</dt><dd>${m.diskGiB} GiB</dd><dt>${t('Folder','資料夾')}</dt><dd>${escape(m.folder||'—')}</dd><dt>ISO</dt><dd>${escape(m.iso||'—')}</dd></dl><p class="muted" style="margin-top:20px">${escape(m.notes)}</p><div class="actions">${button(`edit:${m.id}`,t('Edit machine','編輯機器'))}${button(`favourite:${m.id}`,m.favourite?t('Remove favourite','取消最愛'):t('Favourite','加入最愛'))}${button(`console:${m.id}`,label('console'),'primary')}</div><p class="muted-line">${t('Hardware and organization changes require a stopped machine.','更改硬件和分類前，請先停止機器。')}</p></aside>`;}
-const setupNames=[['Owner','擁有人'],['Language','語言'],['Hardware','硬件'],['Storage','儲存空間'],['Network','網絡'],['ISO library','ISO 媒體'],['First machine','第一部機器'],['Ready','準備完成']];
-function steps(labels,current){return `<div class="steps" aria-label="Progress">${labels.map((s,i)=>`<div class="step ${current===i+1?'active':current>i+1?'done':''}" ${current===i+1?'aria-current="step"':''}><b>${current>i+1?'✓':i+1}</b>${t(...s)}</div>`).join('')}</div>`;}
-function renderOnboarding(){const n=state.setup.step;let content='';
-  if(n===2)content=select('setup-language',t('Workspace language','工作區語言'),[['en','English'],['yue','廣東話'],['both','English + 廣東話']],state.settings.language)+select('setup-theme',t('Appearance','外觀'),[['dark',t('Dark','深色')],['light',t('Light','淺色')],['system',t('Follow device','跟隨裝置')]],state.settings.theme);
-  if(n===3)content=`<div class="grid">${Object.entries(state.capabilities).map(([arch,c])=>`<div class="card"><h3>${arch}</h3><span class="pill ${c.available?'healthy':'error'}">${c.available?t('Ready','可用'):t('Unavailable','未能使用')}</span><p class="muted" style="margin-top:15px">${escape(c.version||c.reason)}</p></div>`).join('')}</div><p class="help">${t('TCG software emulation works without passing host virtualization devices into the container. No host firmware or security settings are changed.','TCG 使用模擬運行，不需將虛擬化裝置交給容器，也不會更改主機韌體或安全設定。')}</p>`;
-  if(n===4)content=`<h3>${t('Private managed storage','私人管理儲存空間')}</h3><p>${t('Machine disks are created as sparse QCOW2 images in the persistent data volume. Existing host disks are never selected or erased.','機器使用持久資料空間中的 QCOW2 磁碟，不會選取或清除現有主機磁碟。')}</p><dl><dt>${t('Disk format','磁碟格式')}</dt><dd>QCOW2</dd><dt>${t('Storage scope','儲存範圍')}</dt><dd>${t('Managed data volume only','只限管理資料空間')}</dd></dl>`;
-  if(n===5)content=`<h3>${t('Isolated by default','預設隔離')}</h3><p>${t('Machines use restricted user-mode networking, or no network. Host port forwarding and bridges are not enabled.','機器使用受限制的使用者模式網絡，或完全不連網。不會啟用主機端口轉送或網絡橋接。')}</p><div class="help">${escape(location.origin)}<br>${t('This is your current connection, not a claim of LAN reachability. Use an HTTPS reverse proxy before remote access.','這是目前連線地址，並不代表區域網絡已可連線。遠端存取前請設定 HTTPS 代理。')}</div>`;
-  if(n===6)content=`<h3>${t('Bring your installation media','準備安裝媒體')}</h3><p>${t('Place your trusted ISO files in the data volume’s media directory. The host operator manages these files. A blank machine can be created without an ISO.','將可信的 ISO 放進資料空間的 media 目錄，由主機管理者處理。也可先建立沒有 ISO 的空白機器。')}</p><div class="help">${state.media.length?state.media.map(escape).join('<br>'):t('No ISO files found. You can add them later.','尚未找到 ISO，可稍後新增。')}</div>${button('refresh',t('Check again','重新檢查'))}`;
-  if(n===7)content=`<h3>${t('Your first machine is next','下一步，建立第一部機器')}</h3><p>${t('The machine wizard will help you choose a platform, CPU, memory, private disk, network and display. Finish setup first, or continue with an empty workspace.','機器精靈會帶你選擇平台、處理器、記憶體、磁碟、網絡及顯示。先完成設定，再建立機器。')}</p><p class="help">${t('Nothing starts automatically. Starting a machine is always an explicit action.','機器不會自行啟動，每次啟動都需要你的操作。')}</p>`;
-  if(n===8)content=`<div class="empty"><div class="empty-icon">✓</div><h2>${t('Your workspace is ready','工作區已準備好')}</h2><p>${t('Your owner account and preferences are saved. You can register a passkey in Settings and create your first machine.','帳戶和偏好已儲存，可在設定登記通行密鑰，再建立第一部機器。')}</p></div>`;
-  $('#app').innerHTML=`<header class="topbar"><div class="brand"><span class="mark">▧</span>Material QEMU</div><span class="spacer"></span><span class="pill">${t('Setup saved automatically','設定進度自動儲存')}</span></header><main class="main wizard">${heading(t('Make yourself at home','設定你的工作區'),t('A few practical steps, then you are in.','幾個實用步驟，完成即可開始。'))}${steps(setupNames,n)}<section class="card wizard-content"><h2>${t(...setupNames[n-1])}</h2>${content}</section><div class="wizard-footer">${n>2?button('setup-back',t('Back','上一步')):'<span></span>'}${button(n===8?'setup-finish':'setup-next',n===8?t('Open workspace','開啟工作區'):t('Save & continue','儲存並繼續'),'primary')}</div></main>`;
+async function api(route, body, options = {}) {
+  const response = await fetch(`/api${route}`, {
+    method: body === undefined ? "GET" : "POST",
+    headers:
+      body === undefined
+        ? {}
+        : {
+            "Content-Type": "application/json",
+            "X-CSRF-Token": session?.csrf || "",
+            "X-Setup-Token": options.bootstrap || "",
+          },
+    body: body === undefined ? undefined : JSON.stringify(body),
+  });
+  const data = await response.json();
+  if (!response.ok) throw new Error(data.error || "Request failed.");
+  return data;
 }
-const machineSteps=[['Preset','預設'],['Platform','平台'],['CPU & memory','處理器及記憶體'],['Firmware','韌體'],['Storage','儲存'],['Network','網絡'],['Display','顯示'],['Review','檢查']];
-function machineWizard(){let content='';
-  if(wizardStep===1)content=`${field('name',t('Machine name','機器名稱'),wizard.name,'text','required maxlength="80"')}${select('preset',t('Starting point','起點'),[['blank',t('Blank machine','空白機器')],['linux',t('Linux workstation','Linux 工作站')],['small',t('Lightweight server','輕量伺服器')]],wizard.preset||'blank')}<p class="help">${t('Presets choose resource defaults only. No operating system is downloaded or installed automatically.','預設只選擇資源，不會自動下載或安裝作業系統。')}</p>`;
-  if(wizardStep===2)content=select('arch',t('Architecture','架構'),Object.entries(state.capabilities).filter(([,c])=>c.available).map(([arch])=>[arch,arch]),wizard.arch)+`<div class="help">${t('Only installed system emulators are offered. This release uses TCG acceleration.','只會列出已安裝的模擬器，目前版本使用 TCG 加速。')}</div>`;
-  if(wizardStep===3)content=`<div class="form-grid">${field('cpus',t('Virtual CPUs','虛擬處理器'),wizard.cpus,'number','min="1" max="16" required')}${field('memory',t('Memory (MiB)','記憶體（MiB）'),wizard.memory,'number','min="128" max="32768" step="128" required')}</div><p class="help">${t('Available host memory','主機可用記憶體')}: ${bytes(state.metrics.memoryTotal-state.metrics.memoryUsed)}. ${t('Leave room for the host and other machines.','請為主機和其他機器預留空間。')}</p>`;
-  if(wizardStep===4)content=`<h3>${wizard.arch==='aarch64'?'UEFI':'SeaBIOS'}</h3><p>${t('The supported firmware is selected by the platform. Secure Boot and TPM configuration are not implemented in this release.','韌體按平台選定。此版本尚未提供安全啟動和 TPM 設定。')}</p><div class="help">${wizard.arch==='aarch64'?'virt · cortex-a57 · UEFI':'q35 · max CPU · SeaBIOS'}</div>`;
-  if(wizardStep===5)content=`${field('diskGiB',t('Virtual disk capacity (GiB)','虛擬磁碟容量（GiB）'),wizard.diskGiB,'number',`min="1" max="256" required ${editing?'readonly':''}`)}${select('iso',t('Installation ISO','安裝 ISO'),[['',t('No installation media','沒有安裝媒體')],...state.media.map(f=>[f,f])],wizard.iso||'')}<p class="help">${t('A sparse QCOW2 disk is created inside managed storage. No existing host disk is touched. Disk resizing is not yet available.','QCOW2 磁碟只會在管理空間內建立，不會觸碰現有主機磁碟。目前未提供調整容量。')}</p>`;
-  if(wizardStep===6)content=select('network',t('Network connection','網絡連線'),[['user',t('Restricted user-mode network','受限制使用者網絡')],['none',t('Disconnected','不連網')]],wizard.network)+`<div class="help">${t('Restricted networking blocks guest access to the host and outside network. This release does not configure bridges or forwarding.','受限制網絡會阻止客體存取主機及外部網絡。此版本不設定橋接或轉送。')}</div>`;
-  if(wizardStep===7)content=`<h3>${t('Browser console','瀏覽器主控台')}</h3><p>${t('VNC stays private inside the host and is proxied through your authenticated session. Scaling, fullscreen and key sequences are available in the live console.','VNC 保持在主機內，經過已驗證登入的連線轉送。即時主控台支援縮放、全螢幕及按鍵組合。')}</p>${select('folder',t('Folder','資料夾'),[['',t('Unfiled','未分類')],...state.folders.map(f=>[f,f])],wizard.folder||'')}${field('notes',t('Notes','備註'),wizard.notes||'','text','maxlength="2000"')}`;
-  if(wizardStep===8)content=`<dl>${[['Name',wizard.name],['Platform',wizard.arch],['CPU',`${wizard.cpus} vCPU`],['Memory',`${wizard.memory} MiB`],['Disk',`${wizard.diskGiB} GiB · QCOW2`],['Network',wizard.network],['ISO',wizard.iso||'None'],['Folder',wizard.folder||'Unfiled']].map(([k,v])=>`<dt>${k}</dt><dd>${escape(v)}</dd>`).join('')}</dl><div class="help">${t('Review before saving. The machine will remain stopped until you explicitly start it.','儲存前請檢查。機器會保持停止，直至你親自啟動。')}</div>`;
-  return heading(editing?t('Edit machine','編輯機器'):label('new'),t('Start with the essentials. Every choice belongs to this machine.','由基本設定開始，每個選擇只屬於這部機器。'))+`<div class="wizard">${steps(machineSteps,wizardStep)}<form id="machine-form"><section class="card wizard-content"><h2>${t(...machineSteps[wizardStep-1])}</h2>${content}</section><div class="wizard-footer"><div class="actions">${button('page:machines',t('Cancel','取消'),'ghost')}${wizardStep>1?button('wizard-back',t('Back','上一步')):''}</div>${button(wizardStep===8?'wizard-create':'wizard-next',wizardStep===8?t('Save machine','儲存機器'):t('Continue','繼續'),'primary')}</div></form></div>`;
+async function refresh(renderPage = true) {
+  state = await api("/state");
+  session.csrf = state.csrf;
+  applySettings();
+  if (renderPage) render();
 }
-function settings(){return heading(label('settings'),t('Make this workspace yours. Changes are saved to your account.','打造你的工作區，變更會儲存至帳戶。'))+`<div class="settings-grid"><section class="card"><h2>${t('Appearance & language','外觀與語言')}</h2>${select('theme',t('Theme','主題'),[['dark',t('Dark','深色')],['light',t('Light','淺色')],['system',t('Follow device','跟隨裝置')]],state.settings.theme)}${select('language',t('Language','語言'),[['en','English'],['yue','廣東話'],['both','English + 廣東話']],state.settings.language)}<label class="check"><input id="motion" type="checkbox" ${state.settings.motion?'checked':''}>${t('Interface motion','介面動畫')}</label><p class="muted-line">${t('Your device’s reduced-motion preference always wins.','裝置的減少動畫設定永遠優先。')}</p>${button('save-settings',t('Save preferences','儲存偏好'),'primary')}</section><section class="card"><h2>${t('Account & access','帳戶與存取')}</h2><p>${escape(state.owner.name)}</p><p class="muted">${state.owner.passkeys} ${t('registered passkeys','個已登記通行密鑰')}</p>${button('register-passkey',t('Add a passkey','新增通行密鑰'),'primary')}<p class="help">${t('Passkeys need HTTPS or localhost and a compatible browser. The password fallback remains enabled.','通行密鑰需要 HTTPS 或 localhost，以及相容瀏覽器。密碼登入會保持可用。')}</p></section><section class="card"><h2>${t('Host capabilities','主機功能')}</h2>${Object.entries(state.capabilities).map(([a,c])=>`<p><strong>${a}</strong><br><small>${escape(c.version||c.reason)}</small></p>`).join('')}<p class="muted">${t('Hardware acceleration, advanced devices, backups and appliance installation remain outside this initial runtime.','硬件加速、進階裝置、備份及裝置安裝尚未納入目前執行版本。')}</p></section></div>`;}
-function eventList(limit=200){return `<ul class="activity">${state.events.slice(0,limit).map(e=>`<li><span>${escape(e.message)}</span><time datetime="${e.at}">${new Date(e.at).toLocaleString()}</time></li>`).join('')||`<li>${t('No activity yet.','尚無活動。')}</li>`}</ul>`;}
-function history(){return heading(label('history'),t('Actual actions and their timestamps.','實際操作及時間記錄。'))+`<section class="card">${eventList()}</section>`;}
-function docs(){return heading(label('docs'),t('Practical workflows for your local QEMU workspace.','本機 QEMU 工作區的實用指南。'))+`<div class="grid"><article class="card"><h2>${t('Create and start a machine','建立和啟動機器')}</h2><ol><li>${t('Add a trusted ISO to the managed media directory, if installing an OS.','如需安裝作業系統，先將可信 ISO 放進 media 目錄。')}</li><li>${t('Open New machine and follow the eight steps.','開啟新增機器，完成八個步驟。')}</li><li>${t('Review the resources, save, then choose Start.','檢查資源，儲存後選擇啟動。')}</li><li>${t('Open Console to interact with the guest.','開啟主控台操作客體。')}</li></ol>${button('new',label('new'),'primary')}</article><article class="card"><h2>${t('Control a running machine','控制運行中的機器')}</h2><p>${t('Pause suspends virtual CPUs. Resume continues them. Shut down sends an ACPI power request, which the guest must handle. Power off immediately terminates the virtual machine and can lose unsaved guest data.','暫停會停止虛擬處理器，繼續會恢復運行。關機會傳送 ACPI 請求，由客體處理。強制關機會立即終止機器，可能失去未儲存資料。')}</p></article><article class="card"><h2>${t('Storage and recovery','儲存與復原')}</h2><p>${t('Keep the persistent data volume. It contains account configuration, machine definitions, disks and installation media. Back it up while machines are stopped. Never delete the data volume to update the container.','保留持久資料空間，內有帳戶、機器設定、磁碟和安裝媒體。停止機器後才備份，更新容器時切勿刪除資料空間。')}</p></article><article class="card"><h2>${t('Delivery scope','目前交付範圍')}</h2><p>${t('This runtime implements the six front-door workflows. The other design boards remain a roadmap, including appliance OS images, USB installer, desktop assistant, snapshots, migration and advanced QEMU hardware. They are not shipped features.','此執行版本提供六個主要流程。其他設計仍屬路線圖，包括裝置映像、USB 安裝器、桌面助手、快照、遷移及進階 QEMU 硬件，尚未交付。')}</p></article></div>`;}
-function consolePage(){const m=state.machines.find(m=>m.id===selected);if(!m)return empty();return heading(escape(m.name),`${m.arch} · ${m.cpus} vCPU · ${m.memory} MiB`,pill(m))+`<section class="card"><div class="console-toolbar"><div class="actions">${button(`lifecycle:${m.id}:${m.state==='stopped'?'start':m.state==='paused'?'resume':'pause'}`,t(m.state==='stopped'?'Start':m.state==='paused'?'Resume':'Pause',{stopped:'啟動',paused:'繼續'}[m.state]||'暫停'),'primary')}${m.state!=='stopped'?button(`lifecycle:${m.id}:shutdown`,t('Shut down','關機'))+button(`lifecycle:${m.id}:stop`,t('Power off','強制關機'),'danger'):''}</div><div class="actions">${button('console-scale',t('Toggle scaling','切換縮放'))}${button('console-fullscreen',t('Fullscreen','全螢幕'))}${button('console-keys','Ctrl + Alt + Del')}${button('console-reconnect',t('Reconnect','重新連線'))}</div></div><div id="console-screen" class="console-screen">${m.state==='stopped'?`<p>${t('This machine is stopped. Start it to connect to the live display.','機器已停止，啟動後即可連接即時畫面。')}</p>`:'<div id="vnc"></div>'}</div><p id="console-status" class="muted-line">${t('Authenticated console. Guest input is sent only while connected.','已驗證主控台，只會在連線時傳送操作。')}</p></section>`;}
-async function connectConsole(){if(!$('#vnc'))return;try{const{default:RFB}=await import('/vendor/novnc/core/rfb.js');rfb=new RFB($('#vnc'),`${location.protocol==='https:'?'wss':'ws'}://${location.host}/console/${selected}`,{shared:true});rfb.scaleViewport=true;rfb.resizeSession=false;rfb.addEventListener('connect',()=>{$('#console-status').textContent=t('Connected to the live QEMU display.','已連接 QEMU 即時畫面。');});rfb.addEventListener('disconnect',()=>{if($('#console-status'))$('#console-status').textContent=t('Console disconnected. Reconnect or check the machine state.','主控台已中斷，請重新連線或檢查機器狀態。');});}catch(e){notify(e.message);}}
-function startWizard(machine){editing=Boolean(machine);wizardStep=1;wizard=machine?{...machine}:{name:'',arch:Object.keys(state.capabilities).find(k=>state.capabilities[k].available)||'x86_64',cpus:2,memory:2048,diskGiB:20,network:'none',iso:'',folder:'',notes:''};page='new';render();}
-function saveWizard(){const form=$('#machine-form');if(!form.reportValidity())return false;const values=Object.fromEntries(new FormData(form));if(wizardStep===1 && values.preset!==wizard.preset){if(values.preset==='linux')Object.assign(wizard,{cpus:2,memory:4096,diskGiB:32});if(values.preset==='small')Object.assign(wizard,{cpus:1,memory:512,diskGiB:8});}Object.assign(wizard,values);sessionStorage.setItem('mq-machine-draft',JSON.stringify(wizard));return true;}
-function modal(title,content,confirm,callback){const d=$('#dialog');d.innerHTML=`<h2>${title}</h2><form id="dialog-form">${content}<div class="actions">${button('dialog-close',t('Cancel','取消'),'ghost')}<button class="primary" type="submit">${confirm}</button></div></form>`;d.showModal();$('#dialog-form').onsubmit=async e=>{e.preventDefault();try{await callback(new FormData(e.target));d.close();}catch(error){notify(error.message);}};}
-document.addEventListener('click',async e=>{const b=e.target.closest('[data-action]');if(!b)return;const action=b.dataset.action;try{
-  if(action==='dialog-close')return $('#dialog').close();
-  if(action.startsWith('page:')){page=action.slice(5);if(page==='new')return startWizard();render();return;}
-  if(action==='new')return startWizard();
-  if(action==='refresh')return refresh();
-  if(action==='logout'){await api('/logout',{});session=await api('/session');state=null;render();return;}
-  if(action==='passkey-login'){const result=await api('/passkey/login-options',{});const response=await startAuthentication({optionsJSON:result.options});const login=await api('/passkey/login',{id:result.id,response});session={authenticated:true,csrf:login.csrf};return refresh();}
-  if(action==='register-passkey'){const{options}=await api('/passkey/register-options',{});const response=await startRegistration({optionsJSON:options});await api('/passkey/register',{response});await refresh();notify(t('Passkey added.','通行密鑰已新增。'));return;}
-  if(action.startsWith('setup-')){let step=state.setup.step;if(step===2){await api('/preferences',{settings:{language:$('#setup-language').value,theme:$('#setup-theme').value}});}await api('/preferences',{setup:{step:action==='setup-back'?step-1:action==='setup-finish'?8:step+1,complete:action==='setup-finish'}});return refresh();}
-  if(action==='wizard-next'){if(saveWizard()){wizardStep++;render();}return;}
-  if(action==='wizard-back'){saveWizard();wizardStep--;render();return;}
-  if(action==='wizard-create'){b.disabled=true;await api(editing?`/machines/${wizard.id}`:'/machines',wizard);sessionStorage.removeItem('mq-machine-draft');page='machines';await refresh();notify(t('Machine saved.','機器已儲存。'));return;}
-  if(action.startsWith('filter:')){filter=action.slice(7);render();return;}
-  if(action.startsWith('folder-filter:')){folder=action.slice(14);render();return;}
-  if(action.startsWith('layout:')){await api('/preferences',{settings:{layout:action.slice(7)}});return refresh();}
-  if(action.startsWith('view:')){const view=state.views.find(v=>v.id===action.slice(5));query=view.query;filter=view.state;render();return;}
-  if(action==='save-view')return modal(t('Save this view','儲存此檢視'),field('viewName',t('View name','檢視名稱'),'','text','required maxlength="80"'),t('Save','儲存'),async f=>{await api('/preferences',{view:{name:f.get('viewName'),query,state:filter}});await refresh();});
-  if(action==='folder')return modal(t('New folder','新增資料夾'),field('folderName',t('Folder name','資料夾名稱'),'','text','required maxlength="80"'),t('Create','建立'),async f=>{await api('/preferences',{folder:f.get('folderName')});await refresh();});
-  if(action==='columns')return modal(t('Visible columns','顯示欄位'),['platform','memory','cpu'].map(c=>`<label class="check"><input type="checkbox" name="columns" value="${c}" ${state.settings.columns.includes(c)?'checked':''}>${t(c,{platform:'平台',memory:'記憶體',cpu:'處理器'}[c])}</label>`).join(''),t('Apply','套用'),async f=>{await api('/preferences',{settings:{columns:f.getAll('columns')}});await refresh();});
-  if(action==='select-all'){filtered().forEach(m=>checked.add(m.id));render();return;}
-  if(action.startsWith('details:')){selected=action.slice(8);page='machines';render();return;}
-  if(action.startsWith('console:')){selected=action.slice(8);page='console';render();return;}
-  if(action.startsWith('edit:'))return startWizard(state.machines.find(m=>m.id===action.slice(5)));
-  if(action.startsWith('favourite:')){const m=state.machines.find(m=>m.id===action.slice(10));await api(`/machines/${m.id}`,{favourite:!m.favourite});return refresh();}
-  if(action.startsWith('lifecycle:')){const[,id,verb]=action.split(':');if(verb==='stop')return modal(t('Power off immediately?','立即強制關機？'),`<p>${t('Unsaved guest data may be lost. A normal shutdown is safer. Type POWER OFF to confirm.','可能失去客體未儲存資料，正常關機較安全。輸入 POWER OFF 確認。')}</p>${field('confirm',t('Confirmation','確認'),'','text','required pattern="POWER OFF"')}`,t('Power off','強制關機'),async()=>{await api(`/machines/${id}/action`,{action:verb});await refresh();});b.disabled=true;await api(`/machines/${id}/action`,{action:verb});await refresh();notify(t('Action requested. The displayed state reflects the host.','操作已請求，顯示狀態由主機回報。'));return;}
-  if(action.startsWith('bulk:')){const verb=action.slice(5),outcomes=[];for(const id of checked){try{await api(`/machines/${id}/action`,{action:verb});outcomes.push(`${state.machines.find(m=>m.id===id)?.name}: requested`);}catch(err){outcomes.push(`${state.machines.find(m=>m.id===id)?.name}: ${err.message}`);}}await refresh();return modal(t('Bulk action results','批次操作結果'),`<ul>${outcomes.map(v=>`<li>${escape(v)}</li>`).join('')}</ul>`,t('Close','關閉'),async()=>{});}
-  if(action==='save-settings'){await api('/preferences',{settings:{theme:$('#theme').value,language:$('#language').value,motion:$('#motion').checked}});localStorage.setItem('mq-theme',$('#theme').value);localStorage.setItem('mq-language',$('#language').value);await refresh();notify(t('Preferences saved.','偏好已儲存。'));return;}
-  if(action==='console-scale'){if(rfb){rfb.scaleViewport=!rfb.scaleViewport;notify(t('Console scaling changed.','主控台縮放已更改。'));}return;}
-  if(action==='console-fullscreen')return $('#console-screen').requestFullscreen();
-  if(action==='console-keys'){await api(`/machines/${selected}/keys`,{keys:'ctrlaltdel'});return;}
-  if(action==='console-reconnect'){if(rfb)rfb.disconnect();return connectConsole();}
-}catch(error){notify(error.message);}finally{if(b.isConnected)b.disabled=false;}});
-document.addEventListener('change',e=>{if(e.target.matches('[data-check]')){e.target.checked?checked.add(e.target.dataset.check):checked.delete(e.target.dataset.check);$('#machine-results').innerHTML=machineResults();}});
-document.addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.shiftKey&&e.key.toLowerCase()==='f'){e.preventDefault();$('#global-search')?.focus();}});
-async function boot(){try{session=await api('/session');applySettings();if(session.authenticated)await refresh();else render();}catch(error){$('#app').innerHTML=`<main class="auth"><section class="card"><h1>Connection unavailable</h1><p>${escape(error.message)}</p><p>Check that this address matches the host’s PUBLIC_ORIGIN setting.</p></section></main>`;}}
+function applySettings() {
+  const theme =
+    state?.settings.theme || localStorage.getItem("mq-theme") || "dark";
+  document.documentElement.dataset.theme =
+    theme === "system"
+      ? matchMedia("(prefers-color-scheme:dark)").matches
+        ? "dark"
+        : "light"
+      : theme;
+  document.documentElement.dataset.motion =
+    state?.settings.motion === false ? "off" : "on";
+  document.documentElement.lang =
+    state?.settings.language === "yue" ? "zh-HK" : "en";
+}
+function field(name, title, value = "", type = "text", extra = "") {
+  return `<div class="field"><label for="${name}">${title}</label><input id="${name}" name="${name}" type="${type}" value="${escape(value)}" ${extra}></div>`;
+}
+function select(name, title, options, value) {
+  return `<div class="field"><label for="${name}">${title}</label><select id="${name}" name="${name}">${options.map(([v, l]) => `<option value="${escape(v)}" ${v === value ? "selected" : ""}>${escape(l)}</option>`).join("")}</select></div>`;
+}
+function button(action, text, cls = "", extra = "") {
+  return `<button type="button" data-action="${action}" class="${cls}" ${extra}>${text}</button>`;
+}
+function pill(machine) {
+  return `<span class="pill ${machine.state}">${escape(t(machine.state, { running: "運行中", paused: "已暫停", stopped: "已停止", starting: "啟動中", error: "錯誤" }[machine.state]))}</span>`;
+}
+function render() {
+  if (rfb) {
+    rfb.disconnect();
+    rfb = null;
+  }
+  if (!session?.authenticated) {
+    renderAuth();
+    return;
+  }
+  if (!state.setup.complete) {
+    renderOnboarding();
+    return;
+  }
+  $("#app").innerHTML =
+    `<header class="topbar"><div class="brand"><span class="mark" aria-hidden="true">▧</span>Material QEMU</div><div class="search"><input id="global-search" aria-label="${t("Search machines", "搜尋機器")}" placeholder="${t("Search machines, folders and notes", "搜尋機器、資料夾和備註")}" value="${escape(query)}"></div><span class="spacer"></span><span class="pill healthy health">● ${t("Host connected", "主機已連線")}</span>${button("logout", t("Sign out", "登出"), "ghost")}</header><div class="shell"><nav aria-label="${t("Workspace", "工作區")}">${["overview", "machines", "new"].map((k) => button(`page:${k}`, `<span aria-hidden="true">${{ overview: "▦", machines: "▤", new: "＋" }[k]}</span><span>${label(k)}</span>`, page === k ? "active" : "")).join("")}<div class="group">${t("Machines", "機器")}</div>${state.machines.map((m) => button(`console:${m.id}`, `<span aria-hidden="true">▣</span><span class="nav-name">${escape(m.name)}</span>`, "machine-nav")).join("")}<div class="group">${t("Your workspace", "你的工作區")}</div>${["settings", "history", "docs"].map((k) => button(`page:${k}`, label(k), page === k ? "active" : "")).join("")}<div class="bottom">Material QEMU 0.1.0<br>${t("Built", "建置時間")} ${escape(state.updatedAt || t("unavailable", "未能提供"))}<br>${escape(state.owner.name)}</div></nav><main class="main" id="main" tabindex="-1">${({ overview: views().overview, machines: views().machines, new: machineWizard, settings: views().settings, history: views().history, docs: views().docs, console: views().consolePage }[page] || views().overview)()}</main></div>`;
+  if (page === "console") connectConsole();
+  const search = $("#global-search");
+  search?.addEventListener("input", (e) => {
+    query = e.target.value;
+    if (page !== "machines") {
+      page = "machines";
+      render();
+      $("#global-search").focus();
+    } else $("#machine-results").innerHTML = views().machineResults();
+  });
+}
+function renderAuth() {
+  const setup = session?.setupRequired;
+  $("#app").innerHTML =
+    `<header class="topbar"><div class="brand"><span class="mark">▧</span>Material QEMU</div><span class="spacer"></span><small>0.1.0 · ${escape(session.updatedAt || t("Build time unavailable", "未能提供建置時間"))}</small></header><main class="auth"><div class="card auth-card"><section class="auth-intro"><div class="mark" aria-hidden="true">▧</div><span class="pill">${t("Your machines. Your control.", "你的機器，由你掌控。")}</span><h1 style="margin-top:24px">${t("A quieter home for your virtual machines.", "虛擬機器的安心基地。")}</h1><p class="muted">${t("One workspace for QEMU. Manage, monitor and connect, with everything running on your own host.", "一個 QEMU 工作區，管理、監察及連線，全部在你的主機上運行。")}</p><p class="muted-line">${t("Private by default. No cloud account required.", "預設私人使用，毋須雲端帳戶。")}</p></section><section class="auth-form"><h2>${setup ? t("Welcome to your new workspace", "歡迎使用新工作區") : t("Welcome back", "歡迎回來")}</h2><p class="muted">${setup ? t("Create the owner account to begin guided setup.", "建立擁有人帳戶，開始設定。") : t("Unlock your local workspace.", "解鎖你的本機工作區。")}</p>${!setup ? button("passkey-login", t("Sign in with a passkey", "使用通行密鑰登入"), "primary", 'style="width:100%;margin-bottom:22px"') : ""}<form id="auth-form">${setup ? field("owner", t("Your name", "你的名字"), "", "text", 'required autocomplete="name"') + field("bootstrap", t("Setup authorization code", "設定授權碼"), "", "password", 'required autocomplete="off"') : ""}${field("password", t("Password", "密碼"), "", "password", `required minlength="12" maxlength="256" autocomplete="${setup ? "new-password" : "current-password"}"`)}<button class="${setup ? "primary" : ""}" type="submit" style="width:100%">${setup ? t("Create owner account", "建立擁有人帳戶") : t("Sign in with password", "使用密碼登入")}</button></form><p class="muted-line">${setup ? t("The setup authorization code is stored in the host data directory. Passwords need at least 12 characters.", "設定授權碼存於主機資料目錄，密碼最少需要十二個字元。") : t("Passkeys require HTTPS or localhost. Your password remains available as a recovery method.", "通行密鑰需要 HTTPS 或 localhost。密碼仍可用作復原登入。")}</p></section></div></main>`;
+  $("#auth-form").onsubmit = async (e) => {
+    e.preventDefault();
+    const values = new FormData(e.target);
+    try {
+      const result = await api(
+        setup ? "/setup" : "/login",
+        { name: values.get("owner"), password: values.get("password") },
+        { bootstrap: values.get("bootstrap") },
+      );
+      session = { ...session, authenticated: true, csrf: result.csrf };
+      await refresh();
+    } catch (error) {
+      notify(error.message);
+    }
+  };
+}
+
+const setupNames = [
+  ["Owner", "擁有人"],
+  ["Language", "語言"],
+  ["Hardware", "硬件"],
+  ["Storage", "儲存空間"],
+  ["Network", "網絡"],
+  ["ISO library", "ISO 媒體"],
+  ["First machine", "第一部機器"],
+  ["Ready", "準備完成"],
+];
+function steps(labels, current) {
+  return `<div class="steps" aria-label="Progress">${labels.map((s, i) => `<div class="step ${current === i + 1 ? "active" : current > i + 1 ? "done" : ""}" ${current === i + 1 ? 'aria-current="step"' : ""}><b>${current > i + 1 ? "✓" : i + 1}</b>${t(...s)}</div>`).join("")}</div>`;
+}
+function renderOnboarding() {
+  const n = state.setup.step;
+  let content = "";
+  if (n === 2)
+    content =
+      select(
+        "setup-language",
+        t("Workspace language", "工作區語言"),
+        [
+          ["en", "English"],
+          ["yue", "廣東話"],
+          ["both", "English + 廣東話"],
+        ],
+        state.settings.language,
+      ) +
+      select(
+        "setup-theme",
+        t("Appearance", "外觀"),
+        [
+          ["dark", t("Dark", "深色")],
+          ["light", t("Light", "淺色")],
+          ["system", t("Follow device", "跟隨裝置")],
+        ],
+        state.settings.theme,
+      );
+  if (n === 3)
+    content = `<div class="grid">${Object.entries(state.capabilities)
+      .map(
+        ([arch, c]) =>
+          `<div class="card"><h3>${arch}</h3><span class="pill ${c.available ? "healthy" : "error"}">${c.available ? t("Ready", "可用") : t("Unavailable", "未能使用")}</span><p class="muted" style="margin-top:15px">${escape(c.version || c.reason)}</p></div>`,
+      )
+      .join(
+        "",
+      )}</div><p class="help">${t("TCG software emulation works without passing host virtualization devices into the container. No host firmware or security settings are changed.", "TCG 使用模擬運行，不需將虛擬化裝置交給容器，也不會更改主機韌體或安全設定。")}</p>`;
+  if (n === 4)
+    content = `<h3>${t("Private managed storage", "私人管理儲存空間")}</h3><p>${t("Machine disks are created as sparse QCOW2 images in the persistent data volume. Existing host disks are never selected or erased.", "機器使用持久資料空間中的 QCOW2 磁碟，不會選取或清除現有主機磁碟。")}</p><dl><dt>${t("Disk format", "磁碟格式")}</dt><dd>QCOW2</dd><dt>${t("Storage scope", "儲存範圍")}</dt><dd>${t("Managed data volume only", "只限管理資料空間")}</dd></dl>`;
+  if (n === 5)
+    content = `<h3>${t("Isolated by default", "預設隔離")}</h3><p>${t("Machines use restricted user-mode networking, or no network. Host port forwarding and bridges are not enabled.", "機器使用受限制的使用者模式網絡，或完全不連網。不會啟用主機端口轉送或網絡橋接。")}</p><div class="help">${escape(location.origin)}<br>${t("This is your current connection, not a claim of LAN reachability. Use an HTTPS reverse proxy before remote access.", "這是目前連線地址，並不代表區域網絡已可連線。遠端存取前請設定 HTTPS 代理。")}</div>`;
+  if (n === 6)
+    content = `<h3>${t("Bring your installation media", "準備安裝媒體")}</h3><p>${t("Place your trusted ISO files in the data volume’s media directory. The host operator manages these files. A blank machine can be created without an ISO.", "將可信的 ISO 放進資料空間的 media 目錄，由主機管理者處理。也可先建立沒有 ISO 的空白機器。")}</p><div class="help">${state.media.length ? state.media.map(escape).join("<br>") : t("No ISO files found. You can add them later.", "尚未找到 ISO，可稍後新增。")}</div>${button("refresh", t("Check again", "重新檢查"))}`;
+  if (n === 7)
+    content = `<h3>${t("Your first machine is next", "下一步，建立第一部機器")}</h3><p>${t("The machine wizard will help you choose a platform, CPU, memory, private disk, network and display. Finish setup first, or continue with an empty workspace.", "機器精靈會帶你選擇平台、處理器、記憶體、磁碟、網絡及顯示。先完成設定，再建立機器。")}</p><p class="help">${t("Nothing starts automatically. Starting a machine is always an explicit action.", "機器不會自行啟動，每次啟動都需要你的操作。")}</p>`;
+  if (n === 8)
+    content = `<div class="empty"><div class="empty-icon">✓</div><h2>${t("Your workspace is ready", "工作區已準備好")}</h2><p>${t("Your owner account and preferences are saved. You can register a passkey in Settings and create your first machine.", "帳戶和偏好已儲存，可在設定登記通行密鑰，再建立第一部機器。")}</p></div>`;
+  $("#app").innerHTML =
+    `<header class="topbar"><div class="brand"><span class="mark">▧</span>Material QEMU</div><span class="spacer"></span><span class="pill">${t("Setup saved automatically", "設定進度自動儲存")}</span></header><main class="main wizard">${views().heading(t("Make yourself at home", "設定你的工作區"), t("A few practical steps, then you are in.", "幾個實用步驟，完成即可開始。"))}${steps(setupNames, n)}<section class="card wizard-content"><h2>${t(...setupNames[n - 1])}</h2>${content}</section><div class="wizard-footer">${n > 2 ? button("setup-back", t("Back", "上一步")) : "<span></span>"}${button(n === 8 ? "setup-finish" : "setup-next", n === 8 ? t("Open workspace", "開啟工作區") : t("Save & continue", "儲存並繼續"), "primary")}</div></main>`;
+}
+const machineSteps = [
+  ["Preset", "預設"],
+  ["Platform", "平台"],
+  ["CPU & memory", "處理器及記憶體"],
+  ["Firmware", "韌體"],
+  ["Storage", "儲存"],
+  ["Network", "網絡"],
+  ["Display", "顯示"],
+  ["Review", "檢查"],
+];
+function machineWizard() {
+  let content = "";
+  if (wizardStep === 1)
+    content = `${field("name", t("Machine name", "機器名稱"), wizard.name, "text", 'required maxlength="80"')}${select(
+      "preset",
+      t("Starting point", "起點"),
+      [
+        ["blank", t("Blank machine", "空白機器")],
+        ["linux", t("Linux workstation", "Linux 工作站")],
+        ["small", t("Lightweight server", "輕量伺服器")],
+      ],
+      wizard.preset || "blank",
+    )}<p class="help">${t("Presets choose resource defaults only. No operating system is downloaded or installed automatically.", "預設只選擇資源，不會自動下載或安裝作業系統。")}</p>`;
+  if (wizardStep === 2)
+    content =
+      select(
+        "arch",
+        t("Architecture", "架構"),
+        Object.entries(state.capabilities)
+          .filter(([, c]) => c.available)
+          .map(([arch]) => [arch, arch]),
+        wizard.arch,
+      ) +
+      `<div class="help">${t("Only installed system emulators are offered. This release uses TCG acceleration.", "只會列出已安裝的模擬器，目前版本使用 TCG 加速。")}</div>`;
+  if (wizardStep === 3)
+    content = `<div class="form-grid">${field("cpus", t("Virtual CPUs", "虛擬處理器"), wizard.cpus, "number", 'min="1" max="16" required')}${field("memory", t("Memory (MiB)", "記憶體（MiB）"), wizard.memory, "number", 'min="128" max="32768" step="128" required')}</div><p class="help">${t("Available host memory", "主機可用記憶體")}: ${bytes(state.metrics.memoryTotal - state.metrics.memoryUsed)}. ${t("Leave room for the host and other machines.", "請為主機和其他機器預留空間。")}</p>`;
+  if (wizardStep === 4)
+    content = `<h3>${wizard.arch === "aarch64" ? "UEFI" : "SeaBIOS"}</h3><p>${t("The supported firmware is selected by the platform. Secure Boot and TPM configuration are not implemented in this release.", "韌體按平台選定。此版本尚未提供安全啟動和 TPM 設定。")}</p><div class="help">${wizard.arch === "aarch64" ? "virt · cortex-a57 · UEFI" : "q35 · max CPU · SeaBIOS"}</div>`;
+  if (wizardStep === 5)
+    content = `${field("diskGiB", t("Virtual disk capacity (GiB)", "虛擬磁碟容量（GiB）"), wizard.diskGiB, "number", `min="1" max="256" required ${editing ? "readonly" : ""}`)}${select("iso", t("Installation ISO", "安裝 ISO"), [["", t("No installation media", "沒有安裝媒體")], ...state.media.map((f) => [f, f])], wizard.iso || "")}<p class="help">${t("A sparse QCOW2 disk is created inside managed storage. No existing host disk is touched. Disk resizing is not yet available.", "QCOW2 磁碟只會在管理空間內建立，不會觸碰現有主機磁碟。目前未提供調整容量。")}</p>`;
+  if (wizardStep === 6)
+    content =
+      select(
+        "network",
+        t("Network connection", "網絡連線"),
+        [
+          ["user", t("Restricted user-mode network", "受限制使用者網絡")],
+          ["none", t("Disconnected", "不連網")],
+        ],
+        wizard.network,
+      ) +
+      `<div class="help">${t("Restricted networking blocks guest access to the host and outside network. This release does not configure bridges or forwarding.", "受限制網絡會阻止客體存取主機及外部網絡。此版本不設定橋接或轉送。")}</div>`;
+  if (wizardStep === 7)
+    content = `<h3>${t("Browser console", "瀏覽器主控台")}</h3><p>${t("VNC stays private inside the host and is proxied through your authenticated session. Scaling, fullscreen and key sequences are available in the live console.", "VNC 保持在主機內，經過已驗證登入的連線轉送。即時主控台支援縮放、全螢幕及按鍵組合。")}</p>${select("folder", t("Folder", "資料夾"), [["", t("Unfiled", "未分類")], ...state.folders.map((f) => [f, f])], wizard.folder || "")}${field("notes", t("Notes", "備註"), wizard.notes || "", "text", 'maxlength="2000"')}`;
+  if (wizardStep === 8)
+    content = `<dl>${[
+      ["Name", wizard.name],
+      ["Platform", wizard.arch],
+      ["CPU", `${wizard.cpus} vCPU`],
+      ["Memory", `${wizard.memory} MiB`],
+      ["Disk", `${wizard.diskGiB} GiB · QCOW2`],
+      ["Network", wizard.network],
+      ["ISO", wizard.iso || "None"],
+      ["Folder", wizard.folder || "Unfiled"],
+    ]
+      .map(([k, v]) => `<dt>${k}</dt><dd>${escape(v)}</dd>`)
+      .join(
+        "",
+      )}</dl><div class="help">${t("Review before saving. The machine will remain stopped until you explicitly start it.", "儲存前請檢查。機器會保持停止，直至你親自啟動。")}</div>`;
+  return (
+    views().heading(
+      editing ? t("Edit machine", "編輯機器") : label("new"),
+      t(
+        "Start with the essentials. Every choice belongs to this machine.",
+        "由基本設定開始，每個選擇只屬於這部機器。",
+      ),
+    ) +
+    `<div class="wizard">${steps(machineSteps, wizardStep)}<form id="machine-form"><section class="card wizard-content"><h2>${t(...machineSteps[wizardStep - 1])}</h2>${content}</section><div class="wizard-footer"><div class="actions">${button("page:machines", t("Cancel", "取消"), "ghost")}${wizardStep > 1 ? button("wizard-back", t("Back", "上一步")) : ""}</div>${button(wizardStep === 8 ? "wizard-create" : "wizard-next", wizardStep === 8 ? t("Save machine", "儲存機器") : t("Continue", "繼續"), "primary")}</div></form></div>`
+  );
+}
+
+async function connectConsole() {
+  if (!$("#vnc")) return;
+  try {
+    const { default: RFB } = await import("/vendor/novnc/core/rfb.js");
+    rfb = new RFB(
+      $("#vnc"),
+      `${location.protocol === "https:" ? "wss" : "ws"}://${location.host}/console/${selected}`,
+      { shared: true },
+    );
+    rfb.scaleViewport = true;
+    rfb.resizeSession = false;
+    rfb.addEventListener("connect", () => {
+      $("#console-status").textContent = t(
+        "Connected to the live QEMU display.",
+        "已連接 QEMU 即時畫面。",
+      );
+    });
+    rfb.addEventListener("disconnect", () => {
+      if ($("#console-status"))
+        $("#console-status").textContent = t(
+          "Console disconnected. Reconnect or check the machine state.",
+          "主控台已中斷，請重新連線或檢查機器狀態。",
+        );
+    });
+  } catch (e) {
+    notify(e.message);
+  }
+}
+function startWizard(machine) {
+  editing = Boolean(machine);
+  wizardStep = 1;
+  let draft = null;
+  if (!machine) {
+    try {
+      draft = JSON.parse(localStorage.getItem("mq-machine-draft"));
+    } catch {}
+  }
+  wizard = machine
+    ? { ...machine }
+    : draft || {
+        name: "",
+        arch:
+          Object.keys(state.capabilities).find(
+            (k) => state.capabilities[k].available,
+          ) || "x86_64",
+        cpus: 2,
+        memory: 2048,
+        diskGiB: 20,
+        network: "none",
+        iso: "",
+        folder: "",
+        notes: "",
+      };
+  page = "new";
+  render();
+}
+function saveWizard() {
+  const form = $("#machine-form");
+  if (!form.reportValidity()) return false;
+  const values = Object.fromEntries(new FormData(form));
+  if (wizardStep === 1 && values.preset !== wizard.preset) {
+    if (values.preset === "linux")
+      Object.assign(wizard, { cpus: 2, memory: 4096, diskGiB: 32 });
+    if (values.preset === "small")
+      Object.assign(wizard, { cpus: 1, memory: 512, diskGiB: 8 });
+  }
+  Object.assign(wizard, values);
+  localStorage.setItem("mq-machine-draft", JSON.stringify(wizard));
+  return true;
+}
+function modal(title, content, confirm, callback) {
+  const d = $("#dialog");
+  d.innerHTML = `<h2>${title}</h2><form id="dialog-form">${content}<div class="actions">${button("dialog-close", t("Cancel", "取消"), "ghost")}<button class="primary" type="submit">${confirm}</button></div></form>`;
+  d.showModal();
+  $("#dialog-form").onsubmit = async (e) => {
+    e.preventDefault();
+    try {
+      await callback(new FormData(e.target));
+      d.close();
+    } catch (error) {
+      notify(error.message);
+    }
+  };
+}
+document.addEventListener("click", async (e) => {
+  const b = e.target.closest("[data-action]");
+  if (!b) return;
+  const action = b.dataset.action;
+  try {
+    if (action === "dialog-close") return $("#dialog").close();
+    if (action.startsWith("page:")) {
+      page = action.slice(5);
+      if (page === "new") return startWizard();
+      render();
+      return;
+    }
+    if (action === "new") return startWizard();
+    if (action === "refresh") return refresh();
+    if (action === "logout") {
+      await api("/logout", {});
+      session = await api("/session");
+      state = null;
+      render();
+      return;
+    }
+    if (action === "passkey-login") {
+      const result = await api("/passkey/login-options", {});
+      const response = await startAuthentication({
+        optionsJSON: result.options,
+      });
+      const login = await api("/passkey/login", { id: result.id, response });
+      session = { authenticated: true, csrf: login.csrf };
+      return refresh();
+    }
+    if (action === "register-passkey") {
+      const { options } = await api("/passkey/register-options", {});
+      const response = await startRegistration({ optionsJSON: options });
+      await api("/passkey/register", { response });
+      await refresh();
+      notify(t("Passkey added.", "通行密鑰已新增。"));
+      return;
+    }
+    if (action.startsWith("setup-")) {
+      let step = state.setup.step;
+      if (step === 2) {
+        await api("/preferences", {
+          settings: {
+            language: $("#setup-language").value,
+            theme: $("#setup-theme").value,
+          },
+        });
+      }
+      await api("/preferences", {
+        setup: {
+          step:
+            action === "setup-back"
+              ? step - 1
+              : action === "setup-finish"
+                ? 8
+                : step + 1,
+          complete: action === "setup-finish",
+        },
+      });
+      return refresh();
+    }
+    if (action === "wizard-next") {
+      if (saveWizard()) {
+        wizardStep++;
+        render();
+      }
+      return;
+    }
+    if (action === "wizard-back") {
+      saveWizard();
+      wizardStep--;
+      render();
+      return;
+    }
+    if (action === "wizard-create") {
+      b.disabled = true;
+      await api(editing ? `/machines/${wizard.id}` : "/machines", wizard);
+      localStorage.removeItem("mq-machine-draft");
+      page = "machines";
+      await refresh();
+      notify(t("Machine saved.", "機器已儲存。"));
+      return;
+    }
+    if (action.startsWith("filter:")) {
+      filter = action.slice(7);
+      render();
+      return;
+    }
+    if (action.startsWith("folder-filter:")) {
+      folder = action.slice(14);
+      render();
+      return;
+    }
+    if (action.startsWith("layout:")) {
+      await api("/preferences", { settings: { layout: action.slice(7) } });
+      return refresh();
+    }
+    if (action.startsWith("view:")) {
+      const view = state.views.find((v) => v.id === action.slice(5));
+      query = view.query;
+      filter = view.state;
+      render();
+      return;
+    }
+    if (action === "save-view")
+      return modal(
+        t("Save this view", "儲存此檢視"),
+        field(
+          "viewName",
+          t("View name", "檢視名稱"),
+          "",
+          "text",
+          'required maxlength="80"',
+        ),
+        t("Save", "儲存"),
+        async (f) => {
+          await api("/preferences", {
+            view: { name: f.get("viewName"), query, state: filter },
+          });
+          await refresh();
+        },
+      );
+    if (action === "folder")
+      return modal(
+        t("New folder", "新增資料夾"),
+        field(
+          "folderName",
+          t("Folder name", "資料夾名稱"),
+          "",
+          "text",
+          'required maxlength="80"',
+        ),
+        t("Create", "建立"),
+        async (f) => {
+          await api("/preferences", { folder: f.get("folderName") });
+          await refresh();
+        },
+      );
+    if (action === "columns")
+      return modal(
+        t("Visible columns", "顯示欄位"),
+        ["platform", "memory", "cpu"]
+          .map(
+            (c) =>
+              `<label class="check"><input type="checkbox" name="columns" value="${c}" ${state.settings.columns.includes(c) ? "checked" : ""}>${t(c, { platform: "平台", memory: "記憶體", cpu: "處理器" }[c])}</label>`,
+          )
+          .join(""),
+        t("Apply", "套用"),
+        async (f) => {
+          await api("/preferences", {
+            settings: { columns: f.getAll("columns") },
+          });
+          await refresh();
+        },
+      );
+    if (action === "select-all") {
+      views()
+        .filtered()
+        .forEach((m) => checked.add(m.id));
+      render();
+      return;
+    }
+    if (action.startsWith("details:")) {
+      selected = action.slice(8);
+      page = "machines";
+      render();
+      return;
+    }
+    if (action.startsWith("console:")) {
+      selected = action.slice(8);
+      page = "console";
+      render();
+      return;
+    }
+    if (action.startsWith("edit:"))
+      return startWizard(state.machines.find((m) => m.id === action.slice(5)));
+    if (action.startsWith("favourite:")) {
+      const m = state.machines.find((m) => m.id === action.slice(10));
+      await api(`/machines/${m.id}`, { favourite: !m.favourite });
+      return refresh();
+    }
+    if (action.startsWith("lifecycle:")) {
+      const [, id, verb] = action.split(":");
+      if (verb === "stop")
+        return modal(
+          t("Power off immediately?", "立即強制關機？"),
+          `<p>${t("Unsaved guest data may be lost. A normal shutdown is safer. Type POWER OFF to confirm.", "可能失去客體未儲存資料，正常關機較安全。輸入 POWER OFF 確認。")}</p>${field("confirm", t("Confirmation", "確認"), "", "text", 'required pattern="POWER OFF"')}`,
+          t("Power off", "強制關機"),
+          async () => {
+            await api(`/machines/${id}/action`, { action: verb });
+            await refresh();
+          },
+        );
+      b.disabled = true;
+      await api(`/machines/${id}/action`, { action: verb });
+      await refresh();
+      notify(
+        t(
+          "Action requested. The displayed state reflects the host.",
+          "操作已請求，顯示狀態由主機回報。",
+        ),
+      );
+      return;
+    }
+    if (action.startsWith("bulk:")) {
+      const verb = action.slice(5),
+        outcomes = [];
+      for (const id of checked) {
+        try {
+          await api(`/machines/${id}/action`, { action: verb });
+          outcomes.push(
+            `${state.machines.find((m) => m.id === id)?.name}: requested`,
+          );
+        } catch (err) {
+          outcomes.push(
+            `${state.machines.find((m) => m.id === id)?.name}: ${err.message}`,
+          );
+        }
+      }
+      await refresh();
+      return modal(
+        t("Bulk action results", "批次操作結果"),
+        `<ul>${outcomes.map((v) => `<li>${escape(v)}</li>`).join("")}</ul>`,
+        t("Close", "關閉"),
+        async () => {},
+      );
+    }
+    if (action === "save-settings") {
+      await api("/preferences", {
+        settings: {
+          theme: $("#theme").value,
+          language: $("#language").value,
+          motion: $("#motion").checked,
+        },
+      });
+      localStorage.setItem("mq-theme", $("#theme").value);
+      localStorage.setItem("mq-language", $("#language").value);
+      await refresh();
+      notify(t("Preferences saved.", "偏好已儲存。"));
+      return;
+    }
+    if (action === "console-release") {
+      if (rfb) {
+        rfb.viewOnly = !rfb.viewOnly;
+        notify(
+          rfb.viewOnly
+            ? t("Guest input released.", "客體輸入已解除。")
+            : t("Guest input enabled.", "客體輸入已啟用。"),
+        );
+      }
+      return;
+    }
+    if (action === "console-scale") {
+      if (rfb) {
+        rfb.scaleViewport = !rfb.scaleViewport;
+        notify(t("Console scaling changed.", "主控台縮放已更改。"));
+      }
+      return;
+    }
+    if (action === "console-fullscreen")
+      return $("#console-screen").requestFullscreen();
+    if (action === "console-keys") {
+      await api(`/machines/${selected}/keys`, { keys: "ctrlaltdel" });
+      return;
+    }
+    if (action === "console-reconnect") {
+      if (rfb) rfb.disconnect();
+      return connectConsole();
+    }
+  } catch (error) {
+    notify(error.message);
+  } finally {
+    if (b.isConnected) b.disabled = false;
+  }
+});
+document.addEventListener("change", (e) => {
+  if (e.target.matches("[data-check]")) {
+    e.target.checked
+      ? checked.add(e.target.dataset.check)
+      : checked.delete(e.target.dataset.check);
+    $("#machine-results").innerHTML = views().machineResults();
+  }
+});
+document.addEventListener("keydown", (e) => {
+  if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key.toLowerCase() === "f") {
+    e.preventDefault();
+    $("#global-search")?.focus();
+  }
+});
+async function boot() {
+  try {
+    session = await api("/session");
+    applySettings();
+    if (session.authenticated) await refresh();
+    else render();
+  } catch (error) {
+    $("#app").innerHTML =
+      `<main class="auth"><section class="card"><h1>Connection unavailable</h1><p>${escape(error.message)}</p><p>Check that this address matches the host’s PUBLIC_ORIGIN setting.</p></section></main>`;
+  }
+}
 await boot();
-setInterval(async()=>{if(!session?.authenticated||document.hidden)return;try{await refresh(false);if(['overview','machines','history'].includes(page)&&!$('#dialog').open&&!document.activeElement?.matches('input,select,textarea'))render();}catch(error){if(error.message==='Sign in to continue.'){session=await api('/session');render();}}},5000);
+setInterval(async () => {
+  if (!session?.authenticated || document.hidden) return;
+  try {
+    const oldConsoleState = state?.machines.find(
+      (m) => m.id === selected,
+    )?.state;
+    await refresh(false);
+    if (
+      page === "console" &&
+      oldConsoleState !== state.machines.find((m) => m.id === selected)?.state
+    )
+      render();
+    if (
+      ["overview", "machines", "history"].includes(page) &&
+      !$("#dialog").open &&
+      !document.activeElement?.matches("input,select,textarea")
+    )
+      render();
+  } catch (error) {
+    if (error.message === "Sign in to continue.") {
+      session = await api("/session");
+      render();
+    }
+  }
+}, 5000);
+
+function views() {
+  return createViews({
+    state,
+    session,
+    page,
+    query,
+    filter,
+    folder,
+    selected,
+    checked,
+    t,
+    label,
+    escape,
+    bytes,
+    field,
+    select,
+    button,
+    pill,
+  });
+}
