@@ -712,6 +712,24 @@ document.addEventListener("click", async (e) => {
       );
       return;
     }
+    if (action.startsWith("overview-state:")) {
+      await api("/preferences", {
+        settings: { overviewState: action.slice(15) },
+      });
+      return refresh();
+    }
+    if (action.startsWith("overview-arch:")) {
+      await api("/preferences", {
+        settings: { overviewArch: action.slice(14) },
+      });
+      return refresh();
+    }
+    if (action === "overview-reset") {
+      await api("/preferences", {
+        settings: { overviewState: "all", overviewArch: "all" },
+      });
+      return refresh();
+    }
     if (action.startsWith("filter:")) {
       filter = action.slice(7);
       render();

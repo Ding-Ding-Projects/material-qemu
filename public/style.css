@@ -1064,3 +1064,24 @@ h1 {
 .wizard-footer {
   flex-wrap: wrap;
 }
+
+.history-chart {
+  display: block;
+  width: 100%;
+  height: 90px;
+  margin-top: 16px;
+  overflow: visible;
+}
+.history-chart polyline {
+  fill: none;
+  stroke: var(--accent);
+  stroke-width: 2.5;
+  vector-effect: non-scaling-stroke;
+}
+.history-chart.memory polyline {
+  stroke: var(--teal);
+}
+.chart-axis {
+  stroke: var(--line);
+  stroke-width: 1;
+}

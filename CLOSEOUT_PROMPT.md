@@ -23,3 +23,5 @@ Onboarding/draft unit adds exact-step local new/edit drafts, persisted skip/save
 Priority media repair pins raw/read-only CD format, aligns upload deadline, and separates successful storage from audit failure. Native eighteen tests pass with three QEMU skips. Before accepting the repair image, run all four platform launches with harmless blank CD fixture bytes.
 
 Main auth unit now requires #username for password sign-in, using the original #owner name for existing single-owner records. Five-attempt cooldown and in-flight bounds have focused tests. Next browser password-login must fill the known owner name; no anonymous identity lookup exists.
+
+Overview unit adds actual bounded sample history, explicit resource scope and independent persisted state/architecture filters. Native twenty-four tests pass, three QEMU cases skip only on the native host. New image/browser proof pending; host-specific metrics must stay out of public captures without review.

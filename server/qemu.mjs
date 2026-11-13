@@ -1,9 +1,10 @@
 import { spawn, execFile } from "node:child_process";
 import { promisify } from "node:util";
-import { mkdir, readdir, realpath, stat, readFile } from "node:fs/promises";
+import { mkdir, readdir, realpath, stat } from "node:fs/promises";
 import path from "node:path";
 import net from "node:net";
-import os from "node:os";
+import { memoryLimit } from "./resources.mjs";
+export { hostMetrics } from "./resources.mjs";
 
 const exec = promisify(execFile);
 import {
@@ -400,54 +401,6 @@ export function qmpCommand(portNumber, execute, args, timeout = 3000) {
       else finish(new Error("QMP connection closed."));
     });
   });
-}
-let previousCpu;
-async function memoryLimit() {
-  let limit = os.totalmem();
-  for (const file of [
-    "/sys/fs/cgroup/memory.max",
-    "/sys/fs/cgroup/memory/memory.limit_in_bytes",
-  ]) {
-    try {
-      const value = Number((await readFile(file, "utf8")).trim());
-      if (Number.isFinite(value) && value > 0) limit = Math.min(limit, value);
-    } catch {}
-  }
-  return limit;
-}
-export async function hostMetrics() {
-  const cpus = os.cpus();
-  const total = cpus.reduce(
-    (sum, c) => sum + Object.values(c.times).reduce((a, b) => a + b, 0),
-    0,
-  );
-  const idle = cpus.reduce((sum, c) => sum + c.times.idle, 0);
-  const cpuPercent =
-    previousCpu && total > previousCpu.total
-      ? Math.round(
-          100 * (1 - (idle - previousCpu.idle) / (total - previousCpu.total)),
-        )
-      : null;
-  previousCpu = { total, idle };
-  const memoryTotal = await memoryLimit();
-  let memoryUsed = os.totalmem() - os.freemem();
-  try {
-    memoryUsed = Number(
-      (await readFile("/sys/fs/cgroup/memory.current", "utf8")).trim(),
-    );
-  } catch {}
-  return {
-    cpuPercent,
-    cpuCount: cpus.length,
-    memoryTotal,
-    memoryUsed: Math.min(memoryTotal, memoryUsed),
-    uptime: os.uptime(),
-    platform: os.platform(),
-    arch: os.arch(),
-    sampledAt: new Date().toISOString(),
-    diskIO: null,
-    networkIO: null,
-  };
 }
 
 function validateMachineWithIdentity(machine, capabilities) {

@@ -1,3 +1,4 @@
+import { renderMetrics, renderOverview } from "./overview.js";
 import { filterMachines } from "./machine-filter.js";
 export function createViews(context) {
   const {
@@ -22,60 +23,24 @@ export function createViews(context) {
     consoleInput,
   } = context;
   function metrics() {
-    const m = state.metrics;
-    return `<div class="grid metrics">${[
-      [
-        t("Host CPU", "主機處理器"),
-        m.cpuPercent === null ? t("Sampling…", "取樣中…") : `${m.cpuPercent}%`,
-        `${m.cpuCount} ${t("logical processors", "邏輯處理器")}`,
-        m.cpuPercent,
-      ],
-      [
-        t("Memory", "記憶體"),
-        bytes(m.memoryUsed),
-        `${t("of", "共")} ${bytes(m.memoryTotal)}`,
-        (100 * m.memoryUsed) / m.memoryTotal,
-      ],
-      [
-        t("Machines", "機器"),
-        state.machines.length,
-        `${state.machines.filter((x) => x.state === "running").length} ${t("running", "運行中")}`,
-        null,
-      ],
-      [
-        t("Host uptime", "主機運行時間"),
-        `${Math.floor(m.uptime / 3600)}h ${Math.floor((m.uptime % 3600) / 60)}m`,
-        `${m.platform} · ${m.arch}`,
-        null,
-      ],
-    ]
-      .map(
-        ([name, value, sub, amount]) =>
-          `<section class="card"><div class="card-title"><h3>${name}</h3><span class="pill">${t("Live", "即時")}</span></div><div class="metric-value">${value}</div><p class="muted">${sub}</p>${amount !== null ? `<div class="meter"><span style="width:${Math.max(0, Math.min(100, amount || 0))}%"></span></div>` : ""}</section>`,
-      )
-      .join("")}</div>`;
+    return renderMetrics({ state, t, bytes, escape });
   }
   function heading(title, description, actions = "") {
     return `<div class="crumb">${t("Workspace", "工作區")} / ${title}</div><div class="heading"><div><h1>${title}</h1><p>${description}</p></div><div class="actions">${actions}</div></div>`;
   }
   function overview() {
-    return (
-      heading(
-        t("Everything at a glance", "一眼掌握所有狀態"),
-        t(
-          "Your host and machines, measured in real time.",
-          "主機和機器狀態，全部即時量度。",
-        ),
-        button("new", `＋ ${label("new")}`, "primary"),
-      ) +
-      metrics() +
-      `<div class="toolbar"><h2>${t("Machines", "機器")}</h2>${button("page:machines", t("View all machines", "查看所有機器"), "ghost")}</div>${state.machines.length ? `<div class="grid">${state.machines.slice(0, 6).map(machineCard).join("")}</div>` : empty()}<div class="grid lower"><section class="card"><h2>${t("Recent activity", "最近活動")}</h2>${eventList(5)}</section><section class="card"><h2>${t("Your host", "你的主機")}</h2><dl><dt>QEMU</dt><dd>${
-        Object.entries(state.capabilities)
-          .filter(([, c]) => c.available)
-          .map(([a]) => a)
-          .join(", ") || t("Unavailable", "未能使用")
-      }</dd><dt>${t("Acceleration", "加速方式")}</dt><dd>TCG</dd><dt>${t("Connection", "連線")}</dt><dd>${escape(location.origin)}</dd><dt>${t("Disk and network rates", "磁碟及網絡速率")}</dt><dd>${t("Not collected", "尚未收集")}</dd></dl></section></div>`
-    );
+    return renderOverview({
+      state,
+      t,
+      bytes,
+      escape,
+      button,
+      enumLabel,
+      heading,
+      empty,
+      machineCard,
+      eventList,
+    });
   }
   function empty() {
     return `<section class="card empty"><div class="empty-icon" aria-hidden="true"><span class="icon">computer</span></div><h2>${t("A home for your first machine", "為第一部機器安個家")}</h2><p>${t("Create a machine with a private virtual disk, choose your resources, then open its live console. No sample machines are shown.", "建立私人虛擬磁碟，選擇資源，再打開即時主控台。這裡不會顯示假機器。")}</p>${button("new", `＋ ${label("new")}`, "primary")}</section>`;

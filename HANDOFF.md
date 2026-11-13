@@ -55,3 +55,7 @@ Installation media now has an explicit raw/read-only virtual SCSI CD backend on 
 ## Main authentication unit
 
 Password sign-in now requires the owner username. Existing accounts without a username field retain their saved owner name; anonymous metadata does not disclose it. Five unsuccessful attempts impose fifteen minutes of cooldown, with two in-flight checks maximum and no concurrent sixth attempt while the fifth is pending. Focused limiter and HTTP migration/authentication checks pass; the new username field needs the updated browser journey. This remains a single-owner runtime, and password-disable settings remain pending.
+
+## Overview sampling unit
+
+The backend collects actual resource samples every two seconds into a ninety-point ring. Overview renders CPU/memory history only after two valid samples, exposes host-visible/container scope and retains last-known warnings without fabricated replacements. Independent state/architecture filters persist in account settings. Sampling, chart-coordinate and persistence tests pass; newer browser acceptance remains pending. Resource collection was extracted from QEMU process management into its own module.

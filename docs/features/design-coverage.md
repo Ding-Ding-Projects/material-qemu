@@ -49,11 +49,11 @@ This inventory covers the controls in the supplied Main, Onboarding, Overview, M
 
 | Supplied control | Current state and exact limit |
 | --- | --- |
-| Host CPU/memory/uptime | Actual readings implemented; timeseries charts pending. |
+| Host CPU/memory/uptime | Actual bounded sampled history and CPU/memory charts implemented; host-visible versus container scope is explicit. No fabricated initial history. |
 | Disk I/O and network rates | Explicitly unavailable; not simulated. |
 | New machine | Implemented. |
 | Machine import | Pending. |
-| State/architecture chips | State filters exist on Machines; overview architecture chips pending. |
+| State/architecture chips | Independent persisted Overview state/architecture filters implemented. |
 | Machine console/start/pause/details | Implemented against real runtime. |
 | Live thumbnails, guest CPU/RAM | Pending guest measurement and framebuffer preview integration. |
 | Recent activity | Persisted actual action history implemented. |

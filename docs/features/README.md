@@ -17,3 +17,5 @@ The application includes task-oriented help for creating machines, controlling l
 - [Onboarding and exact-step draft resume](onboarding.md)
 
 - [Owner authentication and cooldown](authentication.md)
+
+- [Measured Overview history and filters](overview.md)

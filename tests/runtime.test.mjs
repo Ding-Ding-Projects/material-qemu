@@ -199,6 +199,21 @@ test("HTTP owner claim, sessions, CSRF and persistence boundaries", async () => 
     ).json();
     assert.deepEqual(state.folders, ["Test"]);
     assert.equal(state.settings.language, "both");
+    assert.ok(state.metricHistory.length >= 1);
+    assert.equal(state.metricHistory.at(-1).sampledAt, state.metrics.sampledAt);
+    assert.equal(
+      (
+        await request(
+          "/preferences",
+          { settings: { overviewState: "stopped", overviewArch: "x86_64" } },
+          { Cookie: cookie, "X-CSRF-Token": csrf },
+        )
+      ).status,
+      200,
+    );
+    const settingsReload = await new Store(dir).open();
+    assert.equal(settingsReload.state.settings.overviewState, "stopped");
+    assert.equal(settingsReload.state.settings.overviewArch, "x86_64");
     assert.equal("hash" in state.owner, false);
     const authenticated = { Cookie: cookie, "X-CSRF-Token": csrf };
     assert.equal(

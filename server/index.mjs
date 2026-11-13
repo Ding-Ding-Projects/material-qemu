@@ -16,6 +16,7 @@ import { Qemu, validateMachine, hostMetrics, launchPlan } from "./qemu.mjs";
 import { Sessions, hashPassword, checkPassword } from "./auth.mjs";
 import { updateOrganization, requireFolder } from "./organization.mjs";
 import { receiveIso, MAX_ISO_BYTES } from "./media.mjs";
+import { MetricSampler } from "./resources.mjs";
 import { dataDirectory } from "./paths.mjs";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
@@ -35,6 +36,7 @@ export async function createApplication(options = {}) {
     secure = expected.protocol === "https:";
   const store = await new Store(data).open();
   const qemu = await new Qemu(data).open();
+  const metrics = await new MetricSampler().start();
   const sessions = new Sessions();
   const challenges = new Map();
   let activeUploads = 0;
@@ -310,13 +312,26 @@ export async function createApplication(options = {}) {
           capabilityDiscovery: qemu.capabilities.inventory,
           media: await qemu.media(),
           mediaMaxBytes: MAX_ISO_BYTES,
-          metrics: await hostMetrics(),
+          metrics: metrics.latest,
+          metricHistory: metrics.history,
+          metricError: metrics.error,
         });
       }
       if (route === "/api/preferences" && req.method === "POST") {
         await store.transaction((s) => {
           if (body.settings) {
             const v = body.settings;
+            if (
+              ["all", "running", "paused", "stopped", "attention"].includes(
+                v.overviewState,
+              )
+            )
+              s.settings.overviewState = v.overviewState;
+            if (
+              v.overviewArch === "all" ||
+              Object.hasOwn(qemu.capabilities, v.overviewArch)
+            )
+              s.settings.overviewArch = v.overviewArch;
             if (["dark", "light", "system"].includes(v.theme))
               s.settings.theme = v.theme;
             if (["en", "yue", "both"].includes(v.language))
@@ -623,6 +638,7 @@ export async function createApplication(options = {}) {
     store,
     qemu,
     close: async () => {
+      metrics.stop();
       wss.clients.forEach((c) => c.close());
       await qemu.close();
       await new Promise((resolve) => server.close(resolve));
