@@ -1,1 +1,32 @@
-# material-qemu
+# Material QEMU
+
+A functional, self-hosted QEMU workspace based on the preserved design contract. This initial runtime connects owner sign-in, guided setup, overview, machine management, an eight-step machine editor, and an authenticated live VNC console.
+
+## Run locally
+
+Use Node.js 22 or newer for the web runtime. The container includes QEMU for x86_64 and aarch64 with TCG emulation.
+
+```powershell
+.\build.bat -Container
+.\host.bat --detached
+```
+
+Open http://localhost:8080/. Initial ownership requires the protected `setup-code` file in the persistent data directory. Read that file through your trusted host administration channel and enter it only in the setup form. Never publish or log it. It is removed after successful ownership setup.
+
+The default Compose port is loopback-only. Remote access requires a reviewed HTTPS reverse proxy and an exact `PUBLIC_ORIGIN`. LAN delivery and image-registry publication are not yet verified. Preserve the data volume during updates.
+
+## Runtime behavior
+
+- Password authentication uses scrypt; sessions use opaque HttpOnly SameSite cookies and CSRF verification.
+- Passkeys use SimpleWebAuthn with origin and relying-party checks. Hardware authenticator verification remains pending.
+- Machine disks are sparse QCOW2 images within managed storage. Installation ISOs are operator-managed under `data/media`.
+- Machine start, pause, resume, ACPI shutdown and explicit power off use real QEMU processes and QMP.
+- The browser console uses locally bundled noVNC through an authenticated WebSocket proxy. VNC and QMP bind only to container loopback.
+- The data directory and container are a single-owner trust boundary. Other code running inside that container must be trusted.
+- Host measurements are actual readings. Unsupported disk/network throughput and advanced hardware are not synthesized.
+
+## Scope and remaining work
+
+The other 50 design boards remain design-only. Appliance operating-system images, USB installation, advanced QEMU hardware, snapshots, migration, desktop assistants, portable companions and native installers are not delivered. Full required-feature parity, regex tooling, complete translation and production hardening remain incomplete. `build-installer.bat` reports that gap with a nonzero exit code.
+
+See [roadmap](ROADMAP.md), [handoff](HANDOFF.md), [runtime architecture](docs/features/runtime.md) and the original [design contract](design/HANDOFF.md). Design frames illustrate the reference only and are not runtime evidence.

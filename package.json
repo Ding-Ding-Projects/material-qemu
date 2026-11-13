@@ -1,0 +1,1 @@
+{"name":"material-qemu","version":"0.1.0","private":true,"type":"module","engines":{"node":">=22"},"scripts":{"start":"node server/index.mjs","test":"node --test tests/*.test.mjs","build":"node scripts/build.mjs"},"dependencies":{"@simplewebauthn/server":"14.1.0","@simplewebauthn/browser":"13.3.0","@novnc/novnc":"1.7.0","ws":"8.23.0"}}
