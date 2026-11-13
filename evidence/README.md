@@ -1,11 +1,13 @@
 # Runtime evidence
 
-## Verified build 96fa87a
+## Verified build 0ec08a9
 
-These unedited images were produced from the immutable container bound to `96fa87a7c6f55bd304380067638cc462159d3635`. They show real runtime states, not design renders. See [receipt](96fa87a/receipt.json) for image hashes, dimensions, timestamps, viewport, source and container identity, observed checks and limitations.
+Unedited images from immutable source `0ec08a90bd68e4b4f2e78bd894471ebacf4e137e`. The [receipt](0ec08a9/receipt.json) records hashes, dimensions, observed timestamps, viewports, container identity, checks and limitations.
 
-- [Initial owner setup](96fa87a/initial.png)
-- [Live QEMU console](96fa87a/console.png)
-- [Machine management at 360 pixels](96fa87a/machines-360.png)
+- [Initial owner setup](0ec08a9/initial.png)
+- [Live QEMU console](0ec08a9/console.png)
+- [Machine management at 360 pixels](0ec08a9/machines-360.png)
 
-The console shows SeaBIOS on an intentionally blank disk. It does not prove an installed guest operating system. Browser interaction used a fresh isolated Linux Chromium context and synthetic records.
+The console displays real SeaBIOS on an intentionally blank disk. It does not prove an installed guest OS. Browser verification uses isolated Linux Chromium and synthetic data.
+
+[Earlier originals and provenance](ARCHIVE.md).

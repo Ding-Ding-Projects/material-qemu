@@ -1,0 +1,87 @@
+{
+  "schemaVersion": 1,
+  "route": "linux-container-playwright",
+  "source": "0ec08a90bd68e4b4f2e78bd894471ebacf4e137e",
+  "image": "sha256:863d574f722e58401574076351ed5d404afc09946b850cf1eedceb10287cbe31",
+  "browser": "141.0.7390.37",
+  "isolatedContext": true,
+  "screenshots": [
+    {
+      "path": "initial.png",
+      "sha256": "308b26bff30fb28c6a154a3ddb7d32132daa7c6429e552582e4e525b0989d985",
+      "width": 1440,
+      "height": 1000,
+      "viewport": {
+        "width": 1440,
+        "height": 1000
+      },
+      "scale": 1,
+      "theme": "dark",
+      "language": "en",
+      "reducedMotion": true,
+      "capturedAt": "2026-11-13T23:29:16.305709+00:00",
+      "inspected": true,
+      "state": "Initial owner setup with empty credential fields"
+    },
+    {
+      "path": "console.png",
+      "sha256": "be4f0e6945d6f8bedb975677789d0739763e6b98c373fce702c573b8ad93b88a",
+      "width": 1440,
+      "height": 1092,
+      "viewport": {
+        "width": 1440,
+        "height": 1000
+      },
+      "scale": 1,
+      "theme": "dark",
+      "language": "en",
+      "reducedMotion": true,
+      "capturedAt": "2026-11-13T23:29:27.209500+00:00",
+      "inspected": true,
+      "state": "Authenticated live console with persistent control state"
+    },
+    {
+      "path": "machines-360.png",
+      "sha256": "078111ee068e967abdce2f6e4bbf2dcc3415460a04d58e2fed34c073de3e7528",
+      "width": 360,
+      "height": 1707,
+      "viewport": {
+        "width": 360,
+        "height": 900
+      },
+      "scale": 1,
+      "theme": "dark",
+      "language": "en",
+      "reducedMotion": true,
+      "capturedAt": "2026-11-13T23:29:28.340934+00:00",
+      "inspected": true,
+      "state": "Narrow machine management with reserved notice region"
+    }
+  ],
+  "pageErrors": [],
+  "checks": [
+    "owner setup UI",
+    "onboarding UI",
+    "anonymous state rejection",
+    "setup credential absent from anonymous response",
+    "machine wizard UI",
+    "real QEMU start pause resume stop",
+    "live console canvas",
+    "360 and 1440 body overflow",
+    "Virtual WebAuthn registration and sign-in",
+    "Folder and saved-view operations preserve a running machine",
+    "Dialog Escape restores opener focus",
+    "12 language/theme/width tuples with equal action inventories",
+    "Preferences survive reload",
+    "Browser ISO upload and duplicate rejection retain original bytes",
+    "Console toggle state persists across reconnect",
+    "Local fonts load with no external requests"
+  ],
+  "privacyReview": "Synthetic owner and machine only; no credentials, private paths or unrelated content in selected images.",
+  "limitations": [
+    "Virtual authenticator, not physical device",
+    "Blank disk firmware, not installed guest OS",
+    "Scale 1; not full design parity",
+    "Linux browser, not native installer evidence"
+  ]
+}

@@ -33,10 +33,10 @@ See [roadmap](ROADMAP.md), [handoff](HANDOFF.md), [runtime architecture](docs/fe
 
 ## Verified runtime images
 
-The following images show the real container built from `96fa87a7c6f55bd304380067638cc462159d3635`. The [evidence inventory](evidence/README.md) records source and image identity, exact hashes, viewports, observed interactions and limitations. Later source changes require their own evidence.
+The following images show the real container built from `0ec08a90bd68e4b4f2e78bd894471ebacf4e137e`. The [evidence inventory](evidence/README.md) records source and image identity, exact hashes, viewports, observed interactions and limitations. Later source changes require their own evidence.
 
-![Initial owner setup with empty credential fields](evidence/96fa87a/initial.png)
+![Initial owner setup with empty credential fields](evidence/0ec08a9/initial.png)
 
-![Authenticated QEMU console displaying SeaBIOS on an intentionally blank disk](evidence/96fa87a/console.png)
+![Authenticated QEMU console displaying SeaBIOS on an intentionally blank disk](evidence/0ec08a9/console.png)
 
-[Machine management at 360 pixels](evidence/96fa87a/machines-360.png)
+[Machine management at 360 pixels](evidence/0ec08a9/machines-360.png)
