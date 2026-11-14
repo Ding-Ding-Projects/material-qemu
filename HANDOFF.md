@@ -78,3 +78,6 @@ The next console-media helper and its boundary tests are preserved but not impor
 ## Startup tab restoration repair
 
 The startup path now restores an already-open saved active destination before rendering, rather than automatically activating the default Overview. A negative regression closes unpinned Overview while Settings is active, serializes/reloads state and proves Overview remains closed. Legacy tab state without an active field selects an already-open destination. Explicit navigation can still reopen a closed tab. New browser verification remains pending.
+## Polling focus repair
+
+Live refresh now records the focused control by stable id or action plus occurrence and restores the corresponding replacement without scrolling. Disappearing or disabled controls fall back to the main workspace. Checkbox-result refresh uses the same path. Sampling is not suspended merely because a button has focus. Pure regressions cover duplicate actions, missing/disabled targets and unaffected connected controls; the exact timed browser assertion remains the acceptance check.

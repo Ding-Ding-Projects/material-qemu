@@ -33,3 +33,5 @@ Password-mode unit requires fresh verified passkey before explicit disable/re-en
 Shared navigation unit adds persistent open/close/pin tabs, Open every tab, New tab catalog and Ctrl+Shift+F command palette with live settings. State/inventory tests pass; next immutable image needs narrow/keyboard/catalog/persistence proof. Full regex parity remains pending and is not represented by a small tester.
 
 Priority navigation repair preserves a deliberately closed Overview across startup by restoring a valid open active destination. Four workspace tests pass, including the reproduced negative path. Inactive console-media helper is preserved in a separate incomplete checkpoint and is not yet connected to UI. New navigation image/browser readback pending.
+
+Polling-focus repair is implemented without freezing live data. Run the updated navigation-proof.py timed New tab focus assertion against the new immutable image before accepting it. Console export helpers remain inactive while this repair is completed.

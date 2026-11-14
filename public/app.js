@@ -7,6 +7,7 @@ import {
   openAllTabs,
   initialTab,
 } from "./workspace-tabs.js";
+import { rememberFocus, restoreFocus } from "./focus.js";
 import { commandInventory, searchCommands } from "./commands.js";
 import { formatBuildTimestamp } from "./provenance.js";
 import { loadDraft, saveDraft, clearDraft } from "./drafts.js";
@@ -162,16 +163,19 @@ function pill(machine) {
   return `<span class="pill ${machine.state}">${escape(enumLabel(machine.state))}</span>`;
 }
 function render() {
+  const focus = rememberFocus();
   if (rfb) {
     rfb.disconnect();
     rfb = null;
   }
   if (!session?.authenticated) {
     renderAuth();
+    restoreFocus(focus);
     return;
   }
   if (!state.setup.complete && !onboardingMachine) {
     renderOnboarding();
+    restoreFocus(focus);
     return;
   }
   $("#app").innerHTML =
@@ -180,6 +184,7 @@ function render() {
     updateConsoleControls();
     connectConsole();
   }
+  restoreFocus(focus);
   if (page === "new") requestPreview();
   const search = $("#global-search");
   search?.addEventListener("input", (e) => {
@@ -1308,10 +1313,12 @@ document.addEventListener("click", async (e) => {
 });
 document.addEventListener("change", (e) => {
   if (e.target.matches("[data-check]")) {
+    const focus = rememberFocus();
     e.target.checked
       ? checked.add(e.target.dataset.check)
       : checked.delete(e.target.dataset.check);
     $("#machine-results").innerHTML = views().machineResults();
+    restoreFocus(focus);
   }
 });
 document.addEventListener("keydown", (e) => {
