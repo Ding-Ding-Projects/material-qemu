@@ -1,0 +1,16 @@
+# Runtime architecture
+
+The HTTP service owns authentication, persistent state and all QEMU launch arguments. Browser input selects bounded configuration values and cannot submit a shell command or arbitrary QMP operation. State updates serialize through a single queue and atomically rename a complete replacement file.
+
+QEMU executes as the unprivileged container user with TCG. Each machine has a private QCOW2 disk. ISO files are resolved against the managed media directory with real-path containment checks. Console transport connects only after session and origin validation.
+
+The default network is disconnected. Restricted user networking does not provide external connectivity. Graceful shutdown sends an ACPI request; the guest is responsible for handling it. Explicit power off may lose guest data and requires a confirmation.
+
+The staged `dist` runtime stores its data in the adjacent root `data` directory by default. An explicit `DATA_DIR` overrides that location. Rebuilds replace generated output, preserve that separate data directory and stop without deleting anything when legacy `dist/data` is detected. State writes retain the prior valid `state.json.previous` as a recovery copy. Restore only while the service is stopped and after preserving both current and previous files.
+
+The initial browser verification used a blank disk and the genuine SeaBIOS display. It proves console transport, not installation or boot of a guest operating system. Virtual-authenticator passkey registration/sign-in has passed source-bound browser verification. Physical authenticators, guest ACPI handling, installed guest operating-system boot, native fullscreen behavior and physical keyboard-device combinations remain unverified.
+
+Known limitations: actual KVM acceleration remains unverified despite its explicit eligibility path. Guest agents, disk resizing, permanent disk deletion, VM CPU sampling, throughput metrics, backups, live migration and unattended appliance updates remain incomplete. The container is a single-owner trust boundary, not a sandbox for hostile tenants.
+
+
+Source: [docs/features/runtime.md](https://github.com/Ding-Ding-Projects/material-qemu/blob/2a273d914f9d4a0c4f61be13d391a9011fc38f42/docs/features/runtime.md).

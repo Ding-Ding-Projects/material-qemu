@@ -1,3 +1,6 @@
 # Historical runtime evidence
 
-[Source 96fa87a](96fa87a/receipt.json) retains original dates, hashes and raw images from the earlier organization runtime. It predates the bundled fonts, notice layout and persistent console controls.
+- [96fa87a](96fa87a/receipt.json): organization runtime before bundled fonts and console state labels.
+- [0ec08a9](0ec08a9/receipt.json): media/console runtime before later authentication, platform and tab controls.
+
+Original image bytes, hashes and observed dates remain in their source-specific folders.

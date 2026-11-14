@@ -1,0 +1,91 @@
+{
+  "schemaVersion": 1,
+  "route": "linux-container-playwright",
+  "source": "8e7802f38df82728a5db4fe58959be70f3a7bc09",
+  "image": "sha256:dc1ce0d8c5b43858a97b49ce91316169ff8cef522da142d780bc377f8966d182",
+  "browser": "141.0.7390.37",
+  "isolatedContext": true,
+  "screenshots": [
+    {
+      "path": "initial.png",
+      "sha256": "f13f41e17d3b2058b3e2b8d979215151103b5ca42571cabf71b1e951f545b644",
+      "width": 1440,
+      "height": 1000,
+      "viewport": {
+        "width": 1440,
+        "height": 1000
+      },
+      "scale": 1,
+      "theme": "dark",
+      "language": "en",
+      "reducedMotion": true,
+      "capturedAt": "2026-11-14T00:47:36.478271+00:00",
+      "inspected": true,
+      "state": "Initial owner setup with empty credential fields and build provenance"
+    },
+    {
+      "path": "console.png",
+      "sha256": "c20769931478fa3e3368eb69a1569ef4a4270cf68697ad59fbd9c12ddd8c25d6",
+      "width": 1440,
+      "height": 1092,
+      "viewport": {
+        "width": 1440,
+        "height": 1000
+      },
+      "scale": 1,
+      "theme": "dark",
+      "language": "en",
+      "reducedMotion": true,
+      "capturedAt": "2026-11-14T00:47:44.603531+00:00",
+      "inspected": true,
+      "state": "Authenticated live i386 console with workspace tabs"
+    },
+    {
+      "path": "machines-360.png",
+      "sha256": "35c72b01556cbbf50c6f5f6fa4081867af6fc510708947f4ad9170108247341b",
+      "width": 360,
+      "height": 2120,
+      "viewport": {
+        "width": 360,
+        "height": 900
+      },
+      "scale": 1,
+      "theme": "dark",
+      "language": "en",
+      "reducedMotion": true,
+      "capturedAt": "2026-11-14T00:47:45.730012+00:00",
+      "inspected": true,
+      "state": "Narrow machine management with retained controls"
+    }
+  ],
+  "pageErrors": [],
+  "checks": [
+    "owner setup UI",
+    "onboarding UI",
+    "anonymous state rejection",
+    "setup credential absent from anonymous response",
+    "machine wizard UI",
+    "real QEMU start pause resume stop",
+    "live console canvas",
+    "360 and 1440 body overflow",
+    "Username/password setup continuation",
+    "Virtual WebAuthn registration and sign-in",
+    "Exact-step draft resume",
+    "Folder and saved-view operations preserve a running machine",
+    "Dialog Escape restores opener focus",
+    "12 language/theme/width tuples with equal action inventories",
+    "Preferences survive reload",
+    "ISO upload and duplicate rejection preserve original bytes",
+    "Console state persists across reconnect",
+    "Local fonts without external requests",
+    "Five unsuccessful sign-ins reject the sixth without disrupting an authenticated session"
+  ],
+  "privacyReview": "Synthetic owner and machine only; empty credentials, no private paths, host-specific measurements or unrelated content in selected images.",
+  "limitations": [
+    "Virtual authenticator, not physical hardware",
+    "Blank disk firmware, not installed guest OS",
+    "Scale 1; not full reference parity",
+    "Linux browser, not native installer evidence",
+    "Inactive console-export drafts are not delivered"
+  ]
+}

@@ -1,0 +1,79 @@
+{
+  "sourceCommit": "2a273d914f9d4a0c4f61be13d391a9011fc38f42",
+  "wikiRemote": "https://github.com/Ding-Ding-Projects/material-qemu.wiki.git",
+  "publicationState": "pending-first-page",
+  "pages": [
+    {
+      "source": "docs/features/README.md",
+      "sourceSha256": "08f501727bf9617063060b7295bd80bbaa896b0a01c85d7a398af0b83625d27d",
+      "page": "feature-index.md",
+      "pageSha256": "1d4a08d6567e221ba784718b6f819d8a08ff62d61d053886ffd6b90df0901076"
+    },
+    {
+      "source": "docs/features/authentication.md",
+      "sourceSha256": "0f2363da2e879b2fd01482d666e55dda44f88a9797c88ca6bf77b0ab93af9a13",
+      "page": "authentication.md",
+      "pageSha256": "9a85ba13f74e12404f9d35d0b4a242261d1e04bcb8c46d2d51b977ccc41a4363"
+    },
+    {
+      "source": "docs/features/console.md",
+      "sourceSha256": "813cbd98c329eec7ca196e9c8b064a03d30c68eb87f31a0b98ca645ce984a7a5",
+      "page": "console.md",
+      "pageSha256": "9e98f371b380829618e0354d6811a905c1e27c9f358ce7e103320e740bb1fa83"
+    },
+    {
+      "source": "docs/features/design-coverage.md",
+      "sourceSha256": "c1783ab29ed6b053f50b02dae7bd448ff7ba18b94af808747e3188373c3e4e89",
+      "page": "design-coverage.md",
+      "pageSha256": "3f98824d10c21b91aedf85064feb6270931e36e0df02111a4ccc4af1a0a0e0f0"
+    },
+    {
+      "source": "docs/features/machine-lifecycle.md",
+      "sourceSha256": "c92460e5500ec53c031de6684538c0b4e253b42e214542fa2a50cf088da7c121",
+      "page": "machine-lifecycle.md",
+      "pageSha256": "63021d5d56f8cce9e682b9caef95cc89e0002423eed8abbae8de30a2f68e3a96"
+    },
+    {
+      "source": "docs/features/media.md",
+      "sourceSha256": "0d81dcbeaff42a46ec0d23fbd8780c51b6e02d5d6fee106eb549e9109c996a96",
+      "page": "media.md",
+      "pageSha256": "9057bae46c9f5a1f0f57fbe890146629fe38347196a2383b8aaa152bef31da25"
+    },
+    {
+      "source": "docs/features/onboarding.md",
+      "sourceSha256": "6a3566b2f38dc55cdc3170653111db2f3a7f8e07aad47ba4609b307b007e2967",
+      "page": "onboarding.md",
+      "pageSha256": "fc31a26226b533f6c34b0ec27ab45ad763c6c3f7041549a9271c78e0c411b581"
+    },
+    {
+      "source": "docs/features/organization.md",
+      "sourceSha256": "11dec9633a42c3f41ba54b272f1f93e1d8fcb65bae62a6ba43805895168edbbb",
+      "page": "organization.md",
+      "pageSha256": "e6d8ffc202e9dffb0adfed45f271506fa9f5c74d3cbf9b98cb3dcff02f79d0d6"
+    },
+    {
+      "source": "docs/features/overview.md",
+      "sourceSha256": "a257990dc3c3fd09f21f62f8e12463a5272809b26ed51af7504d7373ec48c0a2",
+      "page": "overview.md",
+      "pageSha256": "b2b41869aab46fd6d7471a0eaabfaca0bd1ba5201cb79dd19119fc59b0461fcc"
+    },
+    {
+      "source": "docs/features/platforms.md",
+      "sourceSha256": "856be4192994b18c03e69168d9324f807ccd6ab56703a2adeab5e7686388e017",
+      "page": "platforms.md",
+      "pageSha256": "953785c05311a0124af964bd46ed50148ce23cfa53adf99a62f20c64241622fb"
+    },
+    {
+      "source": "docs/features/runtime.md",
+      "sourceSha256": "7beac7dd4c3374c74d6ee01b5a27a1e066982deaa9d199dc301ea09c76982dd8",
+      "page": "runtime.md",
+      "pageSha256": "ae86a7bfd72457c9709b98a048b035a83929af5ee143b99f2ac2c17d39632e46"
+    },
+    {
+      "source": "docs/features/workspace.md",
+      "sourceSha256": "3cdd0bf2f3f1ba73defdb2c2e60cd8352a2757fd867cfb380222eb29aa997c52",
+      "page": "workspace.md",
+      "pageSha256": "73a2e1cb61bcb9da0ae7353ffcb91361a57f43d73a030536adedfc191125cd2a"
+    }
+  ]
+}
