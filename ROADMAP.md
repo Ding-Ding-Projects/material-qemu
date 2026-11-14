@@ -40,3 +40,12 @@
 - [ ] Complete the required-feature inventory and remaining acceptance.
 - [ ] Publish complete interactive documentation and wiki content; pending source staging is not publication.
 - [ ] Complete the requested preservation/cleanup pass with independently verified remote state.
+
+## Preservation and evidence
+
+- [x] Preserve inactive console-export drafts without claiming runtime delivery.
+- [x] Preserve inspected runtime screenshots and isolated browser reproduction scripts.
+- [x] Prepare complete wiki articles and navigation while its repository is uninitialized.
+- [x] Publish and verify the public nine-image screenshot gallery.
+- [ ] Publish the prepared wiki after its first page is initialized.
+- [ ] Complete the remaining design-control inventory and release/delivery requirements.

@@ -43,3 +43,9 @@ The implementation lane used only the primary checkout and `main`; it created no
 Next session: verify the preserved source and remote state, read the coverage inventory, complete the inactive console unit in a bounded pass, then independently verify actual outputs before marking any item delivered. Preserve existing runtime data and earlier evidence.
 
 Task record: https://github.com/Ding-Ding-Projects/material-qemu/issues/1
+
+## Preservation closeout
+
+Implementation stopped at the owner’s explicit preservation request. Inactive console drafts remain preserved without activation. Current inspected runtime evidence is under `evidence/8e7802f/`; complete prepared wiki pages and navigation are under `docs/wiki/pending/`, with publication awaiting wiki initialization.
+
+The [public screenshot gallery](https://ding-ding-projects.github.io/material-qemu-gallery/) is live and its nine images were hash-verified. Search/filter behavior, empty-state/Escape, 360/1440 layouts and zero page exceptions were independently checked. The source README contains the direct gallery backlink. See `CLOSEOUT_PROMPT.md` for the complete continuation state and the task Discussion for final remote readbacks.
