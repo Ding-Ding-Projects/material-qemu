@@ -1,83 +1,45 @@
 # Implementation handoff
 
-## Delivered source
+## Current objective and stop state
 
-The six initial workflows now connect to a real authenticated runtime: owner sign-in, saved onboarding, live host overview, machine organization, an eight-step machine editor and authenticated noVNC console. Existing design references remain unchanged. Six readable supplied templates and original-export provenance are retained under `design/imports`.
+Implement the supplied six Material QEMU boards as real workflows while preserving the broader design contract. The owner has now explicitly requested preservation and cleanup. New implementation has stopped. The full supplied design is not complete.
 
-## Verified evidence
+The active runtime's latest built source is `8e7802f38df82728a5db4fe58959be70f3a7bc09`, image `sha256:dc1ce0d8c5b43858a97b49ce91316169ff8cef522da142d780bc377f8966d182`. The generated runtime receipt reports that source with `dirty: false` and build time `2026-11-14T00:41:44.620Z`. Later preservation changes contain inactive console-export work only and must not be relabelled as a new verified image.
 
-Candidate `e26461e387774b7ba47e294ef498a7e15b97440a`, image `sha256:7ec6a3b1d964112cda302a921ef57d8bf9f134d0b6151885fb2eb8d5a9b16658`, passed six focused container tests. An independent Linux Chromium review exercised actual owner setup, saved onboarding, all eight machine-creation steps, real x86_64 QEMU start, live noVNC display, pause, resume and process stop. Body overflow checks passed at 360 and 1440 pixels with zero page exceptions. The console displayed genuine SeaBIOS on a blank disk, not an installed guest OS.
+## Implemented and verified core
 
-The subsequent storage-preservation patch is a newer candidate and must retain separate test/build evidence. It moves staged runtime data outside generated output and rejects rebuilding legacy embedded data. No earlier capture is proof for changed source until independently reviewed.
+- Owner username/password authentication, protected first-owner setup, five-attempt cooldown, bounded verification concurrency, virtual-authenticator passkey registration/sign-in, and fresh-passkey-only password disable/re-enable. Existing credentials and sessions are preserved.
+- Persistent onboarding with save-later/resume, explicit optional-step skips, real first-machine creation, exact-step new/edit drafts, and browser-local pre-auth language/theme controls.
+- Real QEMU discovery and supported x86_64, i386, aarch64 and arm recipes; server-generated launch preview; optional immediate startup; private QMP and authenticated noVNC; lifecycle controls and bounded text/key actions.
+- Authenticated streamed ISO import with size/concurrency/time limits, no-overwrite finalization, symlink containment, abort cleanup, explicit raw/read-only CD format and truthful audit-warning handling.
+- Folders, saved views, tags, filters, persistent collapsed groups, bulk graceful requests, stopped-only record removal retaining disk bytes, and restoration of retained definitions.
+- Actual bounded CPU/memory sample history with explicit measurement scope, independently persisted Overview filters, locally packaged licensed fonts/icons, visible build provenance and dismissible narrow-screen status.
+- Persistent implemented-destination tabs, close/pin/Open every tab, New tab catalog, actionable command palette and live palette settings. Startup preserves deliberately closed Overview, and live polling preserves interactive focus.
 
-## Remaining acceptance gaps
+## Evidence boundaries
 
-Within the six workflows, physical passkey registration/authentication, aarch64 guest boot, guest OS installation, guest ACPI shutdown handling, full keyboard/fullscreen interaction, every localization tuple, visual design parity, exhaustive narrow-screen action parity, saved-view deletion and richer folder management remain unverified or incomplete. Host disk/network throughput, guest CPU metrics and thumbnail previews are explicitly unavailable, not simulated.
+| Source | Evidence |
+| --- | --- |
+| `fe05e2ce6baa119345822bdbd1a1832f7a72298a` | 38 exact-image tests passed. Independent browser proof exercised fresh virtual-passkey disable/sign-in/re-enable, retained sessions and 360 px build provenance. |
+| `8d8e3c896241722b8d3c6e6cd24a312924cdbbcf` | 34 exact-image tests passed, including actual running-removal rejection and unchanged disk bytes around removal/restoration. Independent UI proof covered tags, collapse and restoration. |
+| `3e2e033015c4ad5a3cee5fe844eb730584f50b7e` | 31 exact-image tests passed. Focused browser proof verified actual sample growth, chart rendering, filter persistence and narrow layout. |
+| `15d82fd68493ae7e77c8b90ec2991919f47f477b` | 44 exact-image tests passed. Independent navigation reproduction proved closed Overview remains closed after reload. |
+| `8e7802f38df82728a5db4fe58959be70f3a7bc09` | Seven focused workspace/focus tests passed. The exact updated browser reproduction passed every navigation assertion plus the 5.5-second live-refresh focus assertion, with zero page exceptions. The entire older suite was not rerun for this frontend-only repair. The coordinating final browser run also passed the current full journey, credentials, onboarding/draft resume, ISO transfer, i386 selection, immediate startup, console/lifecycle, organization, local fonts, cooldown and its twelve display tuples. Current screenshots were independently inspected. |
 
-The other 50 boards, complete required-feature inventory, full regex tools, native onboarding companions, appliance operating-system images, USB installer, portable build/hosting assistants, registry publication, LAN delivery and hosted documentation remain unfinished. Native installer entrypoint exits nonzero honestly. Fresh-machine bootstrap is not fully verified and missing Docker acquisition is not yet implemented.
+All four supported default platforms have passed real blank-machine QMP launch/status/stop tests, including harmless blank raw-CD fixtures. This does not prove an installed guest operating system boots. Prior twelve-tuple language/theme/width results remain bound to their actual source. Do not silently transfer screenshots or results to newer revisions.
 
-## Coordination
+The source README and `evidence/` are managed by the coordinating reviewer. Operational screenshots containing host-specific metrics remain private unless independently approved. The wiki is enabled but its supported repository is uninitialized; the coordinating reviewer owns prepared pending wiki content and its publication status.
+
+## Preserved unfinished work
+
+`public/console-media.js` and `public/console-tools.js` contain bounded framebuffer export, recording and annotation drafts. They are not imported by the application, have no activated controls and have not passed real browser export/recording/annotation acceptance. Both parse successfully, and two media-boundary unit tests pass. Their partial controller, connection lifecycle, unsaved-export handling, actual output validation and Ctrl+Alt integration still require completion. No export capability is claimed from these files.
+
+The complete control inventory is [design coverage](docs/features/design-coverage.md). Remaining work includes full regex-builder parity, advanced tab behavior, unfinished hardware/firmware/storage/network controls, snapshots/migration and other listed destinations, physical authenticators, installed guest OS and actual KVM acceptance, complete latest-source visual parity, registry/LAN delivery, complete hosted documentation, appliance images, USB/native installers and portable companions. The other 50 boards remain incomplete. Installer entrypoints report a nonzero incomplete result honestly.
+
+## Ownership and next steps
+
+The implementation lane used only the primary checkout and `main`; it created no linked checkout, task branch or stash. Its two isolated navigation-proof fixtures were removed after identity checks, and no implementation-owned process or build remains active. The coordinating session owns final source push, remote proof, evidence/wiki preservation and cleanup. No deletion or publication is authorized or performed by this lane during the preservation handoff.
+
+Next session: verify the preserved source and remote state, read the coverage inventory, complete the inactive console unit in a bounded pass, then independently verify actual outputs before marking any item delivered. Preserve existing runtime data and earlier evidence.
 
 Task record: https://github.com/Ding-Ding-Projects/material-qemu/issues/1
-
-The coordinating reviewer owns final image verification, evidence promotion, README captures, remote integration and publication. Source changes alone do not claim a release.
-
-## Organization completion pass
-
-Added saved-view deletion, folder rename and explicitly confirmed removal to Unfiled. Rename preserves machine assignments and saved folder filters; removal preserves every machine and disk. Negative tests reject invalid names, collisions, stale references and incorrect confirmation atomically. Saved views now persist the folder filter as well as query and state. Filter/layout/status/review labels are localized, singular counts are corrected, and dialog focus restoration/Enter handling are implemented. Browser acceptance of this newer source remains pending.
-
-The coordinating browser review also verified candidate 224048a with an actual virtual WebAuthn authenticator, real lifecycle/console, twelve language/theme/width combinations and preference persistence. Physical authenticators remain unverified. Earlier evidence is not relabelled to this organization pass.
-
-## ISO import unit
-
-Authenticated ISO import now streams directly into exclusive managed temporary files, confirms actual length and finalizes without overwrite. Two concurrent uploads, 2 GiB per file and a fifteen-minute deadline bound the route. Unit and real HTTP tests cover unauthorized/wrong-origin/CSRF requests, duplicate collisions, overflow, truncated streams, abort cleanup and directory-symlink escape. Browser acceptance of this newer unit remains pending. See the complete six-board control inventory for every known residual.
-
-## Console and presentation unit
-
-Pinned local Roboto Flex and rounded symbol fonts replace generic font/glyph fallbacks; licenses are retained. Narrow notifications reserve layout space and can be dismissed. Console scaling and input show persistent actual state. Reset confirmation, expanded key sequences and explicit clipboard/type-text controls are implemented without claiming guest acceptance. This newer candidate still needs independent browser verification.
-
-## Creation and filtering unit
-
-The machine editor now displays a server-generated launch plan using the same fixed argument builder as execution. Placeholders are explicit and the preview never starts a process. Optional Start after creating performs actual startup, opens the console on success and retains the machine with a truthful error on startup failure. Needs attention/Recently used filters and direct/bulk folder moves are implemented. Unit tests cover argument boundaries and filter semantics; a container-only HTTP test covers inert preview, real immediate startup and moves while running. New browser proof remains pending.
-
-## Capability discovery unit
-
-Binary-derived machine/accelerator discovery now unions the supplied catalog with bounded PATH discovery. Supported PC/q35 and Arm virt recipes are separated from discovered unsupported boards. Version-success/capability-failure states remain honestly installed but incomplete. KVM device access only establishes labelled eligibility, never verified acceleration. The container adds Arm firmware for real i386/arm/aarch64 launch checks; final image results are still pending at this source checkpoint. Native tests pass sixteen cases and skip three runtime-dependent cases because QEMU is absent from this host.
-
-## Onboarding and draft unit
-
-Exact-step new/edit drafts, backwards-compatible draft loading, explicit onboarding skips, save/sign-out/resume, real first-machine creation from onboarding and pre-auth language/theme choices are implemented. Initial browser choices carry into owner setup without persisting credentials. Native unit/API tests pass eighteen cases with three QEMU-dependent skips; newer browser proof remains pending. The preceding capability image independently passed all twenty-three container tests, including actual x86_64/i386/aarch64/arm default-recipe launch/status/stop.
-
-## Media boundary repair
-
-Installation media now has an explicit raw/read-only virtual SCSI CD backend on all supported platforms, preventing uploaded headers from selecting another storage format. The launch-plan regression rejects the old implicit CD path. The per-platform runtime regression uses harmless blank CD bytes; no hostile media is generated. HTTP upload and JSON deadlines are explicit, and successful file storage is reported separately from an activity-write warning. Native tests pass eighteen with three runtime-dependent skips; exact-image verification follows.
-
-## Main authentication unit
-
-Password sign-in now requires the owner username. Existing accounts without a username field retain their saved owner name; anonymous metadata does not disclose it. Five unsuccessful attempts impose fifteen minutes of cooldown, with two in-flight checks maximum and no concurrent sixth attempt while the fifth is pending. Focused limiter and HTTP migration/authentication checks pass; the new username field needs the updated browser journey. This remains a single-owner runtime, and password-disable settings remain pending.
-
-## Overview sampling unit
-
-The backend collects actual resource samples every two seconds into a ninety-point ring. Overview renders CPU/memory history only after two valid samples, exposes host-visible/container scope and retains last-known warnings without fabricated replacements. Independent state/architecture filters persist in account settings. Sampling, chart-coordinate and persistence tests pass; newer browser acceptance remains pending. Resource collection was extracted from QEMU process management into its own module.
-
-## Retained-disk lifecycle unit
-
-Single/bulk confirmed record removal archives definitions and retains disks. Running/paused machines are rejected, and restoration checks the managed disk before returning a stopped definition. Bulk graceful ACPI shutdown, bounded tags and persisted collapsible folder groups are implemented. Unit tests cover reload, negative confirmations, tags and folder state; real HTTP tests compare disk bytes around removal/restoration. New exact-image/browser proof remains pending. No permanent disk deletion is introduced.
-
-## Password-mode and provenance unit
-
-Password disable/re-enable requires a registered passkey and fresh successful passkey authentication. Saved credentials and existing sessions remain intact; direct password-only setting changes and disabled password login are rejected. No unauthenticated recovery route exists. Build provenance is visible in the header at narrow widths and formats the actual timestamp in browser-local time with seconds/zone. Unit and negative HTTP tests pass; actual virtual-authenticator toggle/re-enable browser proof is still pending.
-
-## Shared workspace navigation unit
-
-Implemented destination tabs now persist open/closed/pinned state, focus existing destinations and expose Open every tab plus New tab catalog. The command palette performs actual route/control actions and contains live theme/language/motion settings. Keyboard arrows/Home/End and selection state are implemented; drafts persist across navigation. Pure state/inventory tests pass; built browser acceptance of the new shell is pending. Full regex construction and advanced tab groups/reordering remain unfinished.
-## Inactive console export work
-
-The next console-media helper and its boundary tests are preserved but not imported into the running application. PNG, recording and annotation controls are not yet delivered. Complete integration and actual framebuffer/browser verification remain required.
-
-## Startup tab restoration repair
-
-The startup path now restores an already-open saved active destination before rendering, rather than automatically activating the default Overview. A negative regression closes unpinned Overview while Settings is active, serializes/reloads state and proves Overview remains closed. Legacy tab state without an active field selects an already-open destination. Explicit navigation can still reopen a closed tab. New browser verification remains pending.
-## Polling focus repair
-
-Live refresh now records the focused control by stable id or action plus occurrence and restores the corresponding replacement without scrolling. Disappearing or disabled controls fall back to the main workspace. Checkbox-result refresh uses the same path. Sampling is not suspended merely because a button has focus. Pure regressions cover duplicate actions, missing/disabled targets and unaffected connected controls; the exact timed browser assertion remains the acceptance check.

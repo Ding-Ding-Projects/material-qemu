@@ -110,3 +110,7 @@ This inventory covers the controls in the supplied Main, Onboarding, Overview, M
 | Screenshot/record/drawing | Pending. Runtime evidence capture is independent of these product features. |
 | Summary/hardware/snapshots/migrate/guest-agent/monitor/stats/log tabs | Pending broader board implementations. |
 | Guest FPS/latency/CPU/RAM | Pending real measurements; no sample values are displayed. |
+
+## Explicit preservation checkpoint
+
+New implementation stopped at the owner's preservation/cleanup request. The latest verified active runtime is source `8e7802f38df82728a5db4fe58959be70f3a7bc09`. Later console-media/controller drafts are preserved but inactive and have no delivered export, recording, annotation or Ctrl+Alt controls. Every pending row above remains pending unless separately supported by an exact later source/image receipt. The full supplied-six objective and broader delivery are not complete.
