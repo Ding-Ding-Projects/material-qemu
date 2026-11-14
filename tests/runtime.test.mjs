@@ -219,6 +219,22 @@ test("HTTP owner claim, sessions, CSRF and persistence boundaries", async () => 
     assert.equal(
       (
         await request(
+          "/security",
+          { passwordEnabled: false, method: "passkey" },
+          authenticated,
+        )
+      ).status,
+      403,
+    );
+    assert.notEqual(app.store.state.owner.passwordEnabled, false);
+    await app.store.transaction(value=>{value.owner.passwordEnabled=false;});
+    assert.equal((await request('/login',{username:'Fixture owner',password:'a long fixture-only password',passwordEnabled:true})).status,403);
+    assert.equal((await request('/state',undefined,{Cookie:cookie})).status,200);
+    assert.equal((await request('/security',{passwordEnabled:true},authenticated)).status,403);
+    await app.store.transaction(value=>{value.owner.passwordEnabled=true;});
+    assert.equal(
+      (
+        await request(
           "/preferences",
           { setup: { step: 5, skipStep: 4, complete: false } },
           authenticated,

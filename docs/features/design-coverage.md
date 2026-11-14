@@ -25,7 +25,7 @@ This inventory covers the controls in the supplied Main, Onboarding, Overview, M
 | Passkey sign-in | Implemented and previously verified with a virtual WebAuthn authenticator; physical devices unverified. |
 | Password sign-in | Implemented with scrypt, sessions and origin/CSRF boundaries. |
 | Username | Implemented exact owner-username/password matching with backwards-compatible saved owner names and no anonymous identity disclosure. Scope remains one owner. |
-| Disable password sign-in | Pending; password recovery stays enabled. |
+| Disable password sign-in | Implemented explicit Settings choice with registered-passkey prerequisite and fresh verified passkey for disable/re-enable. Saved password and existing sessions are preserved; no password-only recovery endpoint. New browser proof pending. |
 | Five-attempt unlock ladder | Five-attempt/fifteen-minute cooldown and bounded in-flight verification implemented. Richer ladder/ticket recovery remains pending, not simulated. |
 | Pre-auth language/theme buttons | Implemented browser-local controls; initial choices carry into new-owner setup. Existing account preferences apply after sign-in. |
 | Target/accelerator/appliance release facts | Only actual discovered runtime facts shown; 29-target and appliance-OS claims are not made. |

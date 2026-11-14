@@ -27,3 +27,5 @@ Main auth unit now requires #username for password sign-in, using the original #
 Overview unit adds actual bounded sample history, explicit resource scope and independent persisted state/architecture filters. Native twenty-four tests pass, three QEMU cases skip only on the native host. New image/browser proof pending; host-specific metrics must stay out of public captures without review.
 
 Lifecycle unit adds retained-disk remove/restore, bulk ACPI requests, tags and persistent folder groups. Native twenty-seven tests pass with three runtime skips. Before accepting the new image, run actual HTTP/QEMU removal rejection, byte-preservation and restoration checks, then browser confirmation/result dialogs.
+
+Password-mode unit requires fresh verified passkey before explicit disable/re-enable, retains credentials/other sessions and rejects password-only recovery attempts. Provenance helper preserves actual build time with browser-local zone/seconds and remains visible at360px. New exact-image/virtual-authenticator toggle proof pending.

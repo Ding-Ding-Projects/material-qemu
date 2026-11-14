@@ -1,3 +1,4 @@
+import { formatBuildTimestamp } from "./provenance.js";
 import { loadDraft, saveDraft, clearDraft } from "./drafts.js";
 import { platformFields } from "./capability-view.js";
 import { createViews } from "./views.js";
@@ -160,7 +161,7 @@ function render() {
     return;
   }
   $("#app").innerHTML =
-    `<header class="topbar"><div class="brand"><span class="mark" aria-hidden="true"><span class="icon">memory</span></span>Material QEMU</div><div class="search"><input id="global-search" aria-label="${t("Search machines", "搜尋機器")}" placeholder="${t("Search machines, folders and notes", "搜尋機器、資料夾和備註")}" value="${escape(query)}"></div><span class="spacer"></span><span class="pill healthy health">● ${t("Host connected", "主機已連線")}</span>${button("logout", t("Sign out", "登出"), "ghost")}</header><div class="shell"><nav aria-label="${t("Workspace", "工作區")}">${["overview", "machines", "new"].map((k) => button(`page:${k}`, `<span class="icon" aria-hidden="true">${{ overview: "dashboard", machines: "view_list", new: "add" }[k]}</span><span>${label(k)}</span>`, page === k ? "active" : "")).join("")}<div class="group">${t("Machines", "機器")}</div>${state.machines.map((m) => button(`console:${m.id}`, `<span class="icon" aria-hidden="true">computer</span><span class="nav-name">${escape(m.name)}</span>`, "machine-nav")).join("")}<div class="group">${t("Your workspace", "你的工作區")}</div>${["settings", "history", "docs"].map((k) => button(`page:${k}`, label(k), page === k ? "active" : "")).join("")}<div class="bottom">Material QEMU 0.1.0<br>${t("Built", "建置時間")} ${escape(state.updatedAt || t("unavailable", "未能提供"))}<br>${escape(state.owner.name)}</div></nav><main class="main" id="main" tabindex="-1">${({ overview: views().overview, machines: views().machines, new: machineWizard, settings: views().settings, history: views().history, docs: views().docs, console: views().consolePage }[page] || views().overview)()}</main></div>`;
+    `<header class="topbar"><div class="brand"><span class="mark" aria-hidden="true"><span class="icon">memory</span></span>Material QEMU</div>${buildMetadata()}<div class="search"><input id="global-search" aria-label="${t("Search machines", "搜尋機器")}" placeholder="${t("Search machines, folders and notes", "搜尋機器、資料夾和備註")}" value="${escape(query)}"></div><span class="spacer"></span><span class="pill healthy health">● ${t("Host connected", "主機已連線")}</span>${button("logout", t("Sign out", "登出"), "ghost")}</header><div class="shell"><nav aria-label="${t("Workspace", "工作區")}">${["overview", "machines", "new"].map((k) => button(`page:${k}`, `<span class="icon" aria-hidden="true">${{ overview: "dashboard", machines: "view_list", new: "add" }[k]}</span><span>${label(k)}</span>`, page === k ? "active" : "")).join("")}<div class="group">${t("Machines", "機器")}</div>${state.machines.map((m) => button(`console:${m.id}`, `<span class="icon" aria-hidden="true">computer</span><span class="nav-name">${escape(m.name)}</span>`, "machine-nav")).join("")}<div class="group">${t("Your workspace", "你的工作區")}</div>${["settings", "history", "docs"].map((k) => button(`page:${k}`, label(k), page === k ? "active" : "")).join("")}<div class="bottom">${escape(state.owner.name)}</div></nav><main class="main" id="main" tabindex="-1">${({ overview: views().overview, machines: views().machines, new: machineWizard, settings: views().settings, history: views().history, docs: views().docs, console: views().consolePage }[page] || views().overview)()}</main></div>`;
   if (page === "console") {
     updateConsoleControls();
     connectConsole();
@@ -179,7 +180,7 @@ function render() {
 function renderAuth() {
   const setup = session?.setupRequired;
   $("#app").innerHTML =
-    `<header class="topbar"><div class="brand"><span class="mark" aria-hidden="true"><span class="icon">memory</span></span>Material QEMU</div><span class="spacer"></span><small>0.1.0 · ${escape(session.updatedAt || t("Build time unavailable", "未能提供建置時間"))}</small><div class="auth-controls">${select(
+    `<header class="topbar"><div class="brand"><span class="mark" aria-hidden="true"><span class="icon">memory</span></span>Material QEMU</div><span class="spacer"></span>${buildMetadata()}<div class="auth-controls">${select(
       "auth-language",
       t("Language", "語言"),
       [
@@ -197,7 +198,7 @@ function renderAuth() {
         ["system", t("Follow device", "跟隨裝置")],
       ],
       localStorage.getItem("mq-theme") || "dark",
-    )}</div></header><main class="auth"><div class="card auth-card"><section class="auth-intro"><div class="mark" aria-hidden="true"><span class="icon">memory</span></div><span class="pill">${t("Your machines. Your control.", "你的機器，由你掌控。")}</span><h1 style="margin-top:24px">${t("A quieter home for your virtual machines.", "虛擬機器的安心基地。")}</h1><p class="muted">${t("One workspace for QEMU. Manage, monitor and connect, with everything running on your own host.", "一個 QEMU 工作區，管理、監察及連線，全部在你的主機上運行。")}</p><p class="muted-line">${t("Private by default. No cloud account required.", "預設私人使用，毋須雲端帳戶。")}</p></section><section class="auth-form"><h2>${setup ? t("Welcome to your new workspace", "歡迎使用新工作區") : t("Welcome back", "歡迎回來")}</h2><p class="muted">${setup ? t("Create the owner account to begin guided setup.", "建立擁有人帳戶，開始設定。") : t("Unlock your local workspace.", "解鎖你的本機工作區。")}</p>${!setup ? button("passkey-login", t("Sign in with a passkey", "使用通行密鑰登入"), "primary", 'style="width:100%;margin-bottom:22px"') : ""}<form id="auth-form">${setup ? field("owner", t("Owner username", "擁有人使用者名稱"), "", "text", 'required autocomplete="name"') + field("bootstrap", t("Setup authorization code", "設定授權碼"), "", "password", 'required autocomplete="off"') : ""}${!setup ? field("username", t("Username", "使用者名稱"), "", "text", 'required autocomplete="username" maxlength="80"') : ""}${field("password", t("Password", "密碼"), "", "password", `required minlength="12" maxlength="256" autocomplete="${setup ? "new-password" : "current-password"}"`)}<button class="${setup ? "primary" : ""}" type="submit" style="width:100%">${setup ? t("Create owner account", "建立擁有人帳戶") : t("Sign in with password", "使用密碼登入")}</button></form><p class="muted-line">${setup ? t("The setup authorization code is stored in the host data directory. Passwords need at least 12 characters.", "設定授權碼存於主機資料目錄，密碼最少需要十二個字元。") : t("Passkeys require HTTPS or localhost. Your owner username and password remain a recovery method. After five unsuccessful attempts, wait fifteen minutes.", "通行密鑰需要 HTTPS 或 localhost。擁有人使用者名稱和密碼仍可作復原登入。五次不成功後，請等十五分鐘。")}</p></section></div></main>`;
+    )}</div></header><main class="auth"><div class="card auth-card"><section class="auth-intro"><div class="mark" aria-hidden="true"><span class="icon">memory</span></div><span class="pill">${t("Your machines. Your control.", "你的機器，由你掌控。")}</span><h1 style="margin-top:24px">${t("A quieter home for your virtual machines.", "虛擬機器的安心基地。")}</h1><p class="muted">${t("One workspace for QEMU. Manage, monitor and connect, with everything running on your own host.", "一個 QEMU 工作區，管理、監察及連線，全部在你的主機上運行。")}</p><p class="muted-line">${t("Private by default. No cloud account required.", "預設私人使用，毋須雲端帳戶。")}</p></section><section class="auth-form"><h2>${setup ? t("Welcome to your new workspace", "歡迎使用新工作區") : t("Welcome back", "歡迎回來")}</h2><p class="muted">${setup ? t("Create the owner account to begin guided setup.", "建立擁有人帳戶，開始設定。") : t("Unlock your local workspace.", "解鎖你的本機工作區。")}</p>${!setup ? button("passkey-login", t("Sign in with a passkey", "使用通行密鑰登入"), "primary", 'style="width:100%;margin-bottom:22px"') : ""}<form id="auth-form"><fieldset class="auth-fieldset" ${!setup && session.passwordEnabled === false ? "disabled" : ""}>${setup ? field("owner", t("Owner username", "擁有人使用者名稱"), "", "text", 'required autocomplete="name"') + field("bootstrap", t("Setup authorization code", "設定授權碼"), "", "password", 'required autocomplete="off"') : ""}${!setup ? field("username", t("Username", "使用者名稱"), "", "text", 'required autocomplete="username" maxlength="80"') : ""}${field("password", t("Password", "密碼"), "", "password", `required minlength="12" maxlength="256" autocomplete="${setup ? "new-password" : "current-password"}"`)}<button class="${setup ? "primary" : ""}" type="submit" style="width:100%">${setup ? t("Create owner account", "建立擁有人帳戶") : t("Sign in with password", "使用密碼登入")}</button></fieldset></form>${!setup && session.passwordEnabled === false ? `<p class="help">${t("Password sign-in is disabled. Use a registered passkey. The saved password is retained for explicit re-enabling after passkey verification.", "密碼登入已停用，請使用已登記通行密鑰。密碼會保留，驗證通行密鑰後才可重新啟用。")}</p>` : ""}<p class="muted-line">${setup ? t("The setup authorization code is stored in the host data directory. Passwords need at least 12 characters.", "設定授權碼存於主機資料目錄，密碼最少需要十二個字元。") : t("Passkeys require HTTPS or localhost. Password availability follows your account setting. After five unsuccessful attempts, wait fifteen minutes.", "通行密鑰需要 HTTPS 或 localhost。密碼是否可用會跟隨帳戶設定，五次不成功後請等十五分鐘。")}</p></section></div></main>`;
   $("#auth-form").onsubmit = async (e) => {
     e.preventDefault();
     const values = new FormData(e.target);
@@ -281,7 +282,7 @@ function renderOnboarding() {
   if (n === 8)
     content = `<div class="empty"><div class="empty-icon">✓</div><h2>${t("Your workspace is ready", "工作區已準備好")}</h2><p>${t("Your owner account and preferences are saved. You can register a passkey in Settings and create your first machine.", "帳戶和偏好已儲存，可在設定登記通行密鑰，再建立第一部機器。")}</p></div>`;
   $("#app").innerHTML =
-    `<header class="topbar"><div class="brand"><span class="mark" aria-hidden="true"><span class="icon">memory</span></span>Material QEMU</div><span class="spacer"></span><span class="pill">${t("Setup saved automatically", "設定進度自動儲存")}</span></header><main class="main wizard">${views().heading(t("Make yourself at home", "設定你的工作區"), t("A few practical steps, then you are in.", "幾個實用步驟，完成即可開始。"))}${steps(setupNames, n)}<section class="card wizard-content"><h2>${t(...setupNames[n - 1])}</h2>${content}</section><div class="wizard-footer"><div class="actions">${button("setup-save", t("Save and finish later", "儲存並稍後繼續"))}${[4, 5, 6, 7].includes(n) ? button("setup-skip", t("Skip this step", "跳過此步驟"), "ghost") : ""}</div>${n > 2 ? button("setup-back", t("Back", "上一步")) : "<span></span>"}${button(n === 8 ? "setup-finish" : "setup-next", n === 8 ? t("Open workspace", "開啟工作區") : t("Save & continue", "儲存並繼續"), "primary")}</div></main>`;
+    `<header class="topbar"><div class="brand"><span class="mark" aria-hidden="true"><span class="icon">memory</span></span>Material QEMU</div>${buildMetadata()}<span class="spacer"></span><span class="pill">${t("Setup saved automatically", "設定進度自動儲存")}</span></header><main class="main wizard">${views().heading(t("Make yourself at home", "設定你的工作區"), t("A few practical steps, then you are in.", "幾個實用步驟，完成即可開始。"))}${steps(setupNames, n)}<section class="card wizard-content"><h2>${t(...setupNames[n - 1])}</h2>${content}</section><div class="wizard-footer"><div class="actions">${button("setup-save", t("Save and finish later", "儲存並稍後繼續"))}${[4, 5, 6, 7].includes(n) ? button("setup-skip", t("Skip this step", "跳過此步驟"), "ghost") : ""}</div>${n > 2 ? button("setup-back", t("Back", "上一步")) : "<span></span>"}${button(n === 8 ? "setup-finish" : "setup-next", n === 8 ? t("Open workspace", "開啟工作區") : t("Save & continue", "儲存並繼續"), "primary")}</div></main>`;
 }
 const machineSteps = [
   ["Preset", "預設"],
@@ -599,6 +600,35 @@ document.addEventListener("click", async (e) => {
       const login = await api("/passkey/login", { id: result.id, response });
       session = { authenticated: true, csrf: login.csrf };
       return refresh();
+    }
+    if (action === "password-mode") {
+      const enabled = state.owner.passwordEnabled === false;
+      return modal(
+        enabled
+          ? t("Enable password sign-in", "啟用密碼登入")
+          : t("Disable password sign-in", "停用密碼登入"),
+        `<p>${enabled ? t("A fresh passkey verification is required before enabling the saved owner password.", "重新驗證通行密鑰後，才可啟用已儲存擁有人密碼。") : t("After this change, new sign-ins require a registered passkey. The saved password and existing sessions are preserved. No password-only recovery route is provided.", "更改後，新登入需要已登記通行密鑰，已儲存密碼及現有工作階段會保留，不提供只靠密碼的復原途徑。")}</p>`,
+        t("Verify passkey and change", "驗證通行密鑰並更改"),
+        async () => {
+          const challenge = await api("/passkey/login-options", {});
+          const response = await startAuthentication({
+            optionsJSON: challenge.options,
+          });
+          const verified = await api("/passkey/login", {
+            id: challenge.id,
+            response,
+          });
+          session.csrf = verified.csrf;
+          await api("/security", { passwordEnabled: enabled });
+          await refresh();
+          notify(
+            t(
+              "Sign-in setting saved after passkey verification.",
+              "已在通行密鑰驗證後儲存登入設定。",
+            ),
+          );
+        },
+      );
     }
     if (action === "register-passkey") {
       const { options } = await api("/passkey/register-options", {});
@@ -1367,3 +1397,11 @@ document.addEventListener("change", (event) => {
     document.getElementById(event.target.id)?.focus();
   }
 });
+
+function buildMetadata() {
+  const data = state || session,
+    formatted = formatBuildTimestamp(data?.updatedAt, {
+      locale: state?.settings.language === "yue" ? "zh-HK" : "en-CA",
+    });
+  return `<div class="brand-meta"><span>v${escape(data?.version || t("Unavailable", "未能提供"))}</span>${formatted ? `<time datetime="${escape(formatted.datetime)}" title="${escape(formatted.datetime)}">${t("Built", "建置")} ${escape(formatted.display)}</time>` : `<span>${t("Build time unavailable", "未能提供建置時間")}</span>`}</div>`;
+}

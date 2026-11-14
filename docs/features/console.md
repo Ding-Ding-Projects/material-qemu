@@ -7,3 +7,5 @@ Reset opens an explicit warning before issuing the server-owned QMP reset comman
 On narrow screens the dismissible polite status region participates in layout above the header. It reserves its height rather than obscuring machine controls. Desktop notifications retain their bounded toast duration.
 
 Roboto Flex and Material Symbols Rounded are pinned in the package lockfile and served from local installed packages. Their SIL Open Font License texts are retained under `docs/licenses`. No remote font request is part of the runtime.
+
+Build provenance stays visible in the initial authenticated header at narrow widths. It formats the actual build metadata in the browser timezone with seconds and an explicit zone/offset. Missing or invalid metadata remains unavailable; the current clock is never substituted for a build time.

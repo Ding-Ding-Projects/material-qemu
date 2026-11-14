@@ -14,6 +14,7 @@ import {
 import { Store, event } from "./store.mjs";
 import { Qemu, validateMachine, launchPlan, containedFile } from "./qemu.mjs";
 import { removeMachine, restoreMachine } from "./machine-records.mjs";
+import { setPasswordAccess } from "./security-settings.mjs";
 import { Sessions, hashPassword, checkPassword } from "./auth.mjs";
 import { updateOrganization, requireFolder } from "./organization.mjs";
 import { receiveIso, MAX_ISO_BYTES } from "./media.mjs";
@@ -60,8 +61,8 @@ export async function createApplication(options = {}) {
     });
     res.end(JSON.stringify(body));
   };
-  const login = (res) => {
-    const session = sessions.issue();
+  const login = (res, method = "password") => {
+    const session = sessions.issue(method);
     json(
       res,
       200,
@@ -72,6 +73,7 @@ export async function createApplication(options = {}) {
   const sessionInfo = (session) => ({
     authenticated: Boolean(session),
     setupRequired: !store.state.owner,
+    passwordEnabled: store.state.owner?.passwordEnabled !== false,
     setup: session ? store.state.setup : null,
     csrf: session?.csrf,
     version: "0.1.0",
@@ -184,6 +186,10 @@ export async function createApplication(options = {}) {
         return login(res);
       }
       if (route === "/api/login" && req.method === "POST") {
+        if (store.state.owner?.passwordEnabled === false)
+          return json(res, 403, {
+            error: "Password sign-in is disabled. Use a registered passkey.",
+          });
         const address = req.socket.remoteAddress;
         if (!sessions.reserve(address))
           return json(res, 429, {
@@ -273,12 +279,27 @@ export async function createApplication(options = {}) {
             current.counter = next;
           });
           successful = true;
-          return login(res);
+          return login(res, "passkey");
         } finally {
           sessions.finish(address, successful);
         }
       }
       if (!session) return json(res, 401, { error: "Sign in to continue." });
+      if (route === "/api/security" && req.method === "POST") {
+        if (
+          session.method !== "passkey" ||
+          !session.passkeyVerifiedAt ||
+          Date.now() - session.passkeyVerifiedAt > 5 * 60 * 1000
+        )
+          return json(res, 403, {
+            error: "Verify a passkey again before changing password sign-in.",
+          });
+        return json(
+          res,
+          200,
+          await store.transaction((s) => setPasswordAccess(s, body, session)),
+        );
+      }
       if (route === "/api/logout" && req.method === "POST") {
         sessions.items.delete(session.id);
         for (const ws of wss.clients)
@@ -300,6 +321,7 @@ export async function createApplication(options = {}) {
           owner: {
             name: store.state.owner.name,
             passkeys: store.state.owner.credentials.length,
+            passwordEnabled: store.state.owner.passwordEnabled !== false,
           },
           machines: store.state.machines.map((m) => ({
             ...m,

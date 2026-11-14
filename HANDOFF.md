@@ -63,3 +63,7 @@ The backend collects actual resource samples every two seconds into a ninety-poi
 ## Retained-disk lifecycle unit
 
 Single/bulk confirmed record removal archives definitions and retains disks. Running/paused machines are rejected, and restoration checks the managed disk before returning a stopped definition. Bulk graceful ACPI shutdown, bounded tags and persisted collapsible folder groups are implemented. Unit tests cover reload, negative confirmations, tags and folder state; real HTTP tests compare disk bytes around removal/restoration. New exact-image/browser proof remains pending. No permanent disk deletion is introduced.
+
+## Password-mode and provenance unit
+
+Password disable/re-enable requires a registered passkey and fresh successful passkey authentication. Saved credentials and existing sessions remain intact; direct password-only setting changes and disabled password login are rejected. No unauthenticated recovery route exists. Build provenance is visible in the header at narrow widths and formats the actual timestamp in browser-local time with seconds/zone. Unit and negative HTTP tests pass; actual virtual-authenticator toggle/re-enable browser proof is still pending.

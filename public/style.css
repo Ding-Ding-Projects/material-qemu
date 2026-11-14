@@ -1100,3 +1100,34 @@ h1 {
   white-space: normal;
   overflow-wrap: anywhere;
 }
+
+.auth-fieldset {
+  border: 0;
+  padding: 0;
+  margin: 0;
+  min-width: 0;
+}
+
+.brand-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 0 1 270px;
+  font-size: 11px;
+  line-height: 1.4;
+  color: var(--muted);
+  overflow-wrap: anywhere;
+}
+.brand-meta time {
+  white-space: normal;
+}
+@media (max-width: 760px) {
+  .topbar .brand-meta {
+    order: 2;
+    flex: 1 1 100%;
+  }
+  .auth-controls {
+    order: 3;
+    width: 100%;
+  }
+}

@@ -27,11 +27,13 @@ export class Sessions {
     this.failures = new Map();
     this.inflight = new Map();
   }
-  issue() {
+  issue(method = "password") {
     const id = randomBytes(32).toString("base64url");
     const value = {
       csrf: randomBytes(24).toString("base64url"),
       expires: Date.now() + 8 * 60 * 60 * 1000,
+      method,
+      passkeyVerifiedAt: method === "passkey" ? Date.now() : null,
     };
     this.items.set(id, value);
     return { id, ...value };
