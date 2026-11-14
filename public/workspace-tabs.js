@@ -40,6 +40,7 @@ export function syncTabs(saved, available) {
     pinned: bounded(saved ? saved.pinned : ["overview"]).filter((id) =>
       open.includes(id),
     ),
+    active: open.includes(saved?.active) ? saved.active : open[0],
   };
 }
 export function activateTab(state, id) {
@@ -49,7 +50,11 @@ export function activateTab(state, id) {
     ...state,
     open: state.open.includes(id) ? state.open : [...state.open, id],
     closed: state.closed.filter((value) => value !== id),
+    active: id,
   };
+}
+export function initialTab(state) {
+  return state.open.includes(state.active) ? state.active : state.open[0];
 }
 export function closeTab(state, id) {
   if (state.pinned.includes(id)) return { state, error: "pinned" };

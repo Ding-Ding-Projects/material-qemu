@@ -74,3 +74,7 @@ Implemented destination tabs now persist open/closed/pinned state, focus existin
 ## Inactive console export work
 
 The next console-media helper and its boundary tests are preserved but not imported into the running application. PNG, recording and annotation controls are not yet delivered. Complete integration and actual framebuffer/browser verification remain required.
+
+## Startup tab restoration repair
+
+The startup path now restores an already-open saved active destination before rendering, rather than automatically activating the default Overview. A negative regression closes unpinned Overview while Settings is active, serializes/reloads state and proves Overview remains closed. Legacy tab state without an active field selects an already-open destination. Explicit navigation can still reopen a closed tab. New browser verification remains pending.

@@ -5,6 +5,7 @@ import {
   closeTab,
   pinTab,
   openAllTabs,
+  initialTab,
 } from "./workspace-tabs.js";
 import { commandInventory, searchCommands } from "./commands.js";
 import { formatBuildTimestamp } from "./provenance.js";
@@ -46,6 +47,7 @@ let onboardingMachine = false;
 let workspace = readTabs(localStorage),
   catalogMode = "commands",
   catalogEntries = [];
+let workspaceRestored = false;
 let previewTimer,
   previewSequence = 0;
 let consoleScale = localStorage.getItem("mq-console-scale") !== "false";
@@ -414,7 +416,7 @@ async function connectConsole() {
     notify(e.message);
   }
 }
-function startWizard(machine) {
+function initializeWizard(machine) {
   editing = Boolean(machine);
   const draft = loadDraft(localStorage, machine?.id);
   wizardStep = draft?.step || 1;
@@ -438,6 +440,9 @@ function startWizard(machine) {
     }),
     ...(draft?.data || {}),
   };
+}
+function startWizard(machine) {
+  initializeWizard(machine);
   page = "new";
   render();
 }
@@ -1539,6 +1544,19 @@ function workspaceNavigation() {
     workspace,
     models.map((model) => model.id),
   );
+  if (!workspaceRestored) {
+    workspaceRestored = true;
+    if (!onboardingMachine) {
+      const restored = initialTab(workspace);
+      if (restored?.startsWith("console:")) {
+        page = "console";
+        selected = restored.slice(8);
+      } else {
+        page = restored || "overview";
+        if (page === "new") initializeWizard();
+      }
+    }
+  }
   if (!models.some((model) => model.id === currentTabId())) {
     const fallback = workspace.open[0];
     if (fallback.startsWith("console:")) {

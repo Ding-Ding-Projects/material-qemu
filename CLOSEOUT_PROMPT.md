@@ -31,3 +31,5 @@ Lifecycle unit adds retained-disk remove/restore, bulk ACPI requests, tags and p
 Password-mode unit requires fresh verified passkey before explicit disable/re-enable, retains credentials/other sessions and rejects password-only recovery attempts. Provenance helper preserves actual build time with browser-local zone/seconds and remains visible at360px. New exact-image/virtual-authenticator toggle proof pending.
 
 Shared navigation unit adds persistent open/close/pin tabs, Open every tab, New tab catalog and Ctrl+Shift+F command palette with live settings. State/inventory tests pass; next immutable image needs narrow/keyboard/catalog/persistence proof. Full regex parity remains pending and is not represented by a small tester.
+
+Priority navigation repair preserves a deliberately closed Overview across startup by restoring a valid open active destination. Four workspace tests pass, including the reproduced negative path. Inactive console-media helper is preserved in a separate incomplete checkpoint and is not yet connected to UI. New navigation image/browser readback pending.

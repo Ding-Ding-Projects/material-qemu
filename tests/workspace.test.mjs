@@ -6,6 +6,7 @@ import {
   closeTab,
   pinTab,
   openAllTabs,
+  initialTab,
 } from "../public/workspace-tabs.js";
 import { commandInventory, searchCommands } from "../public/commands.js";
 test("workspace destinations open once, retain explicit closes and add new destinations", () => {
@@ -43,4 +44,27 @@ test("command inventory contains actual machine and settings controls with indep
   assert.ok(entries.find((entry) => entry.id === "password-mode").unavailable);
   assert.ok(searchCommands(entries, "lab machine").length > 4);
   assert.equal(searchCommands(entries, "does not exist").length, 0);
+});
+test("a closed Overview stays closed when startup restores another open active tab", () => {
+  let state = syncTabs(null, ["overview", "machines", "settings"]);
+  state = activateTab(state, "settings");
+  state = pinTab(state, "overview");
+  state = closeTab(state, "overview").state;
+  const reloaded = syncTabs(JSON.parse(JSON.stringify(state)), [
+    "overview",
+    "machines",
+    "settings",
+  ]);
+  assert.equal(initialTab(reloaded), "settings");
+  assert.equal(reloaded.open.includes("overview"), false);
+  const legacy = { ...reloaded };
+  delete legacy.active;
+  assert.equal(
+    initialTab(syncTabs(legacy, ["overview", "machines", "settings"])),
+    "machines",
+  );
+  assert.equal(
+    activateTab(reloaded, "overview").open.includes("overview"),
+    true,
+  );
 });
