@@ -19,3 +19,5 @@ The application includes task-oriented help for creating machines, controlling l
 - [Owner authentication and cooldown](authentication.md)
 
 - [Measured Overview history and filters](overview.md)
+
+- [Retained-disk removal, restoration and bulk lifecycle](machine-lifecycle.md)

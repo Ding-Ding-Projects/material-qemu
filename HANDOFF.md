@@ -59,3 +59,7 @@ Password sign-in now requires the owner username. Existing accounts without a us
 ## Overview sampling unit
 
 The backend collects actual resource samples every two seconds into a ninety-point ring. Overview renders CPU/memory history only after two valid samples, exposes host-visible/container scope and retains last-known warnings without fabricated replacements. Independent state/architecture filters persist in account settings. Sampling, chart-coordinate and persistence tests pass; newer browser acceptance remains pending. Resource collection was extracted from QEMU process management into its own module.
+
+## Retained-disk lifecycle unit
+
+Single/bulk confirmed record removal archives definitions and retains disks. Running/paused machines are rejected, and restoration checks the managed disk before returning a stopped definition. Bulk graceful ACPI shutdown, bounded tags and persisted collapsible folder groups are implemented. Unit tests cover reload, negative confirmations, tags and folder state; real HTTP tests compare disk bytes around removal/restoration. New exact-image/browser proof remains pending. No permanent disk deletion is introduced.

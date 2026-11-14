@@ -4,7 +4,7 @@ export function filterMachines(
 ) {
   const result = machines.filter((machine) => {
     const text =
-      `${machine.name} ${machine.notes || ""} ${machine.folder || ""} ${machine.arch}`.toLowerCase();
+      `${machine.name} ${machine.notes || ""} ${machine.folder || ""} ${machine.arch} ${(machine.tags || []).join(" ")}`.toLowerCase();
     const recent =
       machine.lastUsed &&
       Number.isFinite(Date.parse(machine.lastUsed)) &&

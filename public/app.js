@@ -882,6 +882,102 @@ document.addEventListener("click", async (e) => {
       render();
       return;
     }
+    if (action === "clear-selected") {
+      checked.clear();
+      render();
+      return;
+    }
+    if (action.startsWith("toggle-folder:")) {
+      const name = decodeURIComponent(action.slice(14)),
+        collapsed = new Set(state.settings.collapsedFolders || []);
+      collapsed.has(name) ? collapsed.delete(name) : collapsed.add(name);
+      await api("/preferences", {
+        settings: { collapsedFolders: [...collapsed] },
+      });
+      return refresh();
+    }
+    if (action.startsWith("tags:")) {
+      const machine = state.machines.find(
+        (value) => value.id === action.slice(5),
+      );
+      return modal(
+        t("Edit machine tags", "編輯機器標籤"),
+        field(
+          "tags",
+          t("Tags separated by commas", "以逗號分隔標籤"),
+          (machine.tags || []).join(", "),
+          "text",
+          'maxlength="2048"',
+        ) +
+          `<p class="muted">${t("Up to 16 tags, each at most 32 characters. Tags can change while the machine runs.", "最多十六個標籤，每個最多三十二字元，機器運行時亦可更改。")}</p>`,
+        t("Save tags", "儲存標籤"),
+        async (f) => {
+          await api(`/machines/${machine.id}`, { tags: f.get("tags") });
+          await refresh();
+        },
+      );
+    }
+    if (action === "removed-machines")
+      return modal(
+        t("Retained machine definitions", "保留的機器設定"),
+        `<p>${t("Disks remain in managed storage. Restoring returns a stopped machine to the workspace.", "磁碟保留在管理儲存空間，還原會將已停止機器放回工作區。")}</p><div class="organization-list">${(state.removedMachines || []).map((machine) => `<section><strong>${escape(machine.name)}</strong><small>${escape(machine.arch)} · ${machine.diskGiB} GiB</small>${button(`restore:${machine.id}`, t("Restore", "還原"))}</section>`).join("") || `<p>${t("No retained definitions.", "沒有保留設定。")}</p>`}</div>`,
+        t("Close", "關閉"),
+        async () => {},
+      );
+    if (action.startsWith("restore:")) {
+      await api(`/removed-machines/${action.slice(8)}/restore`, {});
+      await refresh();
+      $("#dialog").close();
+      notify(
+        t(
+          "Machine restored with its retained disk.",
+          "機器已連同保留磁碟還原。",
+        ),
+      );
+      return;
+    }
+    if (action.startsWith("remove:") || action === "bulk-remove") {
+      const machines =
+        action === "bulk-remove"
+          ? state.machines.filter((value) => checked.has(value.id))
+          : [state.machines.find((value) => value.id === action.slice(7))];
+      const expected = machines.length === 1 ? machines[0].name : "REMOVE";
+      return modal(
+        t("Remove machines, retain disks", "移除機器，保留磁碟"),
+        `<ul>${machines.map((machine) => `<li>${escape(machine.name)}</li>`).join("")}</ul><p>${t("Only stopped machines can be removed. Definitions are archived for restoration; no disk is deleted.", "只可移除已停止機器，設定會存檔以供還原，不會刪除磁碟。")}</p>${field("confirmName", t(`Type ${expected} to confirm`, `輸入 ${expected} 確認`), "", "text", "required")}<label class="check"><input name="retainDisk" type="checkbox" checked required>${t("Retain every disk and the recoverable definition", "保留每個磁碟及可還原設定")}</label>`,
+        t("Remove from workspace", "從工作區移除"),
+        async (f) => {
+          if (f.get("confirmName") !== expected)
+            throw new Error(
+              t("Confirmation did not match.", "確認文字不相符。"),
+            );
+          const outcomes = [];
+          for (const machine of machines) {
+            try {
+              await api(`/machines/${machine.id}/remove`, {
+                confirmName: machine.name,
+                retainDisk: Boolean(f.get("retainDisk")),
+              });
+              checked.delete(machine.id);
+              if (selected === machine.id) selected = "";
+              outcomes.push(
+                `${machine.name}: ${t("removed; disk retained", "已移除，磁碟保留")}`,
+              );
+            } catch (error) {
+              outcomes.push(`${machine.name}: ${error.message}`);
+            }
+          }
+          await refresh();
+          modal(
+            t("Removal results", "移除結果"),
+            `<ul>${outcomes.map((value) => `<li>${escape(value)}</li>`).join("")}</ul>`,
+            t("Close", "關閉"),
+            async () => {},
+          );
+          return false;
+        },
+      );
+    }
     if (action.startsWith("move:") || action === "bulk-move") {
       const ids = action === "bulk-move" ? [...checked] : [action.slice(5)];
       return modal(

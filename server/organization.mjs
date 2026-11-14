@@ -14,6 +14,25 @@ export function requireFolder(state, name) {
       "Selected folder no longer exists. Refresh and choose another folder.",
     );
 }
+export function normalizeTags(value) {
+  const items =
+    value === undefined
+      ? []
+      : typeof value === "string"
+        ? value.split(",").filter((item) => item.trim())
+        : value;
+  if (!Array.isArray(items) || items.length > 16)
+    throw new Error("Use at most 16 tags.");
+  const result = [];
+  for (const item of items) {
+    if (typeof item !== "string") throw new Error("Tags must be text.");
+    const tag = item.trim();
+    if (!tag || [...tag].length > 32 || /[\x00-\x1f\x7f]/.test(tag))
+      throw new Error("Each tag must contain 1–32 printable characters.");
+    if (!result.includes(tag)) result.push(tag);
+  }
+  return result;
+}
 export function updateOrganization(state, body) {
   if (Object.hasOwn(body, "folder")) {
     const name = folderName(body.folder);
@@ -30,6 +49,10 @@ export function updateOrganization(state, body) {
     if (from !== to && state.folders.includes(to))
       throw new Error("A folder with the new name already exists.");
     state.folders = state.folders.map((name) => (name === from ? to : name));
+    if (state.settings.collapsedFolders)
+      state.settings.collapsedFolders = state.settings.collapsedFolders.map(
+        (name) => (name === from ? to : name),
+      );
     for (const machine of state.machines)
       if (machine.folder === from) machine.folder = to;
     for (const view of state.views) if (view.folder === from) view.folder = to;
@@ -49,6 +72,10 @@ export function updateOrganization(state, body) {
         "Confirm the exact folder name and move its machines to Unfiled.",
       );
     state.folders = state.folders.filter((value) => value !== name);
+    if (state.settings.collapsedFolders)
+      state.settings.collapsedFolders = state.settings.collapsedFolders.filter(
+        (value) => value !== name,
+      );
     for (const machine of state.machines)
       if (machine.folder === name) machine.folder = "";
     for (const view of state.views) if (view.folder === name) view.folder = "";

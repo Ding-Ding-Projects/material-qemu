@@ -4,6 +4,7 @@ import { mkdir, readdir, realpath, stat } from "node:fs/promises";
 import path from "node:path";
 import net from "node:net";
 import { memoryLimit } from "./resources.mjs";
+import { normalizeTags } from "./organization.mjs";
 export { hostMetrics } from "./resources.mjs";
 
 const exec = promisify(execFile);
@@ -61,6 +62,7 @@ export function validateMachine(input, capabilities) {
     folder: String(input.folder || "").slice(0, 80),
     favourite: Boolean(input.favourite),
     notes: String(input.notes || "").slice(0, 2000),
+    tags: normalizeTags(input.tags),
   };
 }
 export async function containedFile(directory, name) {

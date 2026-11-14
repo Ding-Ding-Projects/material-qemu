@@ -12,7 +12,8 @@ import {
   verifyAuthenticationResponse,
 } from "@simplewebauthn/server";
 import { Store, event } from "./store.mjs";
-import { Qemu, validateMachine, hostMetrics, launchPlan } from "./qemu.mjs";
+import { Qemu, validateMachine, launchPlan, containedFile } from "./qemu.mjs";
+import { removeMachine, restoreMachine } from "./machine-records.mjs";
 import { Sessions, hashPassword, checkPassword } from "./auth.mjs";
 import { updateOrganization, requireFolder } from "./organization.mjs";
 import { receiveIso, MAX_ISO_BYTES } from "./media.mjs";
@@ -304,6 +305,7 @@ export async function createApplication(options = {}) {
             ...m,
             ...qemu.status(m.id),
           })),
+          removedMachines: store.state.removedMachines || [],
           settings: store.state.settings,
           folders: store.state.folders,
           views: store.state.views,
@@ -321,6 +323,18 @@ export async function createApplication(options = {}) {
         await store.transaction((s) => {
           if (body.settings) {
             const v = body.settings;
+            if (Array.isArray(v.collapsedFolders)) {
+              if (
+                v.collapsedFolders.length > 101 ||
+                v.collapsedFolders.some(
+                  (name) =>
+                    typeof name !== "string" ||
+                    (name !== "" && !s.folders.includes(name)),
+                )
+              )
+                throw new Error("Collapsed folder selection is invalid.");
+              s.settings.collapsedFolders = [...new Set(v.collapsedFolders)];
+            }
             if (
               ["all", "running", "paused", "stopped", "attention"].includes(
                 v.overviewState,
@@ -465,14 +479,30 @@ export async function createApplication(options = {}) {
         }
         return json(res, 201, { ...machine, ...qemu.status(machine.id) });
       }
+      const restoreMatch = route.match(
+        /^\/api\/removed-machines\/([a-f0-9-]{36})\/restore$/,
+      );
+      if (restoreMatch && req.method === "POST") {
+        const id = restoreMatch[1];
+        const result = await qemu.exclusive(id, async () => {
+          await containedFile(path.join(data, "disks"), `${id}.qcow2`);
+          return store.transaction((s) => restoreMachine(s, id));
+        });
+        return json(res, 200, result);
+      }
       const match = route.match(
-        /^\/api\/machines\/([a-f0-9-]{36})(?:\/(action|keys))?$/,
+        /^\/api\/machines\/([a-f0-9-]{36})(?:\/(action|keys|remove))?$/,
       );
       if (match && req.method === "POST") {
         if (!store.state.machines.some((m) => m.id === match[1]))
           return json(res, 404, { error: "Machine not found." });
         const result = await qemu.exclusive(match[1], async () => {
           const machine = store.state.machines.find((m) => m.id === match[1]);
+          if (!machine) throw new Error("Machine no longer exists.");
+          if (match[2] === "remove")
+            return store.transaction((s) =>
+              removeMachine(s, machine.id, body, qemu.status(machine.id).state),
+            );
           if (match[2] === "action") {
             if (body.action === "start") await qemu.start(machine);
             else await qemu.action(machine.id, body.action);
@@ -503,7 +533,7 @@ export async function createApplication(options = {}) {
             });
           }
           const metadataOnly = Object.keys(body).every((key) =>
-            ["favourite", "folder", "notes"].includes(key),
+            ["favourite", "folder", "notes", "tags"].includes(key),
           );
           if (!metadataOnly && qemu.status(machine.id).state !== "stopped")
             throw new Error("Stop the machine before editing hardware.");

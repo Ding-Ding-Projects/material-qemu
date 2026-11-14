@@ -1085,3 +1085,18 @@ h1 {
   stroke: var(--line);
   stroke-width: 1;
 }
+
+.machine-group {
+  margin-bottom: 24px;
+}
+.machine-group > .toolbar h3 {
+  margin: 0;
+}
+.machine-group > .toolbar button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  max-width: 100%;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}

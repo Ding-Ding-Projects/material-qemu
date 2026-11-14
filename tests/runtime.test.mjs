@@ -440,6 +440,28 @@ test("HTTP preview is inert, start-after-create launches, and live folder moves 
     assert.equal(app.qemu.status(machine.id).state, "running");
     assert.equal(app.store.state.machines[0].folder, "Running folder");
     assert.equal(
+      (
+        await call(
+          `/machines/${machine.id}`,
+          { tags: "work, gpu, work" },
+          headers,
+        )
+      ).status,
+      200,
+    );
+    assert.deepEqual(app.store.state.machines[0].tags, ["work", "gpu"]);
+    assert.equal(
+      (
+        await call(
+          `/machines/${machine.id}/remove`,
+          { confirmName: machine.name, retainDisk: true },
+          headers,
+        )
+      ).status,
+      400,
+    );
+    assert.equal(app.store.state.machines.length, 1);
+    assert.equal(
       (await call(`/machines/${machine.id}`, { folder: "Missing" }, headers))
         .status,
       400,
@@ -458,6 +480,39 @@ test("HTTP preview is inert, start-after-create launches, and live folder moves 
     const reloaded = await new Store(dir).open();
     assert.equal(reloaded.state.machines[0].id, machine.id);
     assert.ok(reloaded.state.machines[0].lastUsed);
+    const diskFile = path.join(dir, "disks", `${machine.id}.qcow2`),
+      beforeRemoval = await readFile(diskFile);
+    assert.equal(
+      (
+        await call(
+          `/machines/${machine.id}/remove`,
+          { confirmName: "Wrong", retainDisk: true },
+          headers,
+        )
+      ).status,
+      400,
+    );
+    assert.equal(
+      (
+        await call(
+          `/machines/${machine.id}/remove`,
+          { confirmName: machine.name, retainDisk: true },
+          headers,
+        )
+      ).status,
+      200,
+    );
+    assert.equal(app.store.state.machines.length, 0);
+    assert.equal(app.store.state.removedMachines.length, 1);
+    assert.ok((await readFile(diskFile)).equals(beforeRemoval));
+    assert.equal(
+      (await call(`/removed-machines/${machine.id}/restore`, {}, headers))
+        .status,
+      200,
+    );
+    assert.equal(app.store.state.machines[0].id, machine.id);
+    assert.ok((await readFile(diskFile)).equals(beforeRemoval));
+    assert.equal(app.qemu.status(machine.id).state, "stopped");
   } finally {
     await app.close();
     await rm(dir, { recursive: true, force: true });
