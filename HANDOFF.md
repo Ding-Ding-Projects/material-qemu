@@ -71,3 +71,6 @@ Password disable/re-enable requires a registered passkey and fresh successful pa
 ## Shared workspace navigation unit
 
 Implemented destination tabs now persist open/closed/pinned state, focus existing destinations and expose Open every tab plus New tab catalog. The command palette performs actual route/control actions and contains live theme/language/motion settings. Keyboard arrows/Home/End and selection state are implemented; drafts persist across navigation. Pure state/inventory tests pass; built browser acceptance of the new shell is pending. Full regex construction and advanced tab groups/reordering remain unfinished.
+## Inactive console export work
+
+The next console-media helper and its boundary tests are preserved but not imported into the running application. PNG, recording and annotation controls are not yet delivered. Complete integration and actual framebuffer/browser verification remain required.
