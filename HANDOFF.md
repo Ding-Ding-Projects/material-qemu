@@ -67,3 +67,7 @@ Single/bulk confirmed record removal archives definitions and retains disks. Run
 ## Password-mode and provenance unit
 
 Password disable/re-enable requires a registered passkey and fresh successful passkey authentication. Saved credentials and existing sessions remain intact; direct password-only setting changes and disabled password login are rejected. No unauthenticated recovery route exists. Build provenance is visible in the header at narrow widths and formats the actual timestamp in browser-local time with seconds/zone. Unit and negative HTTP tests pass; actual virtual-authenticator toggle/re-enable browser proof is still pending.
+
+## Shared workspace navigation unit
+
+Implemented destination tabs now persist open/closed/pinned state, focus existing destinations and expose Open every tab plus New tab catalog. The command palette performs actual route/control actions and contains live theme/language/motion settings. Keyboard arrows/Home/End and selection state are implemented; drafts persist across navigation. Pure state/inventory tests pass; built browser acceptance of the new shell is pending. Full regex construction and advanced tab groups/reordering remain unfinished.

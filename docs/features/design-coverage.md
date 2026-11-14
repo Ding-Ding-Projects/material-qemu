@@ -9,12 +9,12 @@ This inventory covers the controls in the supplied Main, Onboarding, Overview, M
 | Brand, version, update timestamp | Implemented; runtime build time is generated or explicitly unavailable. |
 | Global search | Implemented for machine name, notes, folder and architecture. Other product categories remain pending. |
 | Adjacent full regex builder | Pending; no misleading placeholder is displayed. |
-| Command palette shortcut and button | Shortcut currently focuses search; a command catalog and live controls remain pending. |
+| Command palette shortcut and button | Implemented searchable real workflow commands and live theme/language/motion controls, from header and Ctrl+Shift+F. Full regex construction remains pending. |
 | Notifications center | Pending; transient action notifications exist, not the designed center. |
 | Help | Implemented task-oriented runtime help; complete documentation delivery remains pending. |
 | Owner identity | Implemented for one owner; multiple users remain pending. |
 | Health/LAN indicator | Actual host connection shown; LAN reachability is not claimed. |
-| Workspace tabs, close/pin, Open every tab, New tab catalog | Pending. Current navigation switches implemented routes without pretending to implement the complete tab contract. |
+| Workspace tabs, close/pin, Open every tab, New tab catalog | Implemented for actual destinations, with persistent closes, new-destination offering, pin/close controls, keyboard navigation and a searchable catalog. Advanced groups/reordering and unfinished destinations remain pending. |
 | Host/tool/advanced navigation destinations | Pending under the corresponding broader design boards; no inert command catalog substitutes for them. |
 | Theme, language, reduced motion | Implemented dark/light/system and English/Cantonese/bilingual settings; earlier twelve-tuple evidence remains source-bound. Complete translation of backend diagnostics remains pending. |
 

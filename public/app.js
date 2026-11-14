@@ -1,3 +1,12 @@
+import {
+  readTabs,
+  syncTabs,
+  activateTab,
+  closeTab,
+  pinTab,
+  openAllTabs,
+} from "./workspace-tabs.js";
+import { commandInventory, searchCommands } from "./commands.js";
 import { formatBuildTimestamp } from "./provenance.js";
 import { loadDraft, saveDraft, clearDraft } from "./drafts.js";
 import { platformFields } from "./capability-view.js";
@@ -34,6 +43,9 @@ let session,
   dialogOpener,
   dialogOpenerAction;
 let onboardingMachine = false;
+let workspace = readTabs(localStorage),
+  catalogMode = "commands",
+  catalogEntries = [];
 let previewTimer,
   previewSequence = 0;
 let consoleScale = localStorage.getItem("mq-console-scale") !== "false";
@@ -161,7 +173,7 @@ function render() {
     return;
   }
   $("#app").innerHTML =
-    `<header class="topbar"><div class="brand"><span class="mark" aria-hidden="true"><span class="icon">memory</span></span>Material QEMU</div>${buildMetadata()}<div class="search"><input id="global-search" aria-label="${t("Search machines", "搜尋機器")}" placeholder="${t("Search machines, folders and notes", "搜尋機器、資料夾和備註")}" value="${escape(query)}"></div><span class="spacer"></span><span class="pill healthy health">● ${t("Host connected", "主機已連線")}</span>${button("logout", t("Sign out", "登出"), "ghost")}</header><div class="shell"><nav aria-label="${t("Workspace", "工作區")}">${["overview", "machines", "new"].map((k) => button(`page:${k}`, `<span class="icon" aria-hidden="true">${{ overview: "dashboard", machines: "view_list", new: "add" }[k]}</span><span>${label(k)}</span>`, page === k ? "active" : "")).join("")}<div class="group">${t("Machines", "機器")}</div>${state.machines.map((m) => button(`console:${m.id}`, `<span class="icon" aria-hidden="true">computer</span><span class="nav-name">${escape(m.name)}</span>`, "machine-nav")).join("")}<div class="group">${t("Your workspace", "你的工作區")}</div>${["settings", "history", "docs"].map((k) => button(`page:${k}`, label(k), page === k ? "active" : "")).join("")}<div class="bottom">${escape(state.owner.name)}</div></nav><main class="main" id="main" tabindex="-1">${({ overview: views().overview, machines: views().machines, new: machineWizard, settings: views().settings, history: views().history, docs: views().docs, console: views().consolePage }[page] || views().overview)()}</main></div>`;
+    `<header class="topbar"><div class="brand"><span class="mark" aria-hidden="true"><span class="icon">memory</span></span>Material QEMU</div>${buildMetadata()}<div class="search"><input id="global-search" aria-label="${t("Search machines", "搜尋機器")}" placeholder="${t("Search machines, folders and notes", "搜尋機器、資料夾和備註")}" value="${escape(query)}"></div><span class="spacer"></span><span class="pill healthy health">● ${t("Host connected", "主機已連線")}</span>${button("commands", t("Commands", "指令"), "ghost")}${button("logout", t("Sign out", "登出"), "ghost")}</header><div class="shell">${workspaceNavigation()}<main class="main" id="main" tabindex="-1" role="tabpanel" aria-labelledby="workspace-tab-${encodeURIComponent(currentTabId())}">${({ overview: views().overview, machines: views().machines, new: machineWizard, settings: views().settings, history: views().history, docs: views().docs, console: views().consolePage }[page] || views().overview)()}</main></div>`;
   if (page === "console") {
     updateConsoleControls();
     connectConsole();
@@ -577,6 +589,7 @@ document.addEventListener("click", async (e) => {
         render();
         return;
       }
+      if (page === "new" && $("#machine-form")) persistDraft();
       page = action.slice(5);
       if (page === "new") return startWizard();
       render();
@@ -584,6 +597,79 @@ document.addEventListener("click", async (e) => {
     }
     if (action === "new") return startWizard();
     if (action === "refresh") return refresh();
+    if (action === "commands" || action === "new-tab") {
+      showCatalog(action === "commands" ? "commands" : "tabs");
+      return;
+    }
+    if (action === "open-all-tabs") {
+      workspace = openAllTabs(
+        workspace,
+        workspaceModels().map((model) => model.id),
+      );
+      saveWorkspace();
+      render();
+      return;
+    }
+    if (action.startsWith("pin-tab:")) {
+      workspace = pinTab(workspace, decodeURIComponent(action.slice(8)));
+      saveWorkspace();
+      render();
+      return;
+    }
+    if (action.startsWith("close-tab:")) {
+      const id = decodeURIComponent(action.slice(10));
+      const outcome = closeTab(workspace, id);
+      if (outcome.error) {
+        notify(
+          outcome.error === "pinned"
+            ? t(
+                "Unpin this tab before closing it.",
+                "請先取消固定，才關閉分頁。",
+              )
+            : t(
+                "Keep at least one workspace tab open.",
+                "至少保留一個工作區分頁。",
+              ),
+        );
+        return;
+      }
+      workspace = outcome.state;
+      saveWorkspace();
+      if (currentTabId() === id) navigateWorkspace(workspace.open[0]);
+      else render();
+      return;
+    }
+    if (action.startsWith("command-run:")) {
+      const command = catalogEntries.find(
+        (entry) => entry.id === decodeURIComponent(action.slice(12)),
+      );
+      if (!command) return;
+      $("#dialog").close();
+      if (command.unavailable) {
+        notify(command.unavailable);
+        return;
+      }
+      if (command.select) selected = command.select;
+      navigateWorkspace(command.route);
+      if (command.focus) {
+        document.getElementById(command.focus)?.focus();
+        return;
+      }
+      if (command.action) {
+        const target = document.querySelector(
+          `[data-action="${CSS.escape(command.action)}"]`,
+        );
+        if (target) target.click();
+        else
+          notify(
+            t(
+              "This control is not available in the current state.",
+              "目前狀態未能使用此控制。",
+            ),
+          );
+      }
+      return;
+    }
     if (action === "logout") {
       onboardingMachine = false;
       await api("/logout", {});
@@ -907,6 +993,7 @@ document.addEventListener("click", async (e) => {
       return;
     }
     if (action.startsWith("console:")) {
+      if (page === "new" && $("#machine-form")) persistDraft();
       selected = action.slice(8);
       page = "console";
       render();
@@ -1225,7 +1312,7 @@ document.addEventListener("change", (e) => {
 document.addEventListener("keydown", (e) => {
   if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key.toLowerCase() === "f") {
     e.preventDefault();
-    $("#global-search")?.focus();
+    showCatalog("commands");
   }
 });
 async function boot() {
@@ -1405,3 +1492,193 @@ function buildMetadata() {
     });
   return `<div class="brand-meta"><span>v${escape(data?.version || t("Unavailable", "未能提供"))}</span>${formatted ? `<time datetime="${escape(formatted.datetime)}" title="${escape(formatted.datetime)}">${t("Built", "建置")} ${escape(formatted.display)}</time>` : `<span>${t("Build time unavailable", "未能提供建置時間")}</span>`}</div>`;
 }
+
+function currentTabId() {
+  return page === "console" ? `console:${selected}` : page;
+}
+function workspaceModels() {
+  return [
+    ...["overview", "machines", "new", "settings", "history", "docs"].map(
+      (id) => ({
+        id,
+        label: label(id),
+        icon: {
+          overview: "dashboard",
+          machines: "view_list",
+          new: "add",
+          settings: "settings",
+          history: "history",
+          docs: "menu_book",
+        }[id],
+      }),
+    ),
+    ...state.machines.map((machine) => ({
+      id: `console:${machine.id}`,
+      label: machine.name,
+      icon: "computer",
+    })),
+  ];
+}
+function saveWorkspace() {
+  try {
+    const value = JSON.stringify(workspace);
+    if (localStorage.getItem("mq-workspace-tabs") !== value)
+      localStorage.setItem("mq-workspace-tabs", value);
+  } catch {
+    notify(
+      t(
+        "Workspace tabs could not be saved in this browser.",
+        "此瀏覽器未能儲存工作區分頁。",
+      ),
+    );
+  }
+}
+function workspaceNavigation() {
+  const models = workspaceModels();
+  workspace = syncTabs(
+    workspace,
+    models.map((model) => model.id),
+  );
+  if (!models.some((model) => model.id === currentTabId())) {
+    const fallback = workspace.open[0];
+    if (fallback.startsWith("console:")) {
+      page = "console";
+      selected = fallback.slice(8);
+    } else page = fallback;
+  }
+  workspace = activateTab(workspace, currentTabId());
+  saveWorkspace();
+  return `<nav aria-label="${t("Workspace tabs", "工作區分頁")}"><div class="workspace-tabs" role="tablist" aria-orientation="${matchMedia("(max-width:760px)").matches ? "horizontal" : "vertical"}">${workspace.open
+    .map((id) => {
+      const model = models.find((value) => value.id === id);
+      if (!model) return "";
+      const pinned = workspace.pinned.includes(id),
+        active = id === currentTabId(),
+        action = id.startsWith("console:") ? id : `page:${id}`;
+      return `<div class="tab-item">${button(action, `<span class="icon" aria-hidden="true">${model.icon}</span><span class="nav-name">${escape(model.label)}</span>`, `tab-route ${active ? "active" : ""}`, `id="workspace-tab-${encodeURIComponent(id)}" role="tab" aria-selected="${active}" aria-controls="main" tabindex="${active ? "0" : "-1"}" data-tab="${id}" title="${escape(model.label)}"`)}<div class="tab-controls">${button(`pin-tab:${encodeURIComponent(id)}`, `<span class="icon" aria-hidden="true">${pinned ? "keep" : "keep_off"}</span>`, "tab-control", `aria-label="${escape(t(pinned ? "Unpin " : "Pin ", pinned ? "取消固定 " : "固定 ") + model.label)}" aria-pressed="${pinned}"`)}${button(`close-tab:${encodeURIComponent(id)}`, '<span class="icon" aria-hidden="true">close</span>', "tab-control", `aria-label="${escape(t("Close ", "關閉 ") + model.label)}" ${pinned ? "disabled" : ""}`)}</div></div>`;
+    })
+    .join(
+      "",
+    )}</div><div class="tab-tools">${button("open-all-tabs", t("Open every tab", "開啟所有分頁"))}${button("new-tab", t("New tab", "新增分頁"), "primary")}</div><div class="bottom">${escape(state.owner.name)}</div></nav>`;
+}
+function navigateWorkspace(id) {
+  if (page === "new" && $("#machine-form")) persistDraft();
+  if (onboardingMachine && !state.setup.complete) {
+    onboardingMachine = false;
+    render();
+    return;
+  }
+  if (id === "new") {
+    startWizard();
+    return;
+  }
+  if (id.startsWith("console:")) {
+    page = "console";
+    selected = id.slice(8);
+  } else page = id;
+  render();
+}
+function showCatalog(mode = "commands", query = "") {
+  catalogMode = mode;
+  catalogEntries = commandInventory(state, t);
+  modal(
+    mode === "tabs"
+      ? t("New tab catalog", "新增分頁目錄")
+      : t("Command palette", "指令選單"),
+    `<div class="field"><label for="command-search">${t("Search destinations and controls", "搜尋目的地及控制")}</label><input id="command-search" type="search" maxlength="200" value="${escape(query)}" autocomplete="off"></div><p class="muted-line">${t("Plain-text search. Full regex construction is not available yet.", "純文字搜尋，完整正規表示式建構尚未提供。")}</p><div class="palette-settings">${select(
+      "palette-theme",
+      t("Theme", "主題"),
+      [
+        ["dark", t("Dark", "深色")],
+        ["light", t("Light", "淺色")],
+        ["system", t("Follow device", "跟隨裝置")],
+      ],
+      state.settings.theme,
+    )}${select(
+      "palette-language",
+      t("Language", "語言"),
+      [
+        ["en", "English"],
+        ["yue", "廣東話"],
+        ["both", "English + 廣東話"],
+      ],
+      state.settings.language,
+    )}<label class="check"><input id="palette-motion" type="checkbox" ${state.settings.motion ? "checked" : ""}>${t("Interface motion", "介面動畫")}</label></div><div id="command-results" class="command-results"></div>`,
+    t("Close", "關閉"),
+    async () => {},
+  );
+  renderCommands(query);
+  $("#command-search").focus();
+}
+function renderCommands(query) {
+  const matches = searchCommands(catalogEntries, query);
+  $("#command-results").innerHTML =
+    matches
+      .map((entry) =>
+        button(
+          `command-run:${encodeURIComponent(entry.id)}`,
+          `<strong>${escape(entry.label)}</strong><small>${escape(entry.unavailable || entry.description)}</small>`,
+          "command-entry",
+          entry.unavailable ? "disabled" : "",
+        ),
+      )
+      .join("") || `<p>${t("No matching controls.", "沒有符合的控制。")}</p>`;
+}
+document.addEventListener("input", (event) => {
+  if (event.target.id === "command-search") renderCommands(event.target.value);
+});
+document.addEventListener("change", async (event) => {
+  if (
+    !["palette-theme", "palette-language", "palette-motion"].includes(
+      event.target.id,
+    )
+  )
+    return;
+  try {
+    const query = $("#command-search").value;
+    await api("/preferences", {
+      settings: {
+        theme: $("#palette-theme").value,
+        language: $("#palette-language").value,
+        motion: $("#palette-motion").checked,
+      },
+    });
+    await refresh();
+    showCatalog(catalogMode, query);
+  } catch (error) {
+    notify(error.message);
+  }
+});
+document.addEventListener("keydown", (event) => {
+  if (
+    event.target.id === "command-search" &&
+    (event.key === "Enter" || event.key === "ArrowDown")
+  ) {
+    event.preventDefault();
+    const first = $("#command-results button:not(:disabled)");
+    if (event.key === "Enter") first?.click();
+    else first?.focus();
+  }
+  if (
+    event.target.matches("[role=tab]") &&
+    ["ArrowDown", "ArrowUp", "ArrowLeft", "ArrowRight", "Home", "End"].includes(
+      event.key,
+    )
+  ) {
+    event.preventDefault();
+    const buttons = [...document.querySelectorAll("[role=tab]")],
+      index = buttons.indexOf(event.target);
+    const next =
+      event.key === "Home"
+        ? 0
+        : event.key === "End"
+          ? buttons.length - 1
+          : (index +
+              (["ArrowDown", "ArrowRight"].includes(event.key) ? 1 : -1) +
+              buttons.length) %
+            buttons.length;
+    const id = buttons[next].dataset.tab;
+    buttons[next].click();
+    document.querySelector(`[data-tab="${CSS.escape(id)}"]`)?.focus();
+  }
+});

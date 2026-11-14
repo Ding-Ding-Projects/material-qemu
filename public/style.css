@@ -1131,3 +1131,88 @@ h1 {
     width: 100%;
   }
 }
+
+.workspace-tabs {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.tab-item {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+}
+.tab-route {
+  flex: 1;
+  min-width: 0;
+}
+.tab-controls {
+  display: flex;
+  flex: none;
+}
+.tab-control {
+  padding: 0 !important;
+  min-width: 48px;
+  width: 48px;
+  height: 48px;
+  justify-content: center !important;
+}
+.tab-tools {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 18px;
+}
+.tab-tools button {
+  justify-content: center;
+}
+.command-results {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 42vh;
+  overflow: auto;
+}
+.command-entry {
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  white-space: normal;
+}
+.command-entry strong,
+.command-entry small {
+  overflow-wrap: anywhere;
+}
+.palette-settings {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.palette-settings .field {
+  flex: 1;
+  min-width: 150px;
+}
+@media (max-width: 760px) {
+  .workspace-tabs {
+    flex-direction: row;
+    flex: none;
+  }
+  .tab-item {
+    flex: none;
+    max-width: 320px;
+  }
+  .tab-route {
+    min-width: 120px;
+  }
+  .tab-tools {
+    flex-direction: row;
+    flex: none;
+    margin: 0;
+  }
+  .tab-tools button {
+    white-space: nowrap;
+  }
+}

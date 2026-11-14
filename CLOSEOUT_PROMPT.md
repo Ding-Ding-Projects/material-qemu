@@ -29,3 +29,5 @@ Overview unit adds actual bounded sample history, explicit resource scope and in
 Lifecycle unit adds retained-disk remove/restore, bulk ACPI requests, tags and persistent folder groups. Native twenty-seven tests pass with three runtime skips. Before accepting the new image, run actual HTTP/QEMU removal rejection, byte-preservation and restoration checks, then browser confirmation/result dialogs.
 
 Password-mode unit requires fresh verified passkey before explicit disable/re-enable, retains credentials/other sessions and rejects password-only recovery attempts. Provenance helper preserves actual build time with browser-local zone/seconds and remains visible at360px. New exact-image/virtual-authenticator toggle proof pending.
+
+Shared navigation unit adds persistent open/close/pin tabs, Open every tab, New tab catalog and Ctrl+Shift+F command palette with live settings. State/inventory tests pass; next immutable image needs narrow/keyboard/catalog/persistence proof. Full regex parity remains pending and is not represented by a small tester.
