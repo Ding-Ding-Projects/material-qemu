@@ -6,7 +6,7 @@ Finish the remaining roadmap items and push each one to main as it is completed.
 
 ## State of main
 
-Main is at 7e634c144496970b250335a715906cf2821d3a77 and is released as v0.1.0-build.56: a normal release, all six build jobs succeeded, 16 assets. There is one checkout, one branch (main) and no stash. Nothing is uncommitted.
+Main was at cbc81aca1ec959ff39ca0bf01f7173ccb96a575c, released as v0.1.0-build.60 (a normal release, all six build jobs succeeded, 16 assets), before the commit that adds this record. There is one checkout, one branch (main) and no stash. Nothing is uncommitted.
 
 Delivered and verified in this stretch, each with tests and a headless browser check against real QEMU, and evidence under evidence/:
 
@@ -17,6 +17,7 @@ Delivered and verified in this stretch, each with tests and a headless browser c
 - Multiple people with operator and viewer roles enforced by the server (evidence/people).
 - Moving a machine to another host as one bundle, saved state included (evidence/machine-move).
 - Storage pools on host folders with health warnings (evidence/pools).
+- Appliance console: the login screen shows the IP address while starting, when running and on failure; the CI boot check reads it from a console picture with OCR (evidence/appliance-console).
 - Fixed: deleting ISOs, snapshots and firmware from the browser had been refused for lack of a content type.
 
 ## Remaining work

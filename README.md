@@ -77,9 +77,9 @@ The installer ISO in each release puts Material QEMU on a computer's own disk. W
 
    ![The PC restarts from its own disk into Material QEMU](evidence/installer-virtualbox/06-first-boot.png)
 
-7. The console shows the address to open.
+7. The console shows the IP address and the address to open.
 
-   ![The console shows the address to open](evidence/installer-virtualbox/07-ready.png)
+   ![The console shows the IP address and the address to open](evidence/appliance-console/console.png)
 
 8. Opening that address shows the first-run page; the first account becomes the owner.
 
