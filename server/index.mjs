@@ -36,6 +36,7 @@ import { Sessions, hashPassword, checkPassword } from "./auth.mjs";
 import { updateOrganization, requireFolder } from "./organization.mjs";
 import { receiveIso, MAX_ISO_BYTES } from "./media.mjs";
 import { MetricSampler } from "./resources.mjs";
+import { GuestUsage } from "./guest-usage.mjs";
 import { dataDirectory } from "./paths.mjs";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
@@ -56,6 +57,15 @@ export async function createApplication(options = {}) {
   const store = await new Store(data).open();
   const qemu = await new Qemu(data).open();
   const metrics = await new MetricSampler().start();
+  // Per-machine CPU and memory, measured from each running QEMU process.
+  const guestUsage = new GuestUsage();
+  const usageTimer = setInterval(() => {
+    const running = store.state.machines
+      .map((m) => ({ id: m.id, cpus: m.cpus, pid: qemu.status(m.id).pid }))
+      .filter((m) => Number.isInteger(m.pid));
+    guestUsage.sample(running).catch(() => {});
+  }, 5000);
+  usageTimer.unref();
   const sessions = new Sessions();
   const challenges = new Map();
   let activeUploads = 0;
@@ -357,7 +367,9 @@ export async function createApplication(options = {}) {
           machines: store.state.machines.map((m) => ({
             ...m,
             ...qemu.status(m.id),
+            usage: guestUsage.get(m.id),
           })),
+          guestUsageSupported: guestUsage.supported,
           removedMachines: store.state.removedMachines || [],
           settings: store.state.settings,
           folders: store.state.folders,
@@ -884,6 +896,7 @@ export async function createApplication(options = {}) {
     autostart,
     close: async () => {
       metrics.stop();
+      clearInterval(usageTimer);
       wss.clients.forEach((c) => c.close());
       await qemu.close();
       await new Promise((resolve) => server.close(resolve));

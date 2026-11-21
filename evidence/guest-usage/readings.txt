@@ -1,0 +1,9 @@
+Per-guest usage measured on the native Windows test host (QEMU 11.1, TCG) for a running machine with 1 vCPU and 512 MiB on 2026-11-21, read from /api/state every 5 seconds:
+
+t+5s  cpuPercent null (first reading), memory 77541376 bytes
+t+10s cpuPercent 2.5, memory 77561856
+t+15s cpuPercent 1.9
+t+20s cpuPercent 1.9
+t+25s cpuPercent 2.2
+
+The machine card showed "1.6% CPU · 74 MiB"; the machine page CPU tile said "Guest using 1.6% of its 1 vCPU." and the memory tile "74 MiB in use by the guest process" (machine-page.png).

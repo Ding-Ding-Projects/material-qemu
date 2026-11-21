@@ -69,3 +69,7 @@ Names match `^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$` and must be unique per machine. 
 ## Verification
 
 The tests in `tests/hardware-config.test.mjs`, `tests/qemu-hardware.test.mjs` and `tests/hardware-api.test.mjs` cover validation, migration, every launch option, and, with QEMU and `qemu-img` on PATH, real UEFI and Secure Boot starts, live actions, screenshots, running and stopped snapshots, resize, clone and import. TPM start-up needs `swtpm` and is not exercised on hosts without it. Real-hardware acceleration (KVM) and guest operating-system boot are not covered.
+
+## Guest CPU and memory
+
+While a machine runs, the server measures its QEMU process every 5 seconds: on Linux (the container and the appliance) from `/proc/<pid>/stat` and `statm`, on Windows from one `Get-Process` query for the QEMU processes. CPU is shown as a share of the machine's own vCPUs, so 100% means all of them are busy; memory is the process's resident size, which includes QEMU itself. `/api/state` returns this as `usage` on each running machine with the last 30 CPU readings, and `guestUsageSupported` says whether the host platform is measured at all. The machine page shows it in the CPU and memory tiles and running machine cards show a one-line summary; other platforms show a plain note instead of a guess (evidence/guest-usage).
