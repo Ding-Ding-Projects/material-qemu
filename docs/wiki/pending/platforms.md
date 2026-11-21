@@ -11,6 +11,3 @@ The container supplies x86_64, i386, aarch64 and arm executables with the firmwa
 Existing machine records without `machineType` or `accelerator` retain their prior defaults. Newly selected values must match the current discovered supported inventory before save, preview or execution. Resource presets select only installed runnable platforms and do not imply Windows, cloud-init, Raspberry Pi or confidential-guest support.
 
 Primary references: [QEMU invocation](https://www.qemu.org/docs/master/system/invocation.html), including machine listing and comma escaping; [Debian Arm firmware package files](https://packages.debian.org/bookworm/all/qemu-efi-arm/filelist).
-
-
-Source: [docs/features/platforms.md](https://github.com/Ding-Ding-Projects/material-qemu/blob/2a273d914f9d4a0c4f61be13d391a9011fc38f42/docs/features/platforms.md).

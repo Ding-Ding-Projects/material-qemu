@@ -2,7 +2,7 @@
 
 A functional, self-hosted QEMU workspace based on the preserved design contract. This initial runtime connects owner sign-in, guided setup, overview, machine management, an eight-step machine editor, and an authenticated live VNC console.
 
-[Public screenshot gallery: current verified views and historical originals](https://ding-ding-projects.github.io/material-qemu-gallery/)
+[Documentation site: guides, articles and wiki pages](https://ding-ding-projects.github.io/material-qemu/) · [Public screenshot gallery: current verified views and historical originals](https://ding-ding-projects.github.io/material-qemu-gallery/)
 
 ## Run locally
 

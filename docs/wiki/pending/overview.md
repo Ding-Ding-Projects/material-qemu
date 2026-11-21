@@ -7,6 +7,3 @@ Charts use recorded timestamps and values only. They remain absent until at leas
 Overview state and architecture filters are independent from the Machines search/filter state and persist in account settings. Clearing an empty combination restores both Overview filters without changing machine records. Disk/network throughput and guest metrics remain explicitly unavailable.
 
 Operational captures containing host-specific resource values remain private unless separately reviewed for publication.
-
-
-Source: [docs/features/overview.md](https://github.com/Ding-Ding-Projects/material-qemu/blob/2a273d914f9d4a0c4f61be13d391a9011fc38f42/docs/features/overview.md).

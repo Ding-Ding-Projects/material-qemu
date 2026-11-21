@@ -52,7 +52,7 @@ This inventory covers the controls in the supplied Main, Onboarding, Overview, M
 | Host CPU/memory/uptime | Actual bounded sampled history and CPU/memory charts implemented; host-visible versus container scope is explicit. No fabricated initial history. |
 | Disk I/O and network rates | Explicitly unavailable; not simulated. |
 | New machine | Implemented. |
-| Machine import | Pending. |
+| Machine import | Server endpoint implemented (see storage and import in qemu-hardware.md); the browser workflow is pending. |
 | State/architecture chips | Independent persisted Overview state/architecture filters implemented. |
 | Machine console/start/pause/details | Implemented against real runtime. |
 | Live thumbnails, guest CPU/RAM | Pending guest measurement and framebuffer preview integration. |
@@ -73,8 +73,8 @@ This inventory covers the controls in the supplied Main, Onboarding, Overview, M
 | Saved views and deletion | Implemented query/state/folder persistence and confirmed deletion. |
 | Details panel and favourites | Implemented, including editable bounded tags. Firmware/network/snapshot details beyond supported hardware remain pending. |
 | Bulk Start/Pause | Implemented with individual outcomes. |
-| Bulk Snapshot/Shut down/Move/Delete | Move, graceful shutdown and confirmed record removal implemented with individual outcomes and retained disks. Snapshot remains pending; permanent disk deletion is not offered. |
-| Import | Pending. |
+| Bulk Snapshot/Shut down/Move/Delete | Move, graceful shutdown and confirmed record removal implemented with individual outcomes and retained disks. Snapshot has a server endpoint (frontend pending); permanent disk deletion is not offered. |
+| Import | Server endpoint implemented (qcow2, raw, vmdk, vdi, vhdx; format detected from content, converted to qcow2); the browser workflow is pending. |
 
 ## New machine
 
@@ -84,11 +84,11 @@ This inventory covers the controls in the supplied Main, Onboarding, Overview, M
 | Presets | Blank, lightweight server and installed-platform Linux resource presets implemented. Windows/cloud-init/microvm/Raspberry Pi/retro/confidential presets retain specific unsupported reasons. |
 | All system targets | Supplied 29-target catalog plus bounded PATH discovery implemented. Actual installed targets, incomplete discovery and unavailable recipes are distinguished. No claim that all targets are installed. |
 | Machine type and accelerator | Binary-derived inventory and supported recipe selectors implemented. KVM eligibility is explicitly launch-unverified; other unsupported accelerators retain reasons. Final image launch acceptance pending. |
-| CPU/memory | Bounded actual allocations implemented; topology/NUMA/flags pending. |
-| Firmware | Fixed supported SeaBIOS/UEFI paths; Secure Boot, TPM and custom firmware pending. |
-| Storage | One managed QCOW2 disk, capacity and ISO selection implemented. Advanced devices, formats and resize pending. |
-| Network | Disconnected/restricted user mode implemented; bridges, forwarding and custom NICs pending. |
-| Display/devices | Authenticated VNC with platform defaults; selectable display/audio/USB devices pending. |
+| CPU/memory | Server-side: sockets, cores, threads, CPU model, up to 64 CPUs, up to 256 GiB and a balloon device. NUMA and flags pending. |
+| Firmware | Server-side: BIOS or UEFI, Secure Boot and a swtpm TPM, discovered per host. Custom firmware images pending. |
+| Storage | Server-side: up to eight disks (virtio, SATA, NVMe, SCSI, IDE; qcow2 or raw), up to four CD-ROMs, grow-only resize, full-copy clone and import. Browser workflow pending. |
+| Network | Server-side: user mode with port forwards, NIC model and MAC, or none. Bridges pending. |
+| Display/devices | Server-side: display adapter, sound, USB tablet and keyboard, serial log, RNG, boot order and boot menu. VNC stays loopback-private. Browser controls pending. |
 | Name and UUID | Name implemented; UUID generated server-side. User override pending. |
 | Start after creating | Implemented explicit opt-in, real QEMU startup and console navigation. Failed startup retains the saved machine and reports the actual error. |
 | Readconfig/cloud image/cloud-init import | Pending. Browser-supplied arbitrary command strings are not accepted. |
@@ -114,6 +114,3 @@ This inventory covers the controls in the supplied Main, Onboarding, Overview, M
 ## Explicit preservation checkpoint
 
 New implementation stopped at the owner's preservation/cleanup request. The latest verified active runtime is source `8e7802f38df82728a5db4fe58959be70f3a7bc09`. Later console-media/controller drafts are preserved but inactive and have no delivered export, recording, annotation or Ctrl+Alt controls. Every pending row above remains pending unless separately supported by an exact later source/image receipt. The full supplied-six objective and broader delivery are not complete.
-
-
-Source: [docs/features/design-coverage.md](https://github.com/Ding-Ding-Projects/material-qemu/blob/2a273d914f9d4a0c4f61be13d391a9011fc38f42/docs/features/design-coverage.md).

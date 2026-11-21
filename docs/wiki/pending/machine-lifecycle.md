@@ -9,6 +9,3 @@ Bulk graceful shutdown sends the same real ACPI request as the individual contro
 Tags can be changed while a machine runs and participate in machine search. At most sixteen unique printable tags are accepted, each up to thirty-two Unicode code points. Folder groups persist their collapsed state; rename updates that state and removal clears only the removed folder's entry. The direct and bulk Move controls provide the keyboard/touch alternative to drag-and-drop.
 
 The real HTTP/QEMU regression rejects removal while running, checks confirmation, compares retained disk bytes before and after removal/restoration and verifies the restored process remains stopped. Unit tests cover archive reload, rejected removal, tags and collapsed-folder changes.
-
-
-Source: [docs/features/machine-lifecycle.md](https://github.com/Ding-Ding-Projects/material-qemu/blob/2a273d914f9d4a0c4f61be13d391a9011fc38f42/docs/features/machine-lifecycle.md).

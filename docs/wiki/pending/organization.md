@@ -19,6 +19,3 @@ Dialogs use native modal focus containment and Escape dismissal. Closing a neste
 Focused tests reload stored state after rename, removal and saved-view deletion; prove retained machine and disk definitions; and reject duplicate names, stale references, invalid confirmation and mixed-operation partial updates. Built browser acceptance is recorded separately in the task evidence.
 
 Needs attention uses real machine errors. Recently used shows machines with recorded activity in the last seven days, newest first. Direct and bulk Move to folder actions update metadata while preserving process state and disk definitions; each bulk result is reported individually.
-
-
-Source: [docs/features/organization.md](https://github.com/Ding-Ding-Projects/material-qemu/blob/2a273d914f9d4a0c4f61be13d391a9011fc38f42/docs/features/organization.md).

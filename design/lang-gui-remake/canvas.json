@@ -6,9 +6,10 @@
 "Machine.dc.html":{"x":0,"y":1300,"w":1440,"h":1000,"title":"4 · Machine: console, power, snapshots","expand":"fill","is_interactive":true},
 "Storage.dc.html":{"x":1520,"y":1300,"w":1440,"h":960,"title":"5 · Storage and media","expand":"fill","is_interactive":true},
 "Settings.dc.html":{"x":3040,"y":1300,"w":1440,"h":960,"title":"6 · Settings","expand":"fill","is_interactive":true},
-"SignIn.dc.html":{"x":0,"y":2640,"w":1440,"h":900,"title":"7 · First account / sign in","expand":"fill","is_interactive":true}
+"SignIn.dc.html":{"x":0,"y":2640,"w":1440,"h":900,"title":"7 · First account / sign in","expand":"fill","is_interactive":true},
+"DocsSite.dc.html":{"x":1520,"y":2640,"w":1440,"h":1000,"title":"8 · Documentation site","expand":"fill","is_interactive":true}
 },
-"order":["Main.dc.html","Machines.dc.html","Create.dc.html","Machine.dc.html","Storage.dc.html","Settings.dc.html","SignIn.dc.html"],
+"order":["Main.dc.html","Machines.dc.html","Create.dc.html","Machine.dc.html","Storage.dc.html","Settings.dc.html","SignIn.dc.html","DocsSite.dc.html"],
 "notes":{
 "title":{"x":0,"y":-320,"text":"Material QEMU · Lang gui Expressive remake","kind":"title1","maxW":4480},
 "n1":{"x":0,"y":990,"w":420,"text":"Dashboard. Host gauges sweep in, running machines show live console thumbnails and per-guest CPU, the floating New machine button sits on the rail. Try the Tweaks: seed colour, light or dark, motion. Not built yet in the app: live thumbnails, guest CPU.","fill":"orange"},
@@ -17,6 +18,7 @@
 "n4":{"x":0,"y":2330,"w":420,"text":"Machine. Console with a toolbar (Ctrl+Alt+Del, screenshot, CD swap, fullscreen), power controls (start, pause, reset, ACPI shutdown, power off), snapshot timeline with create, restore and delete, live CPU and memory, and the QEMU log.","fill":"orange"},
 "n5":{"x":1520,"y":2290,"w":420,"text":"Storage. ISO library and disk images in one place: upload with progress, import VMDK, VDI, VHDX or raw and convert to qcow2, resize, clone. Every destructive action uses the two-key gate.","fill":"orange"},
 "n6":{"x":3040,"y":2290,"w":420,"text":"Settings. Dynamic colour from a seed, light, dark or system, motion level, language, passkeys and password sign-in, and host facts (QEMU version, accelerators).","fill":"orange"},
+"n8":{"x":1520,"y":3670,"w":420,"text":"Documentation site (GitHub Pages). Leads with tasks, not files: host in a VM, install on a PC, first machine, updating, the console. A search box with a regex builder beside it filters guides and articles. Guides are steppers over real screenshots and remember your place. Articles and wiki pages are complete on the site. Click Guides, and toggle Regex.","fill":"orange"},
 "n7":{"x":0,"y":3570,"w":420,"text":"First account. No setup code: the first account created becomes the owner, and later visitors sign in. Passkey sign-in sits beside password sign-in.","fill":"orange"}
 },
 "designSystems":[]}

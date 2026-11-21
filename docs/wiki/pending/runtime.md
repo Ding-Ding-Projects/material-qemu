@@ -11,6 +11,3 @@ The staged `dist` runtime stores its data in the adjacent root `data` directory 
 The initial browser verification used a blank disk and the genuine SeaBIOS display. It proves console transport, not installation or boot of a guest operating system. Virtual-authenticator passkey registration/sign-in has passed source-bound browser verification. Physical authenticators, guest ACPI handling, installed guest operating-system boot, native fullscreen behavior and physical keyboard-device combinations remain unverified.
 
 Known limitations: actual KVM acceleration remains unverified despite its explicit eligibility path. Guest agents, disk resizing, permanent disk deletion, VM CPU sampling, throughput metrics, backups, live migration and unattended appliance updates remain incomplete. The container is a single-owner trust boundary, not a sandbox for hostile tenants.
-
-
-Source: [docs/features/runtime.md](https://github.com/Ding-Ding-Projects/material-qemu/blob/2a273d914f9d4a0c4f61be13d391a9011fc38f42/docs/features/runtime.md).

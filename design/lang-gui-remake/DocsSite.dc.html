@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Documentation site</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto+Flex:opsz,wdth,wght@8..144,25..151,300..900&amp;family=Roboto+Mono:wght@400;500&amp;display=swap">
+<style>
+body{margin:0}
+a{color:inherit}
+button,input{font:inherit}
+@keyframes rise{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+</style>
+</helmet>
+<div style="{{root}}">
+<header style="display: flex; align-items: center; gap: 16px; padding: 16px 40px; border-bottom: 1px solid {{c.outlineVariant}};">
+<span style="width: 40px; height: 40px; border-radius: 12px; background: {{c.primaryContainer}}; color: {{c.onPrimaryContainer}}; display: flex; align-items: center; justify-content: center; font-weight: 800;">Q</span>
+<strong style="font-size: 18px;">Material QEMU</strong>
+<nav aria-label="Sections" style="display: flex; gap: 4px; margin-left: 24px;"><sc-for list="{{tabs}}" as="t" hint-placeholder-count="4"><button type="button" onClick="{{t.pick}}" aria-current="{{t.on}}" style="{{t.style}}">{{t.label}}</button></sc-for></nav>
+<span style="flex: 1;"></span>
+<button type="button" style="height: 40px; padding: 0 16px; border-radius: 20px; border: 1px solid {{c.outline}}; background: transparent; color: {{c.onSurface}};">English · 廣東話</button>
+</header>
+<sc-if value="{{home}}" hint-placeholder-val="{{ true }}">
+<main style="max-width: 1180px; margin: 0 auto; padding: 40px; display: flex; flex-direction: column; gap: 28px;">
+<section style="display: flex; flex-direction: column; gap: 12px;">
+<span style="font-size: 14px; font-weight: 700; color: {{c.primary}};">Documentation</span>
+<h1 style="margin: 0; font-size: 52px; line-height: 1.05; font-weight: 800; letter-spacing: -.02em;">Run virtual machines on hardware you own.</h1>
+<p style="margin: 0; font-size: 18px; color: {{c.onSurfaceVariant}}; max-width: 720px;">Start with what you want to do. Every guide uses real screenshots of the current release.</p>
+</section>
+<div role="search" style="display: flex; gap: 10px; align-items: stretch;">
+<label style="flex: 1; display: flex; align-items: center; gap: 12px; height: 56px; padding: 0 20px; border-radius: 28px; background: {{c.surfaceHigh}};"><span aria-hidden="true">⌕</span><input value="{{query}}" placeholder="Search guides and articles" style="flex: 1; border: 0; background: transparent; color: {{c.onSurface}}; font-size: 16px; outline: none;"></label>
+<button type="button" onClick="{{toggleRegex}}" aria-pressed="{{regexOn}}" style="{{regexButton}}">.* Regex</button>
+</div>
+<sc-if value="{{regex}}" hint-placeholder-val="{{ false }}">
+<section aria-label="Regular expression builder" style="display: flex; flex-wrap: wrap; gap: 10px; align-items: center; padding: 16px 20px; border-radius: 20px; background: {{c.surfaceContainer}};">
+<code style="font-family: 'Roboto Mono', monospace; padding: 8px 12px; border-radius: 10px; background: {{c.surfaceHigh}};">/(vmware|virtualbox)\s+host/i</code>
+<sc-for list="{{flags}}" as="f" hint-placeholder-count="4"><span style="padding: 6px 12px; border-radius: 10px; border: 1px solid {{c.outline}}; font-size: 13px;">{{f}}</span></sc-for>
+<span style="font-size: 13px; color: {{c.ok}};">Valid · 3 matches in 2 articles</span>
+</section>
+</sc-if>
+<div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px;">
+<sc-for list="{{tasks}}" as="k" hint-placeholder-count="6">
+<button type="button" onClick="{{k.open}}" style="{{k.card}}"><span style="font-size: 28px;" aria-hidden="true">{{k.icon}}</span><strong style="font-size: 20px;">{{k.title}}</strong><span style="color: {{c.onSurfaceVariant}}; font-size: 14px; line-height: 1.5;">{{k.text}}</span><span style="margin-top: auto; color: {{c.primary}}; font-weight: 700; font-size: 14px;">{{k.cta}}</span></button>
+</sc-for>
+</div>
+<section style="display: flex; gap: 16px; align-items: center; padding: 20px 24px; border-radius: 24px; background: {{c.secondaryContainer}}; color: {{c.onSecondaryContainer}};"><strong>Latest release</strong><span style="font-family: 'Roboto Mono', monospace;">0.1.0-build.32</span><span style="flex: 1;"></span><span>Installer ISO · OVA · USB image · Deploy assistant</span></section>
+</main>
+</sc-if>
+<sc-if value="{{guide}}" hint-placeholder-val="{{ false }}">
+<main style="max-width: 1180px; margin: 0 auto; padding: 32px 40px; display: grid; grid-template-columns: 260px minmax(0, 1fr); gap: 32px;">
+<nav aria-label="Guide steps" style="display: flex; flex-direction: column; gap: 6px;"><sc-for list="{{steps}}" as="s" hint-placeholder-count="8"><button type="button" onClick="{{s.pick}}" aria-current="{{s.on}}" style="{{s.style}}"><span style="{{s.dot}}">{{s.n}}</span>{{s.title}}</button></sc-for></nav>
+<article style="display: flex; flex-direction: column; gap: 16px;">
+<span style="font-size: 14px; font-weight: 700; color: {{c.primary}};">Install on a PC · step {{stepN}} of 8</span>
+<h2 style="margin: 0; font-size: 34px; font-weight: 800;">{{stepTitle}}</h2>
+<div style="aspect-ratio: 16 / 10; border-radius: 20px; background: #050505; color: #cfd8dc; display: flex; align-items: center; justify-content: center; font-family: 'Roboto Mono', monospace;">{{stepShot}}</div>
+<div style="display: flex; gap: 12px;"><button type="button" onClick="{{prev}}" style="{{outlined}}">Back</button><button type="button" onClick="{{next}}" style="{{filled}}">Next step</button><span style="flex: 1;"></span><span style="color: {{c.onSurfaceVariant}}; align-self: center;">Your place is saved in this browser.</span></div>
+</article>
+</main>
+</sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"seed":{"editor":"enum","default":"ember","options":["ember","ocean","violet"]},"mode":{"editor":"enum","default":"dark","options":["dark","light"]},"motion":{"editor":"boolean","default":true},"$preview":{"width":1440,"height":1000}}'>
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = { tab: 'Home', regex: true, step: 2 }; }
+  palette() {
+    const seeds = { ember: { dark: ['#ffb68e', '#532200', '#753400', '#ffdbca', '#5d4037', '#ffdbd0'], light: ['#9a4600', '#ffffff', '#ffdbca', '#321200', '#ffdbd0', '#2c160f'] },
+      ocean: { dark: ['#82d3e0', '#00363e', '#004f59', '#9feffd', '#334b4f', '#cde7ec'], light: ['#00687a', '#ffffff', '#9feffd', '#001f26', '#cde7ec', '#061f23'] },
+      violet: { dark: ['#d0bcff', '#381e72', '#4f378b', '#eaddff', '#4a4458', '#e8def8'], light: ['#6750a4', '#ffffff', '#eaddff', '#21005d', '#e8def8', '#1d192b'] } };
+    const mode = this.props.mode ?? 'dark'; const p = seeds[this.props.seed ?? 'ember'][mode]; const d = mode === 'dark';
+    return { primary: p[0], onPrimary: p[1], primaryContainer: p[2], onPrimaryContainer: p[3], secondaryContainer: p[4], onSecondaryContainer: p[5],
+      surface: d ? '#141218' : '#fef7ff', surfaceContainer: d ? '#211f26' : '#f3edf7', surfaceHigh: d ? '#2b2930' : '#ece6f0', onSurface: d ? '#e6e0e9' : '#1d1b20', onSurfaceVariant: d ? '#cac4d0' : '#49454f', outline: d ? '#938f99' : '#79747e', outlineVariant: d ? '#49454f' : '#cac4d0', ok: d ? '#80d99e' : '#1b6d3a' };
+  }
+  renderVals() {
+    const c = this.palette(); const motion = this.props.motion ?? true; const s = this.state;
+    const tabs = ['Home', 'Guides', 'Articles', 'Wiki'].map((label) => ({ label, on: String(s.tab === label), pick: () => this.setState({ tab: label }),
+      style: 'height:40px;padding:0 16px;border:0;border-radius:20px;cursor:pointer;font-weight:600;background:' + (s.tab === label ? c.secondaryContainer : 'transparent') + ';color:' + (s.tab === label ? c.onSecondaryContainer : c.onSurface) + ';' }));
+    const tasks = [['🖥', 'Host it in VirtualBox or VMware', 'One click with the deploy assistant. The VM reports its address when it is ready.', 'Open the guide'], ['💿', 'Install on a PC', 'Boot the installer ISO from a USB drive and pick the disk. Eight screenshots.', 'Start step 1'], ['＋', 'Create your first machine', 'Firmware, disks, network and display, with a live launch preview.', 'Open the walkthrough'], ['⟳', 'Update an appliance', 'Check, then update from Settings. Machines and disks are kept.', 'Read how'], ['⌨', 'Use the console', 'Keys, screenshots, recording, annotation, releasing input.', 'Read the article'], ['▶', 'Try it on this computer', 'go-host.bat starts a test host on your own network.', 'Run locally']]
+      .map(([icon, title, text, cta], i) => ({ icon, title, text, cta, open: () => this.setState({ tab: 'Guides' }),
+        card: 'display:flex;flex-direction:column;gap:10px;min-height:190px;padding:24px;border-radius:28px;border:0;text-align:left;cursor:pointer;background:' + c.surfaceContainer + ';color:' + c.onSurface + ';' + (motion ? 'animation:rise 480ms cubic-bezier(.2,.9,.25,1.1) both;animation-delay:' + (i * 60) + 'ms;' : '') }));
+    const names = ['Boot menu', 'Disk list', 'Writing', 'Checked', 'Installed', 'First boot', 'Address', 'First-run page'];
+    const steps = names.map((title, i) => ({ title, n: String(i + 1), on: String(s.step === i), pick: () => this.setState({ step: i }),
+      style: 'display:flex;align-items:center;gap:12px;height:44px;padding:0 14px;border:0;border-radius:22px;text-align:left;cursor:pointer;font-weight:600;background:' + (s.step === i ? c.secondaryContainer : 'transparent') + ';color:' + c.onSurface + ';',
+      dot: 'width:26px;height:26px;border-radius:13px;display:flex;align-items:center;justify-content:center;font-size:12px;background:' + (i < s.step ? c.primary : c.surfaceHigh) + ';color:' + (i < s.step ? c.onPrimary : c.onSurface) + ';' }));
+    return { c, tabs, tasks, steps, home: s.tab === 'Home' || s.tab === 'Articles' || s.tab === 'Wiki', guide: s.tab === 'Guides',
+      regex: s.regex, regexOn: String(s.regex), toggleRegex: () => this.setState({ regex: !s.regex }), query: s.regex ? '' : 'vmware host',
+      flags: ['i ignore case', 'm multiline', 's dot all', 'Search titles and text'],
+      regexButton: 'height:56px;padding:0 20px;border-radius:28px;cursor:pointer;font-weight:700;border:1px solid ' + (s.regex ? 'transparent' : c.outline) + ';background:' + (s.regex ? c.primaryContainer : 'transparent') + ';color:' + (s.regex ? c.onPrimaryContainer : c.onSurface) + ';',
+      stepN: String(s.step + 1), stepTitle: names[s.step], stepShot: 'Real screenshot: ' + names[s.step].toLowerCase(),
+      prev: () => this.setState({ step: Math.max(0, s.step - 1) }), next: () => this.setState({ step: Math.min(7, s.step + 1) }),
+      outlined: 'height:44px;padding:0 20px;border-radius:22px;border:1px solid ' + c.outline + ';background:transparent;color:' + c.primary + ';font-weight:700;cursor:pointer;',
+      filled: 'height:44px;padding:0 24px;border-radius:22px;border:0;background:' + c.primary + ';color:' + c.onPrimary + ';font-weight:700;cursor:pointer;',
+      root: 'min-height:1000px;background:' + c.surface + ';color:' + c.onSurface + ';font-family:"Roboto Flex",system-ui,sans-serif;' };
+  }
+}
+</script>
+</body>
+</html>

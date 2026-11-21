@@ -11,6 +11,3 @@ The import verifies transfer integrity and storage length only. It does not veri
 QEMU opens installation media through an explicitly raw, read-only virtual SCSI CD device. Uploaded file headers never select an alternate disk format or backing-file interpretation. The same recipe is exercised with harmless blank CD fixture bytes on every selectable default platform.
 
 The HTTP request limit permits the documented fifteen-minute upload deadline; JSON requests retain a separate thirty-second body deadline and 64 KiB limit. If the media file is saved but activity-history persistence fails, the API returns successful media creation with an explicit audit warning. It never reports the already-saved file as a failed upload.
-
-
-Source: [docs/features/media.md](https://github.com/Ding-Ding-Projects/material-qemu/blob/2a273d914f9d4a0c4f61be13d391a9011fc38f42/docs/features/media.md).

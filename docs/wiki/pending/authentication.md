@@ -11,6 +11,3 @@ This is one-owner authentication, not the separate multi-user design. Advanced u
 Settings offers password disable and re-enable only after a passkey is registered. Every change requires a newly completed passkey verification; the server checks the opaque session's authentication method and a five-minute verification age, rather than trusting a request field. Cancelling or failing that verification leaves the setting unchanged.
 
 Disabling rejects new password sign-ins even when the username and password are correct. The saved password and existing sessions remain unchanged. Re-enabling also requires fresh passkey verification. There is no unauthenticated password-only recovery endpoint. If all registered passkeys are lost, recovery requires a separately reviewed trusted-host operator or backup procedure; no automated recovery has been implemented or verified.
-
-
-Source: [docs/features/authentication.md](https://github.com/Ding-Ding-Projects/material-qemu/blob/2a273d914f9d4a0c4f61be13d391a9011fc38f42/docs/features/authentication.md).
