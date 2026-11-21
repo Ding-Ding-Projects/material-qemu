@@ -138,9 +138,12 @@ const virtualbox = {
   async exists(hv, { vmRef }, run = defaultRun) {
     return (await run(hv.vboxmanage, ['showvminfo', vmRef, '--machinereadable'], { timeoutMs: 30000 })).code === 0;
   },
-  async remove(hv, { vmRef }, run = defaultRun) {
+  async remove(hv, { vmRef, folder }, run = defaultRun) {
     if (await this.running(hv, { vmRef }, run)) await must(run, hv.vboxmanage, ['controlvm', vmRef, 'poweroff'], { timeoutMs: 60000 });
     await must(run, hv.vboxmanage, ['unregistervm', vmRef, '--delete'], { timeoutMs: 300000 });
+    // VirtualBox keeps the VM's Logs folder; remove the VM's own folder, which
+    // this app created under its base folder (the name is validated).
+    if (folder && NAME_PATTERN.test(vmRef)) await fsp.rm(path.join(folder, vmRef), { recursive: true, force: true });
   },
 };
 

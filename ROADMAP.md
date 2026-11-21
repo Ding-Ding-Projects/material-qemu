@@ -34,12 +34,14 @@
 ## Delivery and broader design
 
 - [ ] Implement and verify the other 50 design boards.
-- [ ] Publish an immutable container image and verify intended LAN delivery. (Workflow pushes to GHCR on every push; first run and LAN check not yet observed.)
+- [x] Publish an immutable container image (GHCR, public, tagged per build) and normal releases with the OVA, USB image and portable deploy assistant (v0.1.0-build.12 is green).
 - [x] Add a build workflow that builds the image, appliance OVA and portable deploy assistant and publishes one normal release per push.
 - [x] Design the deploy assistant on a canvas (wizard, progress/ready, failure takeover, instance manager, two-key remove gate) and keep the boards in design/deploy-assistant/.
 - [x] Build the portable deploy assistant and confirm it detects real VirtualBox and VMware installs on Windows.
 - [x] Add a one-click Windows test host (go-host.bat): installs QEMU, builds, starts on the LAN address, health-checked, with status and stop modes.
-- [ ] Verify a real one-click deployment end to end on VirtualBox and on VMware with the first released OVA.
+- [x] Verify a real deployment on VirtualBox: import, bridge, boot, LAN address report and health in under a minute; reachable from this computer on its LAN address.
+- [ ] Verify the same on VMware after its VMnet0 bridge is pinned to the real adapter (import and boot already work; the automatic bridge picked a network without DHCP).
+- [ ] Verify LAN reachability from a second device (only this computer has been checked).
 - [x] Add the Docker host target, USB flashing, and English/Cantonese/bilingual modes to the deploy assistant.
 - [ ] Verify the Docker target against a running Docker engine (Docker Desktop on the development host fails at startup).
 - [ ] Verify a real USB flash and boot on a physical PC.
