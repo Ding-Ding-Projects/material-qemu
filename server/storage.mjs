@@ -124,6 +124,7 @@ export async function cloneMachine(store, qemu, machine, name) {
     disks,
     network: { ...source.network, mac: generateMac() },
     favourite: false,
+    autostart: false,
   };
   const config = validateMachine(candidate);
   const written = [];

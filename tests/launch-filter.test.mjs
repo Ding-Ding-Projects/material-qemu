@@ -44,7 +44,7 @@ test("launch preview and execution use the same fixed argument builder", () => {
   );
   assert.ok(
     actual.args.includes(
-      "scsi-cd,drive=installation-media,bus=media-scsi.0,bootindex=1",
+      "scsi-cd,drive=installation-media,bus=media-scsi.0,bootindex=1,id=cd-0",
     ),
   );
   for (const arch of ["x86_64", "i386", "aarch64", "arm"]) {

@@ -5,15 +5,14 @@ import {
   readdir,
   realpath,
   stat,
-  copyFile,
   access,
-  constants,
 } from "node:fs/promises";
 import path from "node:path";
 import net from "node:net";
 import { memoryLimit } from "./resources.mjs";
 import { targets, discoverCapabilities } from "./capabilities.mjs";
 import { discoverHost } from "./host.mjs";
+import { qemuImg } from "./disk-tools.mjs";
 import { validateMachine, diskFileName } from "./machine-config.mjs";
 import { launchPlan } from "./launch-plan.mjs";
 export { hostMetrics } from "./resources.mjs";
@@ -178,12 +177,20 @@ export class Qemu {
     ) {
       const firmware = this.host.firmware[machine.arch];
       options.firmware = firmware;
-      options.vars = path.join(runtime, "OVMF_VARS.fd");
-      try {
-        await copyFile(firmware.vars, options.vars, constants.COPYFILE_EXCL);
-      } catch (error) {
-        if (error.code !== "EEXIST") throw error;
-      }
+      // The per-machine variable store is qcow2 so running snapshots work:
+      // QEMU refuses to snapshot a machine with a writable raw flash device.
+      options.vars = path.join(runtime, "OVMF_VARS.qcow2");
+      options.varsFormat = "qcow2";
+      if (!(await stat(options.vars).then(() => true, () => false)))
+        await qemuImg([
+          "convert",
+          "-f",
+          "raw",
+          "-O",
+          "qcow2",
+          firmware.vars,
+          options.vars,
+        ]);
     }
     if (machine.serial) options.serialLog = path.join(runtime, "serial.log");
     let tpm = null;

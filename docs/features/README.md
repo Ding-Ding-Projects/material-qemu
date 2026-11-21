@@ -25,3 +25,5 @@ The application includes task-oriented help for creating machines, controlling l
 - [Workspace tabs and command palette](workspace.md)
 
 - [VirtualBox and VMware hosting with the deploy assistant](vm-hosting.md)
+
+- [QEMU hardware, live actions, snapshots and storage API](qemu-hardware.md)

@@ -54,6 +54,9 @@ export async function listSnapshots(qemu, machine) {
 export async function createSnapshot(qemu, machine, name) {
   checkSnapshotName(name);
   const files = await qcow2Files(qemu, machine);
+  const existing = await listSnapshots(qemu, machine);
+  if (existing.snapshots.some((s) => s.name === name))
+    throw new Error(`A snapshot named ${name} already exists.`);
   if (running(qemu, machine)) return void (await monitor(qemu, machine, `savevm ${name}`));
   const done = [];
   try {

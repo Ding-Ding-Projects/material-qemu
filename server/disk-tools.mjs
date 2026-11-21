@@ -52,7 +52,7 @@ export function parseHmpSnapshots(text) {
     const match = line.match(
       /^(\S+)\s+(\S+)\s+([\d.]+\s*[A-Za-z]*)\s+(\d{4}-\d\d-\d\d \d\d:\d\d:\d\d)\s+(\S+)/,
     );
-    if (!match || match[1] === "ID" || /^-+$/.test(match[1])) continue;
+    if (!match || match[1] === "ID") continue;
     rows.push({
       id: match[1],
       name: match[2],

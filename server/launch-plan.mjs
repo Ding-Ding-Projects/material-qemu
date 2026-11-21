@@ -24,6 +24,7 @@ export function launchPlan(machineRecord, options = {}) {
     cdroms = [],
     firmware = {},
     vars = "<machine UEFI variables>",
+    varsFormat = "raw",
     tpmSocket = "<private TPM socket>",
     serialLog = "<serial log>",
   } = options;
@@ -88,7 +89,7 @@ export function launchPlan(machineRecord, options = {}) {
           "<UEFI firmware>",
       )}`,
       "-drive",
-      `if=pflash,format=raw,unit=1,file=${escape(vars)}`,
+      `if=pflash,format=${varsFormat},unit=1,file=${escape(vars)}`,
     );
     if (secureBoot)
       args.push(
@@ -173,7 +174,7 @@ export function launchPlan(machineRecord, options = {}) {
       "-drive",
       `file=${escape(file)},format=raw,if=none,media=cdrom,readonly=on,id=${id}`,
       "-device",
-      `scsi-cd,drive=${id},bus=media-scsi.0${boot("cdrom", i)}`,
+      `scsi-cd,drive=${id},bus=media-scsi.0${boot("cdrom", i)},id=cd-${i}`,
     );
   });
   // Network.

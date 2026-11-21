@@ -37,7 +37,7 @@ function cdromId(machine, index) {
   const slot = index === undefined || index === null ? 0 : Number(index);
   if (!Number.isInteger(slot) || slot < 0 || slot >= machine.cdroms.length)
     throw new Error("This machine has no CD-ROM drive with that number.");
-  return slot === 0 ? "installation-media" : `installation-media-${slot}`;
+  return `cd-${slot}`;
 }
 export function checkLiveAction(body) {
   if (!body || !LIVE_ACTIONS.includes(body.action))
