@@ -49,6 +49,42 @@ The **Instances** page starts, stops, restarts and removes what it created. The 
 
 The assistant screens were designed first on a canvas; the source boards are in `design/deploy-assistant/`.
 
+## Install on a PC, step by step
+
+The installer ISO in each release puts Material QEMU on a computer's own disk. Write `material-qemu-installer-x86_64-<version>.iso` to a USB drive with [Rufus](https://rufus.ie), balenaEtcher, `dd` or the deploy assistant's Flash page, then boot the PC from it. These screenshots come from one run of `scripts/virtualbox-install-walkthrough.sh` with release 0.1.0-build.32 in a VirtualBox VM with an empty 20 GiB disk; on a real PC the screens are the same. The installer never lists the drive it booted from, asks for the disk name, and asks for `ERASE` too if the disk already has partitions. Updates after that come from **Settings > Appliance updates** ([details](docs/features/vm-hosting.md#updating-an-appliance)).
+
+1. The installer's boot menu; the first entry starts after 15 seconds.
+
+   ![The installer's boot menu; the first entry starts after 15 seconds](evidence/installer-virtualbox/01-boot-menu.png)
+
+2. The installer lists the internal disks that can hold Material QEMU.
+
+   ![The installer lists the internal disks that can hold Material QEMU](evidence/installer-virtualbox/02-disk-list.png)
+
+3. The disk name is typed in and writing starts.
+
+   ![The disk name is typed in and writing starts](evidence/installer-virtualbox/03-writing.png)
+
+4. The written disk is read back and matches the release's SHA-256.
+
+   ![The written disk is read back and matches the release's SHA-256](evidence/installer-virtualbox/04-verified.png)
+
+5. Installed: remove the installer and press Enter to restart.
+
+   ![Installed: remove the installer and press Enter to restart](evidence/installer-virtualbox/05-installed.png)
+
+6. The PC restarts from its own disk into Material QEMU.
+
+   ![The PC restarts from its own disk into Material QEMU](evidence/installer-virtualbox/06-first-boot.png)
+
+7. The console shows the address to open.
+
+   ![The console shows the address to open](evidence/installer-virtualbox/07-ready.png)
+
+8. Opening that address shows the first-run page; the first account becomes the owner.
+
+   ![Opening that address shows the first-run page; the first account becomes the owner](evidence/installer-virtualbox/08-browser.png)
+
 ## Runtime behavior
 
 - Password authentication uses scrypt; sessions use opaque HttpOnly SameSite cookies and CSRF verification.

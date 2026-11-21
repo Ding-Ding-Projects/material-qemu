@@ -1,0 +1,8 @@
+01-boot-menu.png	The installer's boot menu; the first entry starts after 15 seconds
+02-disk-list.png	The installer lists the internal disks that can hold Material QEMU
+03-writing.png	The disk name is typed in and writing starts
+04-verified.png	The written disk is read back and matches the release's SHA-256
+05-installed.png	Installed: remove the installer and press Enter to restart
+06-first-boot.png	The PC restarts from its own disk into Material QEMU
+07-ready.png	The console shows the address to open
+08-browser.png	Opening that address shows the first-run page; the first account becomes the owner

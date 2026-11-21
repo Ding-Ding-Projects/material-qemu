@@ -1,0 +1,18 @@
+MQ-INSTALL Material QEMU installer
+MQ-INSTALL =======================
+MQ-INSTALL 
+MQ-INSTALL Looking for the installer medium...
+MQ-INSTALL Release 0.1.0-build.32. Disks that can hold it:
+MQ-INSTALL   sda  20 GiB  VBOX HARDDISK   blank
+MQ-INSTALL 
+MQ-INSTALL 
+MQ-INSTALL Writing Material QEMU to /dev/sda. This takes a few minutes...
+MQ-INSTALL Written in 40 seconds. Checking what was written...
+MQ-INSTALL Check passed: SHA-256 f5d6a56727d257ddefc4bbcfbe05d03691d73d975d3dccd83373bf7d3b6f0e73
+MQ-INSTALL 
+MQ-INSTALL Material QEMU is installed on /dev/sda.
+MQ-INSTALL Remove the installer medium. The computer restarts into Material QEMU;
+MQ-INSTALL its address appears on the screen after a few minutes.
+MQ-INSTALL MQ-INSTALLED target=sda
+material-qemu login: MQ-BOOT version=v0.1.0-build.32 ip=192.168.50.41 root=20G
+MQ-READY version=v0.1.0-build.32 url=http://192.168.50.41:8080/

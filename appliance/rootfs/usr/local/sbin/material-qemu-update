@@ -15,7 +15,10 @@ version_file=/opt/material-qemu/version
 vol=$(docker volume inspect -f '{{.Mountpoint}}' material-qemu-data 2>/dev/null) || exit 0
 status="$vol/update-status.json"
 request="$vol/update-request"
-current=$(cat "$version_file" 2>/dev/null || echo unknown)
+# Builds record the version as v0.1.0-build.N while release tags are compared
+# without the leading v, so it is dropped before comparing.
+current=$(sed 's/^v//' "$version_file" 2>/dev/null || echo unknown)
+[ -n "$current" ] || current=unknown
 latest=""
 
 write_status() { # state message

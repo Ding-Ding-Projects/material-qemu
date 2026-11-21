@@ -83,7 +83,7 @@ edge="/c/Program Files (x86)/Microsoft/Edge/Application/msedge.exe"
 if [ -n "$url" ] && [ -x "$edge" ]; then
   n=$((n + 1))
   file=$(printf '%02d-%s.png' "$n" browser)
-  "$edge" --headless=new --disable-gpu --hide-scrollbars --window-size=1440,900 \
+  "$edge" --headless=new --disable-gpu --hide-scrollbars --window-size=1440,900 --virtual-time-budget=8000 \
     --user-data-dir="$(win "$out/edge-profile")" --screenshot="$(win "$out/$file")" "$url" >/dev/null 2>&1 || true
   [ -f "$out/$file" ] && printf '%s\t%s\n' "$file" "Opening that address shows the first-run page; the first account becomes the owner" >> "$out/steps.tsv" && echo "saved $file"
 fi

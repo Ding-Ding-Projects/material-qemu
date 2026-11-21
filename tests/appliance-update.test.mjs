@@ -62,3 +62,10 @@ test("the update path unit is not ordered after Docker, which would form a boot 
   const unit = readFileSync(path.join(root, "appliance", "rootfs", "etc", "systemd", "system", "material-qemu-update.path"), "utf8");
   assert.doesNotMatch(unit, /^After=.*docker/m);
 });
+
+test("the updater compares versions without the build's leading v", () => {
+  const root = path.join(path.dirname(new URL(import.meta.url).pathname.replace(/^\/([A-Za-z]:)/, "$1")), "..");
+  const script = readFileSync(path.join(root, "appliance", "rootfs", "usr", "local", "sbin", "material-qemu-update"), "utf8");
+  assert.match(script, /current=\$\(sed 's\/\^v\/\/' "\$version_file"/);
+  assert.match(script, /tag_name": \*"v\\{0,1\\}/);
+});

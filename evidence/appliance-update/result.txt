@@ -1,0 +1,9 @@
+In-place update on a VirtualBox VM installed from the build 31 installer ISO, run with scripts/verify-appliance-update.mjs on 2026-11-21:
+
+before  {"supported":true,"current":null,"latest":null,"state":null}
+checked {"current":"v0.1.0-build.31","latest":"0.1.0-build.32","state":"available","message":"A newer release is available."}
+after   {"current":"0.1.0-build.32","latest":"0.1.0-build.32","state":"updated","message":"Updated to 0.1.0-build.32. Machines, disks and settings were kept."}
+PASS state=updated current=0.1.0-build.32 keep-me kept=true
+
+The machine keep-me, created before the update, was still listed afterwards.
+The run showed that the build records its version with a leading v; the updater now drops it before comparing, so an up-to-date appliance reports current.
