@@ -27,6 +27,7 @@
 - [ ] Complete every remaining control listed in docs/features/design-coverage.md.
   - [x] Machine page Overview, Hardware, Monitor and Log tabs, checked against a running QEMU machine (scripts/verify-machine-tabs.mjs, evidence/machine-tabs).
   - [x] NUMA nodes and individual CPU flags in the create form and the launch, started in QEMU and read back through the monitor (tests/cpu-numa.test.mjs, scripts/verify-cpu-numa.mjs, evidence/cpu-numa).
+  - [x] Running jobs on the Overview, with upload progress and outcomes (tests/jobs.test.mjs, scripts/verify-jobs.mjs, evidence/jobs).
 - [x] Add regex explain, a test bench with groups, replace and split previews, a saved pattern library and a one-second worker time limit to the regex builder (scripts/verify-regex-tools.mjs, evidence/regex-tools).
 - [x] Add a step-by-step regex debugger, a comparison with other flavours, code generation in six languages and local file search to the regex builder (tests/regex-parity.test.mjs, scripts/verify-regex-tools.mjs, evidence/regex-tools).
 - [x] Extend header search to disk images, ISOs and help articles, and give the command palette its own regex search (tests/search-everywhere.test.mjs, scripts/verify-search-everywhere.mjs, evidence/search-everywhere).

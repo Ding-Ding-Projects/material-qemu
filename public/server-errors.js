@@ -15,6 +15,7 @@ export const SERVER_ERRORS = {
   "CPU count must be 1–64.": "處理器數目必須介乎 1 至 64。",
   "Choose check or apply.": "請選擇檢查或套用。",
   "Choose a listed monitor query.": "請選擇清單上的監察查詢。",
+  "Unknown job kind.": "未知的工作類型。",
   "CPU flags are available for x86 targets only.": "處理器旗標只適用於 x86 目標。",
   "CPU flag names use lowercase letters, digits, dots, dashes and underscores.": "處理器旗標名稱只可用小寫字母、數字、點、連字號及底線。",
   "This QEMU build does not recognize that CPU flag.": "此 QEMU 版本不識別這個處理器旗標。",

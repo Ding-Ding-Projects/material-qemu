@@ -57,7 +57,7 @@ This inventory covers the controls in the supplied Main, Onboarding, Overview, M
 | Machine console/start/pause/details | Implemented against real runtime. |
 | Live thumbnails, guest CPU/RAM | Implemented: live console thumbnails on running cards, and per-guest CPU (share of its vCPUs) and resident memory measured from the QEMU process on Linux and Windows (evidence/guest-usage). |
 | Recent activity | Persisted actual action history implemented. |
-| Running jobs | Pending background-job product model. |
+| Running jobs | Implemented on the Overview: uploads with byte progress, disk imports, resizes, clones and snapshots while they run, and finished or failed for ten minutes after (scripts/verify-jobs.mjs). |
 | Appliance updates/pool health | Appliance updates implemented and verified from build 31 to build 32 (evidence/appliance-update). Storage pool health remains pending with pools. |
 
 ## Machines

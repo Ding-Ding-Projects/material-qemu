@@ -7,6 +7,7 @@ Material QEMU runs QEMU virtual machines from a browser on hardware you own: on 
 - [Console controls and local presentation](console)
 - [Supplied six-board control inventory](design-coverage)
 - [Interface (Material Design 3 Expressive)](interface)
+- [Running jobs](jobs)
 - [Remove machine records without deleting disks](machine-lifecycle)
 - [Machine page tabs](machine-page)
 - [Import installation media](media)

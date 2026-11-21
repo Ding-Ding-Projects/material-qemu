@@ -24,6 +24,7 @@ import {
   deleteSnapshot,
 } from "./snapshots.mjs";
 import { MONITOR_QUERIES, runMonitorQuery, machineLog } from "./machine-monitor.mjs";
+import { createJobs, countedRequest } from "./jobs.mjs";
 import {
   storageReport,
   resizeDisk,
@@ -71,6 +72,8 @@ export async function createApplication(options = {}) {
   const sessions = new Sessions();
   const challenges = new Map();
   let activeUploads = 0;
+  const jobs = createJobs();
+  const declaredBytes = (req) => Number(req.headers["content-length"]) || null;
   // The first person to register becomes the owner; no setup code is needed.
   // Remove the code file older versions wrote so it does not linger.
   await unlink(path.join(data, "setup-code")).catch(() => {});
@@ -148,10 +151,9 @@ export async function createApplication(options = {}) {
           15 * 60 * 1000,
         );
         try {
-          const media = await receiveIso(
-            req,
-            data,
-            url.searchParams.get("name"),
+          const media = await jobs.run(
+            { kind: "upload-iso", label: String(url.searchParams.get("name") || "ISO"), totalBytes: declaredBytes(req) },
+            (job) => receiveIso(countedRequest(req, job), data, url.searchParams.get("name")),
           );
           try {
             await store.transaction((s) =>
@@ -189,11 +191,15 @@ export async function createApplication(options = {}) {
         try {
           const mode = url.searchParams.get("mode");
           const target = url.searchParams.get("machineId");
-          const result = await (mode === "disk" && target
-            ? qemu.exclusive(target, () =>
-                importDisk({ request: req, params: url.searchParams, store, qemu }),
-              )
-            : importDisk({ request: req, params: url.searchParams, store, qemu }));
+          const result = await jobs.run(
+            { kind: "import-disk", label: String(url.searchParams.get("name") || url.searchParams.get("file") || "disk image"), machineId: mode === "disk" ? target : null, totalBytes: declaredBytes(req) },
+            (job) => {
+              const request = countedRequest(req, job);
+              return mode === "disk" && target
+                ? qemu.exclusive(target, () => importDisk({ request, params: url.searchParams, store, qemu }))
+                : importDisk({ request, params: url.searchParams, store, qemu });
+            },
+          );
           return json(res, 201, result);
         } finally {
           clearTimeout(deadline);
@@ -372,6 +378,7 @@ export async function createApplication(options = {}) {
             usage: guestUsage.get(m.id),
           })),
           guestUsageSupported: guestUsage.supported,
+          jobs: jobs.list(),
           removedMachines: store.state.removedMachines || [],
           settings: store.state.settings,
           folders: store.state.folders,
@@ -504,8 +511,10 @@ export async function createApplication(options = {}) {
       if (route === "/api/storage" && req.method === "GET")
         return json(res, 200, await storageReport(store, qemu));
       if (route === "/api/storage/disks/resize" && req.method === "POST") {
-        const result = await qemu.exclusive(String(body.machineId), () =>
-          resizeDisk(store, qemu, body),
+        const resizing = store.state.machines.find((m) => m.id === String(body.machineId));
+        const result = await jobs.run(
+          { kind: "resize-disk", label: `${resizing?.name || "machine"}: ${String(body.diskId || "disk")} to ${String(body.sizeGiB ?? "?").slice(0, 12)} GiB`, machineId: String(body.machineId) },
+          () => qemu.exclusive(String(body.machineId), () => resizeDisk(store, qemu, body)),
         );
         return json(res, 200, result);
       }
@@ -572,12 +581,14 @@ export async function createApplication(options = {}) {
         const view = migrateMachine(machine);
         const name = snapshotMatch[2] && decodeURIComponent(snapshotMatch[2]);
         const method = req.method;
-        const work = async (action, message) =>
-          qemu.exclusive(machine.id, async () => {
-            const result = await action();
-            await store.transaction((s) => event(s, `${machine.name}: ${message}`));
-            return result;
-          });
+        const work = async (action, message, kind) =>
+          jobs.run({ kind, label: `${machine.name}: ${message}`, machineId: machine.id }, () =>
+            qemu.exclusive(machine.id, async () => {
+              const result = await action();
+              await store.transaction((s) => event(s, `${machine.name}: ${message}`));
+              return result;
+            }),
+          );
         if (!name && method === "GET")
           return json(
             res,
@@ -585,15 +596,15 @@ export async function createApplication(options = {}) {
             await qemu.exclusive(machine.id, () => listSnapshots(qemu, view)),
           );
         if (!name && method === "POST") {
-          await work(() => createSnapshot(qemu, view, body.name), `snapshot ${body.name} created.`);
+          await work(() => createSnapshot(qemu, view, body.name), `snapshot ${body.name} created.`, "snapshot-create");
           return json(res, 201, { created: true, name: body.name });
         }
         if (name && snapshotMatch[3] && method === "POST") {
-          await work(() => restoreSnapshot(qemu, view, name), `snapshot ${name} restored.`);
+          await work(() => restoreSnapshot(qemu, view, name), `snapshot ${name} restored.`, "snapshot-restore");
           return json(res, 200, { restored: true, name });
         }
         if (name && !snapshotMatch[3] && method === "DELETE") {
-          await work(() => deleteSnapshot(qemu, view, name), `snapshot ${name} deleted.`);
+          await work(() => deleteSnapshot(qemu, view, name), `snapshot ${name} deleted.`, "snapshot-delete");
           return json(res, 200, { deleted: true, name });
         }
         return json(res, 404, { error: "Unknown endpoint." });
@@ -682,11 +693,9 @@ export async function createApplication(options = {}) {
               removeMachine(s, machine.id, body, qemu.status(machine.id).state),
             );
           if (match[2] === "clone") {
-            const clone = await cloneMachine(
-              store,
-              qemu,
-              machine,
-              String(body.name || "").trim(),
+            const clone = await jobs.run(
+              { kind: "clone", label: `${machine.name} → ${String(body.name || "").trim()}`, machineId: machine.id },
+              () => cloneMachine(store, qemu, machine, String(body.name || "").trim()),
             );
             return { cloned: true, machine: clone };
           }

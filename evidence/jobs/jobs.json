@@ -1,0 +1,41 @@
+{
+  "origin": "http://localhost:8097/",
+  "at": "2026-11-21T12:40:40.103Z",
+  "results": [
+    {
+      "name": "A slow ISO upload is listed as a running job with its progress",
+      "ok": true,
+      "detail": "{\"kind\":\"upload-iso\",\"label\":\"throttled-825268.iso\",\"state\":\"running\",\"fraction\":0.1484375,\"error\":null}"
+    },
+    {
+      "name": "The dashboard card shows the running upload with a percentage",
+      "ok": true,
+      "detail": "Running jobs 1 upload Uploading ISO throttled-825268.iso 42% · 5.0 MiB / 12.0 MiB · 3 s error Resizing disk jobs-source-793118: system to ? GiB Failed · 0 s · Disk capacity must be 1–4096 GiB. check_c"
+    },
+    {
+      "name": "The progress bar reports its value to assistive technology",
+      "ok": true,
+      "detail": "42"
+    },
+    {
+      "name": "The upload finishes and is listed as finished",
+      "ok": true,
+      "detail": "201 done"
+    },
+    {
+      "name": "A real clone is listed as a finished job",
+      "ok": true,
+      "detail": "200 {\"kind\":\"clone\",\"label\":\"jobs-source-825268 → jobs-clone-825268\",\"state\":\"done\",\"fraction\":null,\"error\":null}"
+    },
+    {
+      "name": "A refused resize is listed as failed with the reason",
+      "ok": true,
+      "detail": "400 {\"kind\":\"resize-disk\",\"label\":\"jobs-source-825268: system to ? GiB\",\"state\":\"failed\",\"fraction\":null,\"error\":\"Disk capacity must be 1–4096 GiB.\"}"
+    },
+    {
+      "name": "The card lists finished and failed jobs after the dashboard refreshes",
+      "ok": true,
+      "detail": "Running jobs 0 error Resizing disk jobs-source-825268: system to ? GiB Failed · 0 s · Disk capacity must be 1–4096 GiB. check_circle Cloning machine jobs-source-825268 → jobs-clone-825268 Finished · 0 s check_circle Uploading ISO throttled-825268.iso Finished "
+    }
+  ]
+}

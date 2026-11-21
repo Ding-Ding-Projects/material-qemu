@@ -2884,3 +2884,71 @@ dl.mon-obj {
     gap: 0;
   }
 }
+.lower .jobs-card {
+  grid-column: 1 / -1;
+}
+.jobs-card .row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.jobs-card h2 {
+  margin: 0;
+}
+.jobs {
+  list-style: none;
+  margin: 12px 0 0;
+  padding: 0;
+  display: grid;
+  gap: 10px;
+}
+.job {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+}
+.job > div {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  flex: 1;
+}
+.job .job-label {
+  overflow-wrap: anywhere;
+}
+.job small {
+  opacity: 0.8;
+}
+.job-failed > .icon {
+  color: var(--error);
+}
+.job-done > .icon {
+  color: var(--tertiary);
+}
+.job-bar {
+  height: 6px;
+  border-radius: 3px;
+  overflow: hidden;
+  background: color-mix(in srgb, var(--primary) 18%, transparent);
+  margin: 4px 0;
+}
+.job-bar i {
+  display: block;
+  height: 100%;
+  background: var(--primary);
+  border-radius: 3px;
+  transition: width 0.4s ease;
+}
+.job-bar i.indeterminate {
+  width: 35%;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .job-bar i.indeterminate {
+    animation: job-slide 1.4s ease-in-out infinite;
+  }
+}
+@keyframes job-slide {
+  from { transform: translateX(-100%); }
+  to { transform: translateX(300%); }
+}
