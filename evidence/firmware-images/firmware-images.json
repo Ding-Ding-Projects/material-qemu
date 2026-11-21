@@ -1,0 +1,46 @@
+{
+  "origin": "http://localhost:8097/",
+  "at": "2026-11-21T12:54:56.748Z",
+  "results": [
+    {
+      "name": "Both images are added through the Firmware tab and listed",
+      "ok": true,
+      "detail": "ovmf-435049.fd,ovmf-598204.fd,ovmf-650837.fd,ovmf-679314.fd,seabios-435049.bin,seabios-598204.bin,seabios-650837.bin,seabios-679314.bin"
+    },
+    {
+      "name": "Uploading the same name again is refused, nothing overwritten",
+      "ok": true,
+      "detail": "400 A firmware image with this name already exists. Choose another name; existing files are never overwritten."
+    },
+    {
+      "name": "The create form offers built-in firmware and both images",
+      "ok": true,
+      "detail": "built-in,ovmf-435049.fd,ovmf-598204.fd,ovmf-650837.fd,ovmf-679314.fd,seabios-435049.bin,seabios-598204.bin,seabios-650837.bin,seabios-679314.bin"
+    },
+    {
+      "name": "The launch preview uses the chosen image",
+      "ok": true,
+      "detail": "\"-bios\" \"<firmware image seabios-679314.bin>\""
+    },
+    {
+      "name": "A BIOS machine boots the custom image as -bios",
+      "ok": true,
+      "detail": "-bios \"C:\\Users\\cntow\\Documents\\Material"
+    },
+    {
+      "name": "A UEFI machine boots the custom image as its UEFI code",
+      "ok": true,
+      "detail": "unit=0,readonly=on,file=C:\\Users\\cntow\\Documents\\Material QEMU VMs\\regex-check\\firmware\\ovmf-679314.fd"
+    },
+    {
+      "name": "Both machines are running in QEMU",
+      "ok": true,
+      "detail": "running,running"
+    },
+    {
+      "name": "An image in use cannot be deleted",
+      "ok": true,
+      "detail": "400 This firmware image is used by fw-bios-679314. Choose built-in firmware for them first."
+    }
+  ]
+}

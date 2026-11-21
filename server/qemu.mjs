@@ -1,3 +1,4 @@
+import { firmwareImagePath } from "./firmware-images.mjs";
 import { spawn, execFile } from "node:child_process";
 import { promisify } from "node:util";
 import {
@@ -171,12 +172,14 @@ export class Qemu {
     const runtime = this.runtimeDirectory(machine.id);
     await mkdir(runtime, { recursive: true, mode: 0o700 });
     const options = { disks: diskPaths, cdroms: cdPaths, qmp, vnc };
+    const customFirmware = await firmwareImagePath(this.directory, machine.firmwareImage);
     if (
       ["x86_64", "i386"].includes(machine.arch) &&
       machine.firmware === "uefi"
     ) {
       const firmware = this.host.firmware[machine.arch];
-      options.firmware = firmware;
+      options.firmware = customFirmware ? { ...firmware, code: customFirmware, secureCode: customFirmware } : firmware;
+      if (customFirmware && !firmware?.vars) throw new Error("A custom UEFI image still needs the host's UEFI variable template, which was not found.");
       // The per-machine variable store is qcow2 so running snapshots work:
       // QEMU refuses to snapshot a machine with a writable raw flash device.
       options.vars = path.join(runtime, "OVMF_VARS.qcow2");
@@ -192,6 +195,7 @@ export class Qemu {
           options.vars,
         ]);
     }
+    else if (customFirmware) options.biosImage = customFirmware;
     if (machine.serial) options.serialLog = path.join(runtime, "serial.log");
     let tpm = null;
     if (machine.tpm) {

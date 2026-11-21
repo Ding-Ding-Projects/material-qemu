@@ -116,6 +116,15 @@ test("HTTP hardware, actions, snapshot, storage and import endpoints", async (t)
   assert.deepEqual(storage.body.isos, [{ name: "boot.iso", bytes: 8192, attachedTo: [id] }]);
   assert.equal((await call("/api/storage/disks/resize", "POST", { machineId: id, diskId: "disk0", sizeGiB: 2 })).status, 200);
   assert.equal((await call("/api/storage/isos/boot.iso", "DELETE")).status, 400);
+  // Browsers send a DELETE with no content type; it reaches the handler (which
+  // refuses here only because the ISO is attached), but still needs the origin
+  // and the CSRF token.
+  const browserDelete = (headers) => fetch(origin + "/api/storage/isos/boot.iso", { method: "DELETE", headers });
+  const plain = await browserDelete({ Origin: origin, ...auth });
+  assert.equal(plain.status, 400);
+  assert.match((await plain.json()).error, /attached/);
+  assert.equal((await browserDelete({ Origin: "http://evil.example", ...auth })).status, 403);
+  assert.equal((await browserDelete({ Origin: origin, Cookie: auth.Cookie })).status, 403);
   const clone = await call(`/api/machines/${id}/clone`, "POST", { name: "HTTP clone" });
   assert.equal(clone.status, 200);
   assert.equal(clone.body.machine.disks[0].sizeGiB, 2);

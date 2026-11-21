@@ -17,6 +17,7 @@ All fields are optional on input. Older records (`diskGiB`, a `network` string, 
 | `sockets`, `cores`, `threads` | Integers; the product is the CPU count (maximum 64). Without topology the CPU count becomes cores. |
 | `memory`, `balloon` | 128 to 262144 MiB; virtio balloon device. |
 | `cpuFlags` | Up to 24 `{ name, on }` entries, x86 only. Names must be in this QEMU build's own recognized CPUID flag list (from `-cpu help`), each listed once. Passed as `-cpu model,name=on` or `name=off`. |
+| `firmwareImage` | Empty for the built-in firmware, or the name of a custom image in managed storage (`.fd`, `.bin` or `.rom`). BIOS machines and other targets boot it as `-bios`; UEFI machines use it as the read-only UEFI code image, with variables still started from the host's template. A missing file stops the start with a clear message. |
 | `numa` | `{ nodes }`, 0 (off) or 2 to 8. Memory and virtual CPUs are split evenly: one `memory-backend-ram` and one `-numa node` per node, with contiguous CPU ranges and any remainder on the first nodes. Each node needs at least one virtual CPU and 64 MiB. |
 | `disks` | 1 to 8 entries of `{id, name, sizeGiB 1..4096, bus virtio\|sata\|nvme\|scsi\|ide, format qcow2\|raw, cache none\|writeback\|writethrough, discard}`. IDE is x86 only, at most two. On Windows hosts `cache none` launches as `writethrough`, because QEMU for Windows cannot open images with O_DIRECT. |
 | `cdroms` | 0 to 4 managed ISO names (replaces `iso`). |
@@ -83,6 +84,14 @@ While a machine runs, the server measures its QEMU process every 5 seconds: on L
 ## NUMA and CPU flags
 
 The create form's CPU and memory section offers the number of NUMA nodes (only counts that leave each node a CPU and 64 MiB) and a list of CPU flags, each turned on or off, with this QEMU build's flag names suggested as you type. The server reports the recognized flag names in `GET /api/host` as `cpuFlags`. The machine page's Hardware tab lists both, and its Monitor tab's **Memory backends** question shows one backend per node. `tests/cpu-numa.test.mjs` checks the parsing, validation and arguments; `scripts/verify-cpu-numa.mjs` sets two nodes and turns AVX2 off through the form, starts the machine in QEMU, and reads back two 512 MiB backends and two CPUs on each node (evidence/cpu-numa).
+
+## Custom firmware images
+
+Storage has a **Firmware** tab for adding firmware files: `.fd`, `.bin` or `.rom`, at most 64 MiB, named with letters, digits, dots, dashes and underscores. Each file is written to a temporary name and then linked into the managed `firmware` folder, so an existing name is refused instead of overwritten. The list shows how many machines use each file, and a file in use cannot be deleted. The create form's System section offers the built-in firmware and every image; the launch preview shows the chosen one as `<firmware image name>`, and the machine page's Hardware tab lists it.
+
+Endpoints: `GET /api/firmware` lists `{ images: [{ name, bytes, usedBy }] }`; `POST /api/firmware?name=…` takes the file as `application/octet-stream` and appears as a running job; `DELETE /api/firmware/{name}` removes an unused file.
+
+`tests/firmware-images.test.mjs` checks names, the no-overwrite rule, deletion while in use, and the `-bios` argument. `scripts/verify-firmware-images.mjs` adds copies of QEMU's own SeaBIOS and OVMF code through the Firmware tab, then starts a BIOS machine and a UEFI machine in QEMU and reads their command lines: one boots the custom file as `-bios`, the other as its UEFI code (evidence/firmware-images).
 
 ## SMBIOS UUID
 

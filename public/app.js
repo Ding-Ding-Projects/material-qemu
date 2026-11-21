@@ -77,6 +77,13 @@ let regexTab = "explain", regexSample = null, regexReplacement = "", regexRun = 
 let regexDebug = null, regexDebugStep = 0, regexCodeLang = "JavaScript", regexFiles = [];
 let regexFileReplace = false, regexFileReplacement = "", regexFileResults = [];
 // Machine page tab and the data its Monitor and Log tabs have fetched.
+// Custom firmware images in managed storage, and the last upload's outcome.
+let firmwareList = null, firmwareUpload = null;
+async function loadFirmware() {
+  const r = await tryApi("/firmware");
+  firmwareList = r.ok ? r.data : { images: [] };
+  if (["storage", "new"].includes(page) && session?.authenticated) rerenderQuiet();
+}
 let machineTab = "overview", machineView = { id: null, query: "status", results: {}, log: null };
 function machineViewFor(id) {
   if (machineView.id !== id) machineView = { id, query: "status", results: {}, log: null };
@@ -859,6 +866,7 @@ function initializeWizard(machine) {
 }
 function startWizard(machine) {
   initializeWizard(machine);
+  loadFirmware();
   page = "new";
   render();
 }
@@ -1843,6 +1851,8 @@ function views() {
     snaps: snapshotStore[selected] || { status: "loading", items: [] },
     machineTab,
     machineView: machineViewFor(selected),
+    firmware: firmwareList,
+    firmwareUpload,
     storage: storage || normalizeStorage(null, state),
     storageTab,
     upload,
@@ -2650,6 +2660,23 @@ async function handleExtra(action, b) {
   // Storage
   if (action.startsWith("storage-tab:")) {
     storageTab = action.slice(12);
+    if (storageTab === "firmware") loadFirmware();
+    render();
+    return true;
+  }
+  if (action === "fw-browse") {
+    $("#firmware-file")?.click();
+    return true;
+  }
+  if (action.startsWith("fw-delete:")) {
+    const name = decodeURIComponent(action.slice(10));
+    try {
+      await apiDelete(`/firmware/${encodeURIComponent(name)}`);
+      firmwareUpload = { message: t(`Deleted ${name}.`, `已刪除 ${name}。`) };
+    } catch (error) {
+      firmwareUpload = { error: true, message: localizeServerError(error.message, t) };
+    }
+    await loadFirmware();
     render();
     return true;
   }
@@ -2800,6 +2827,17 @@ document.addEventListener("change", (event) => {
   if (event.target.id === "storage-file" && event.target.files[0]) {
     startUpload(event.target.files[0]);
     event.target.value = "";
+  }
+  if (event.target.id === "firmware-file" && event.target.files[0]) {
+    const file = event.target.files[0];
+    event.target.value = "";
+    firmwareUpload = { message: t(`Uploading ${file.name}…`, `正在上載 ${file.name}…`) };
+    rerenderQuiet();
+    uploadFile(`/api/firmware?name=${encodeURIComponent(file.name)}`, file, session.csrf, () => {}).promise
+      .then((r) => { firmwareUpload = { message: t(`Added ${r.name}.`, `已新增 ${r.name}。`) }; })
+      .catch((error) => { firmwareUpload = { error: true, message: localizeServerError(error.message, t) }; })
+      .then(() => loadFirmware())
+      .then(() => { if (page === "storage") render(); });
   }
   if (event.target.id === "seed-custom") {
     appearance.seed = event.target.value;

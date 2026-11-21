@@ -34,6 +34,7 @@ export function launchPlan(machineRecord, options = {}) {
     varsFormat = "raw",
     tpmSocket = "<private TPM socket>",
     serialLog = "<serial log>",
+    biosImage = null,
   } = options;
   const arch = machine.arch,
     target = targets[arch];
@@ -89,13 +90,17 @@ export function launchPlan(machineRecord, options = {}) {
   const boot = (group, index) =>
     bootindex[group][index] ? `,bootindex=${bootindex[group][index]}` : "";
   if (machine.bootMenu && x86) args.push("-boot", "menu=on");
-  if (target.firmware)
+  // The preview has no paths, so a chosen image shows as a named placeholder.
+  const imagePlaceholder = machine.firmwareImage ? `<firmware image ${machine.firmwareImage}>` : null;
+  if (biosImage || (imagePlaceholder && !uefi)) args.push("-bios", biosImage || imagePlaceholder);
+  else if (target.firmware)
     args.push("-bios", target.firmware);
   if (uefi) {
     args.push(
       "-drive",
       `if=pflash,format=raw,unit=0,readonly=on,file=${escape(
         (secureBoot ? firmware.secureCode : firmware.code) ||
+          imagePlaceholder ||
           "<UEFI firmware>",
       )}`,
       "-drive",

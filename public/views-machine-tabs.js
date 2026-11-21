@@ -58,6 +58,7 @@ ${section(t("Processor and memory", "處理器及記憶體"), "memory", [
   ])}
 ${section(t("Firmware", "韌體"), "shield", [
     [t("Firmware", "韌體"), m.firmware === "uefi" ? "UEFI" : "BIOS"],
+    [t("Firmware image", "韌體映像"), m.firmwareImage ? mono(m.firmwareImage) : t("Built-in", "內建")],
     [t("Secure Boot", "安全開機"), yesNo(t, m.secureBoot)],
     [t("TPM 2.0", "TPM 2.0"), yesNo(t, m.tpm)],
     [t("Boot menu", "開機選單"), yesNo(t, m.bootMenu)],

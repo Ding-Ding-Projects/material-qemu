@@ -1,3 +1,4 @@
+import { checkFirmwareName } from "./firmware-images.mjs";
 import { validateCpuFlags, validateNuma } from "./cpu-numa.mjs";
 import { randomBytes } from "node:crypto";
 import { targets, supportedMachine } from "./capabilities.mjs";
@@ -295,6 +296,7 @@ export function validateMachine(rawInput, capabilities, host) {
     tpm,
     cpuModel: validateCpuModel(input.cpuModel, { arch, accelerator, host }),
     cpuFlags: validateCpuFlags(input.cpuFlags, { arch, host }),
+    firmwareImage: input.firmwareImage ? checkFirmwareName(input.firmwareImage) : "",
     numa: validateNuma(input.numa, { memory, cpus }),
     memory,
     balloon: bool(input.balloon),

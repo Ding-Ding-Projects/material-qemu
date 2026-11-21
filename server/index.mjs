@@ -25,6 +25,7 @@ import {
 } from "./snapshots.mjs";
 import { MONITOR_QUERIES, runMonitorQuery, machineLog } from "./machine-monitor.mjs";
 import { createJobs, countedRequest } from "./jobs.mjs";
+import { listFirmware, receiveFirmware, deleteFirmware } from "./firmware-images.mjs";
 import {
   storageReport,
   resizeDisk,
@@ -123,12 +124,20 @@ export async function createApplication(options = {}) {
       if (req.method === "GET" && route === "/api/session")
         return json(res, 200, sessionInfo(session));
       if (req.method !== "GET") {
+        // A DELETE carries no body, so browsers send it without a content
+        // type; it still needs the right origin and the session's CSRF token.
+        const bodyless =
+          req.method === "DELETE" &&
+          !req.headers["content-type"] &&
+          !Number(req.headers["content-length"] || 0) &&
+          !req.headers["transfer-encoding"];
         if (
           req.headers.origin !== origin ||
-          req.headers["content-type"]?.split(";")[0] !==
-            (route === "/api/media" || route === "/api/storage/import"
-              ? "application/octet-stream"
-              : "application/json")
+          (!bodyless &&
+            req.headers["content-type"]?.split(";")[0] !==
+              (route === "/api/media" || route === "/api/storage/import" || route === "/api/firmware"
+                ? "application/octet-stream"
+                : "application/json"))
         )
           return json(res, 403, { error: "Origin or content type rejected." });
         if (session && req.headers["x-csrf-token"] !== session.csrf)
@@ -171,6 +180,24 @@ export async function createApplication(options = {}) {
                 "ISO saved successfully, but activity history could not be recorded. Refresh the media library before retrying.",
             });
           }
+        } finally {
+          clearTimeout(deadline);
+          activeUploads--;
+        }
+      }
+      if (route === "/api/firmware" && req.method === "POST") {
+        if (!session) return json(res, 401, { error: "Sign in to upload firmware." });
+        if (activeUploads >= 2)
+          return json(res, 429, { error: "Two uploads are already active. Wait for one to finish." });
+        activeUploads++;
+        const deadline = setTimeout(() => req.destroy(new Error("Upload exceeded the 15-minute limit.")), 15 * 60 * 1000);
+        try {
+          const image = await jobs.run(
+            { kind: "upload-firmware", label: String(url.searchParams.get("name") || "firmware"), totalBytes: declaredBytes(req) },
+            (job) => receiveFirmware(countedRequest(req, job), data, url.searchParams.get("name")),
+          );
+          await store.transaction((s) => event(s, `Added firmware image ${image.name} (${image.bytes} bytes).`));
+          return json(res, 201, image);
         } finally {
           clearTimeout(deadline);
           activeUploads--;
@@ -557,6 +584,14 @@ export async function createApplication(options = {}) {
         } catch {
           return json(res, 404, { error: "No screenshot has been taken yet." });
         }
+      }
+      if (route === "/api/firmware" && req.method === "GET")
+        return json(res, 200, { images: await listFirmware(data, store.state.machines) });
+      const firmwareMatch = route.match(/^\/api\/firmware\/([^/]+)$/);
+      if (firmwareMatch && req.method === "DELETE") {
+        const result = await deleteFirmware(data, store.state.machines, decodeURIComponent(firmwareMatch[1]));
+        await store.transaction((s) => event(s, `Deleted firmware image ${result.name}.`));
+        return json(res, 200, result);
       }
       const viewMatch = route.match(/^\/api\/machines\/([a-f0-9-]{36})\/(monitor|log)(?:\/([a-z]+))?$/);
       if (viewMatch && req.method === "GET") {
