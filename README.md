@@ -17,6 +17,18 @@ Open http://localhost:8080/. Initial ownership requires the protected `setup-cod
 
 The default Compose port is loopback-only. Remote access requires a reviewed HTTPS reverse proxy and an exact `PUBLIC_ORIGIN`. LAN delivery and image-registry publication are not yet verified. Preserve the data volume during updates.
 
+## One-click test host on this computer
+
+`go-host.bat` runs Material QEMU directly on Windows for quick testing, with no container and no virtual machine. Double-click it, or run it from a terminal:
+
+```powershell
+.go-host.bat
+```
+
+It installs QEMU for Windows through Chocolatey when it is missing (Windows asks for administrator approval), builds the runtime, starts the server on port 8090 at this computer's LAN address, waits for `/health`, and prints the link and the first-run setup code. `go-host.bat --status` and `go-host.bat --stop` check and stop it; `--port` and `--ip` override the defaults. Test data lives in `DocumentsMaterial QEMU VMsgo-test`, separate from every other deployment, and is kept when it stops.
+
+This is a test bench, not the appliance: guests use software emulation, the Arm targets report their firmware as unavailable on Windows, and a result here says nothing about the OVA, USB or Raspberry Pi images.
+
 ## Host in VirtualBox, VMware, Docker or on a USB drive
 
 Each release from the build workflow carries a portable Windows deploy assistant (`material-qemu-deploy-<version>-portable.exe`), an appliance VM (`material-qemu-appliance-<version>.ova`), a USB image for spare PCs and, when its build passes, a Raspberry Pi 4/5 image. Run the assistant and pick a target:

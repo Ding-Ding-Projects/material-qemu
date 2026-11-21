@@ -38,8 +38,11 @@
 - [x] Add a build workflow that builds the image, appliance OVA and portable deploy assistant and publishes one normal release per push.
 - [x] Design the deploy assistant on a canvas (wizard, progress/ready, failure takeover, instance manager, two-key remove gate) and keep the boards in design/deploy-assistant/.
 - [x] Build the portable deploy assistant and confirm it detects real VirtualBox and VMware installs on Windows.
+- [x] Add a one-click Windows test host (go-host.bat): installs QEMU, builds, starts on the LAN address, health-checked, with status and stop modes.
 - [ ] Verify a real one-click deployment end to end on VirtualBox and on VMware with the first released OVA.
-- [ ] Add the Docker host target, USB flashing, Raspberry Pi image and flashing, and translations to the deploy assistant.
+- [x] Add the Docker host target, USB and Raspberry Pi flashing, and English/Cantonese/bilingual modes to the deploy assistant.
+- [ ] Verify the Docker target against a running Docker engine (Docker Desktop on the development host fails at startup).
+- [ ] Verify a real USB flash and boot, and a Raspberry Pi image on physical hardware.
 - [ ] Deliver appliance operating-system images and USB installer.
 - [ ] Deliver portable hosting/build companions and supported native packaging.
 - [ ] Complete the required-feature inventory and remaining acceptance.

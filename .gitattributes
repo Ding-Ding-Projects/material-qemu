@@ -1,3 +1,4 @@
 appliance/** text eol=lf
 *.sh text eol=lf
 .github/** text eol=lf
+*.bat text eol=crlf
