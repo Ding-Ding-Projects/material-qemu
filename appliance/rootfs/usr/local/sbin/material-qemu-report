@@ -2,6 +2,9 @@
 # Wait for the web service to become healthy, then report its address on the
 # first serial port (read by the deploy app) and on the local console.
 set -u
+# Keep kernel messages (Docker bridge changes and the like) off the screen so
+# the address shown at the login prompt stays readable.
+dmesg -n 3 2>/dev/null || true
 . /run/material-qemu.env
 host=$(printf '%s' "$PUBLIC_ORIGIN" | sed 's#^[a-z]*://##; s#/.*##')
 version=$(cat /opt/material-qemu/version 2>/dev/null || echo unknown)
@@ -35,6 +38,7 @@ if [ "$healthy" -ne 1 ]; then
   } | while IFS= read -r l; do serial "MQ-DIAG $l"; done
   serial "MQ-FAILED version=$version reason=health-timeout"
   printf 'Material QEMU did not become healthy. Check: journalctl -u material-qemu\n\n' > /etc/issue.d/material-qemu.issue
+  systemctl restart getty@tty1.service 2>/dev/null || true
   exit 1
 fi
 serial "MQ-READY version=$version url=$PUBLIC_ORIGIN/"
@@ -44,4 +48,6 @@ serial "MQ-READY version=$version url=$PUBLIC_ORIGIN/"
   printf 'The first account created there becomes the owner.\n'
   printf '\n'
 } > /etc/issue.d/material-qemu.issue
+# Redraw the login screen so it shows the address now that it is known.
+systemctl restart getty@tty1.service 2>/dev/null || true
 exit 0
