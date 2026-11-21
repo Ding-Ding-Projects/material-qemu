@@ -57,6 +57,14 @@ export function migrateMachine(input) {
     machine.network = { mode: "user" };
   return machine;
 }
+// SMBIOS UUID the guest sees. Empty means "use the machine's own id".
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+function smbiosUuid(value) {
+  const text = String(value ?? "").trim();
+  if (!text) return "";
+  if (!UUID.test(text)) throw new Error("Use a UUID in the form 12345678-1234-1234-1234-123456789abc, or leave it empty.");
+  return text.toLowerCase();
+}
 const bool = (value, fallback = false) =>
   value === undefined || value === null ? fallback : Boolean(value);
 function pick(value, allowed, fallback, label) {
@@ -305,6 +313,7 @@ export function validateMachine(rawInput, capabilities, host) {
     bootMenu: bool(input.bootMenu),
     bootOrder: [...bootOrder],
     autostart: bool(input.autostart),
+    uuid: smbiosUuid(input.uuid),
     // Derived for older clients that still read the single-disk fields.
     diskGiB: disks[0].sizeGiB,
     iso: input.cdroms[0] || "",

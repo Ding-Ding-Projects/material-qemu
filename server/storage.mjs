@@ -125,6 +125,8 @@ export async function cloneMachine(store, qemu, machine, name) {
     network: { ...source.network, mac: generateMac() },
     favourite: false,
     autostart: false,
+    // A clone is a different machine to its guest: new MAC above, new SMBIOS UUID here.
+    uuid: "",
   };
   const config = validateMachine(candidate);
   const written = [];

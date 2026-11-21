@@ -77,3 +77,7 @@ While a machine runs, the server measures its QEMU process every 5 seconds: on L
 ## Host hardware discovery
 
 `GET /api/host` includes `hardware`. On Linux it is read only from `/sys` and `/proc`: whether an IOMMU is on and how many groups it has, reserved and free hugepages with their size and the transparent hugepage mode, whether VFIO is available, whether KVM allows nested virtualization, and whether AMD SEV, SEV-ES, SEV-SNP or Intel TDX are enabled in KVM or only advertised by the CPU. Nothing is changed or loaded. Inside a container only what the container can see is reported. Other platforms return `checked: false` with the reason. Settings > Host lists these facts.
+
+## SMBIOS UUID
+
+Every machine passes `-uuid` to QEMU, so the guest sees the same SMBIOS UUID on every boot: the machine's own id unless a UUID is set under **Boot and automation** in the create form. A clone gets a new MAC address and goes back to its own id, so two machines never present the same identity.

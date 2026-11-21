@@ -133,6 +133,7 @@ export const SERVER_ERRORS = {
   "Upload exceeded the 60-minute limit.": "上載超過 60 分鐘限制。",
   "Upload length does not match the received file.": "上載長度與收到的檔案不符。",
   "Updates are only managed here on the Material QEMU appliance.": "只有 Material QEMU 設備才會在這裡管理更新。",
+  "Use a UUID in the form 12345678-1234-1234-1234-123456789abc, or leave it empty.": "請使用 12345678-1234-1234-1234-123456789abc 格式的 UUID，或者留空。",
   "Use a disk name between 1 and 80 characters.": "磁碟名稱須為 1 至 80 個字元。",
   "Use a machine name between 1 and 80 characters.": "機器名稱須為 1 至 80 個字元。",
   "Use a plain .iso filename with letters, numbers, spaces, dots, underscores or hyphens.": "請使用只含字母、數字、空格、點、底線或連字號的 .iso 檔案名稱。",

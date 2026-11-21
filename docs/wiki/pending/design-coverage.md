@@ -89,7 +89,7 @@ This inventory covers the controls in the supplied Main, Onboarding, Overview, M
 | Storage | Implemented in the server and the browser: up to eight disks (virtio, SATA, NVMe, SCSI, IDE; qcow2 or raw), up to four CD-ROMs, grow-only resize, full-copy clone and import. |
 | Network | Implemented in the server and the create form: user mode with port forwards, NIC model and MAC, restricted user mode, or none. Bridges pending. |
 | Display/devices | Implemented in the server and the create form: display adapter, sound, USB tablet and keyboard, serial log, RNG, boot order and boot menu. VNC stays loopback-private. |
-| Name and UUID | Name implemented; UUID generated server-side. User override pending. |
+| Name and UUID | Implemented: the guest sees a stable SMBIOS UUID (the machine id by default) that can be set in the create form; clones get a new one. |
 | Start after creating | Implemented explicit opt-in, real QEMU startup and console navigation. Failed startup retains the saved machine and reports the actual error. |
 | Readconfig/cloud image/cloud-init import | Pending. Browser-supplied arbitrary command strings are not accepted. |
 | Live command preview | Implemented using the same server-owned argument builder as execution, with labelled placeholders for private paths and ports. Preview executes nothing. |

@@ -50,6 +50,8 @@ export function launchPlan(machineRecord, options = {}) {
   const args = [
     "-name",
     escape(machine.name),
+    // A stable SMBIOS UUID: the one set on the machine, or the machine's id.
+    ...((machine.uuid || machine.id) ? ["-uuid", machine.uuid || machine.id] : []),
     "-machine",
     secureBoot ? `${machineType},smm=on` : machineType,
     "-accel",

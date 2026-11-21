@@ -1,5 +1,5 @@
 {
-  "sourceCommit": "bbe646746891af70208baf8a58e67d39e66c5b5e",
+  "sourceCommit": "7bca1c73dc00f5f9608ec9c874aaa519b5c34f7d",
   "wikiRemote": "https://github.com/Ding-Ding-Projects/material-qemu.wiki.git",
   "publicationState": "pending-first-page",
   "pages": [
@@ -23,9 +23,9 @@
     },
     {
       "source": "docs/features/design-coverage.md",
-      "sourceSha256": "d5dc68afcdff1999be297abfde1e4b8c87ffdb0a957815accb3db221d711aed0",
+      "sourceSha256": "3fc10eff2ece94c2fa871b4a6df356d812bf23824fc7b3a0f468b3f8806a5a40",
       "page": "design-coverage.md",
-      "pageSha256": "d5dc68afcdff1999be297abfde1e4b8c87ffdb0a957815accb3db221d711aed0"
+      "pageSha256": "3fc10eff2ece94c2fa871b4a6df356d812bf23824fc7b3a0f468b3f8806a5a40"
     },
     {
       "source": "docs/features/interface.md",
@@ -71,9 +71,9 @@
     },
     {
       "source": "docs/features/qemu-hardware.md",
-      "sourceSha256": "25046a7455aaf0026a2f4ce2323ed14b3b6bde7c4fec4cf3882ab6cc6af11be7",
+      "sourceSha256": "f076d341d965e104f1c919b89fa7f16c9190daa97cd03d7e225019ac9d69bac0",
       "page": "qemu-hardware.md",
-      "pageSha256": "25046a7455aaf0026a2f4ce2323ed14b3b6bde7c4fec4cf3882ab6cc6af11be7"
+      "pageSha256": "f076d341d965e104f1c919b89fa7f16c9190daa97cd03d7e225019ac9d69bac0"
     },
     {
       "source": "docs/features/runtime.md",

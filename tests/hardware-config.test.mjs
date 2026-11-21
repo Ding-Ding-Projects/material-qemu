@@ -295,3 +295,13 @@ test("Windows hosts open cache=none disks with writethrough instead of O_DIRECT"
   assert.equal(hostCache("none", "linux"), "none");
   assert.equal(hostCache("writeback", "win32"), "writeback");
 });
+
+test("each machine gives its guest a stable SMBIOS UUID, which can be set", async () => {
+  const { validateMachine } = await import("../server/machine-config.mjs");
+  const plain = launchPlan({ id: "11111111-2222-3333-4444-555555555555", name: "u", arch: "x86_64", accelerator: "tcg", cpus: 1, memory: 512, disks: [], cdroms: [], network: { mode: "none" }, display: { adapter: "std" } }, { platform: "linux", disks: {} });
+  const at = plain.args.indexOf("-uuid");
+  assert.equal(plain.args[at + 1], "11111111-2222-3333-4444-555555555555");
+  const custom = launchPlan({ id: "11111111-2222-3333-4444-555555555555", uuid: "aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee", name: "u", arch: "x86_64", accelerator: "tcg", cpus: 1, memory: 512, disks: [], cdroms: [], network: { mode: "none" }, display: { adapter: "std" } }, { platform: "linux", disks: {} });
+  assert.equal(custom.args[custom.args.indexOf("-uuid") + 1], "aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee");
+  assert.throws(() => validateMachine({ name: "u", arch: "x86_64", memory: 512, cpus: 1, uuid: "not-a-uuid" }), /Use a UUID in the form/);
+});
