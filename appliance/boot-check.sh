@@ -4,8 +4,10 @@
 # Usage: appliance/boot-check.sh <disk.qcow2> <log-dir>
 set -euo pipefail
 disk=$(readlink -f "$1")
-logs=$2
-mkdir -p "$logs"
+mkdir -p "$2"
+# Absolute, because QEMU changes to / when it daemonizes and writes the
+# console picture relative to that.
+logs=$(readlink -f "$2")
 overlay="$logs/boot-check-overlay.qcow2"
 # A 64 GiB overlay also exercises the grow-to-fill service.
 qemu-img create -f qcow2 -b "$disk" -F qcow2 "$overlay" 64G >/dev/null
@@ -34,7 +36,9 @@ def cmd(c, **a):
 json.loads(f.readline())
 cmd("qmp_capabilities")
 r = cmd("screendump", filename=sys.argv[2], format="png")
-sys.exit(0 if "return" in r else 1)
+if "error" in r:
+    print("screendump failed:", r["error"].get("desc"), file=sys.stderr)
+    sys.exit(1)
 PY
 }
 # Read the console text with OCR, scaled up so the VGA font is easier to read.
@@ -64,7 +68,7 @@ while [ $SECONDS -lt $deadline ]; do
       shown=0
       for attempt in 1 2 3 4 5 6; do
         sleep 10
-        text=$(console_text "$logs/console.png")
+        text=$(console_text "$logs/console.png" || true)
         printf '%s\n' "$text" > "$logs/console.txt"
         if printf '%s' "$text" | grep -q "IP address: *${ip//./\\.}"; then shown=1; break; fi
       done
