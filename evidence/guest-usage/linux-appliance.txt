@@ -1,0 +1,12 @@
+Release v0.1.0-build.40 appliance in VirtualBox (nested virtualization on), 2026-11-21.
+
+GET /api/host hardware:
+{"checked":true,"iommu":{"enabled":false,"groups":0},"hugepages":{"total":0,"free":0,"sizeKiB":2048,"transparent":"always"},"vfio":{"device":false,"module":false},"nestedVirtualization":true,"confidential":{"sev":null,"sevEs":null,"sevSnp":null,"tdx":null,"cpuAdvertises":[]}}
+
+Guest usage of a 2 vCPU KVM UEFI machine read from /api/state:
+t+6s  cpuPercent null (first reading), 66990080 bytes
+t+12s cpuPercent 50    (firmware booting), 98230272 bytes
+t+18s cpuPercent 50.1, 100483072 bytes
+t+24s cpuPercent 2.3   (idle), 100552704 bytes
+
+The verification VM was deleted afterwards.
