@@ -1,0 +1,12 @@
+[Unit]
+Description=Grow the root filesystem to fill the boot disk
+DefaultDependencies=no
+After=local-fs.target
+Before=docker.service material-qemu-load.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/sbin/material-qemu-growroot
+
+[Install]
+WantedBy=multi-user.target

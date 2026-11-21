@@ -84,6 +84,12 @@ async function describe(run = defaultRun, env = process.env) {
     const problem = vmw.ovftool ? null : 'OVF Tool was not found next to VMware Workstation, so the appliance cannot be imported.';
     out.push({ ...vmw, version: null, ready: !problem, problem });
   }
+  const dk = detectDocker(env);
+  if (dk) {
+    const v = await run(dk.docker, ['version', '--format', '{{.Server.Version}}'], { timeoutMs: 30000 });
+    const version = v.code === 0 ? v.stdout.trim() : null;
+    out.push({ ...dk, version, ready: Boolean(version), problem: version ? null : 'Docker is installed but its engine is not running. Start Docker Desktop, then refresh.' });
+  }
   return out;
 }
 
@@ -186,9 +192,76 @@ const vmware = {
   },
 };
 
-const drivers = { virtualbox, vmware };
+// ----- Docker on this computer -----
+
+function detectDocker(env = process.env) {
+  const pathDirs = String(env.PATH || env.Path || '').split(path.delimiter).filter(Boolean);
+  const candidates = [...pathDirs.map((d) => path.join(d, 'docker.exe')), ...programFiles(env).map((p) => path.join(p, 'Docker', 'Docker', 'resources', 'bin', 'docker.exe'))];
+  const docker = firstExisting(candidates);
+  return docker ? { id: 'docker', name: 'Docker on this computer', docker } : null;
+}
+
+const CONTAINER_PREFIX = 'material-qemu-';
+const containerName = (name) => `${CONTAINER_PREFIX}${validateName(name)}`;
+
+function validatePort(port) {
+  if (!Number.isInteger(port) || port < 1024 || port > 65535) throw new Error('The port must be a whole number from 1024 to 65535.');
+  return port;
+}
+
+function validateIpv4(ip) {
+  if (typeof ip !== 'string' || !/^(25[0-5]|2[0-4]\d|1?\d?\d)(\.(25[0-5]|2[0-4]\d|1?\d?\d)){3}$/.test(ip)) throw new Error('Choose this computer\'s LAN address.');
+  return ip;
+}
+
+const docker = {
+  async pull(hv, { image }, run = defaultRun, onOutput) {
+    if (!/^ghcr\.io\/[a-z0-9-]+\/material-qemu:[A-Za-z0-9._-]+$/.test(image)) throw new Error('Unexpected image reference.');
+    await must(run, hv.docker, ['pull', image], { onOutput });
+  },
+  async create(hv, { name, image, ip, port, instanceId }, run = defaultRun) {
+    const cname = containerName(name); validateIpv4(ip); validatePort(port);
+    await must(run, hv.docker, ['create', '--name', cname, '--label', `io.github.material-qemu.deploy=${instanceId}`,
+      '-p', `${port}:8080`, '-e', `PUBLIC_ORIGIN=http://${ip}:${port}`, '-v', `${cname}-data:/data`,
+      '--cap-drop', 'ALL', '--security-opt', 'no-new-privileges:true', '--restart', 'unless-stopped', '--stop-timeout', '30', image], { timeoutMs: 120000 });
+    return { vmRef: cname };
+  },
+  async start(hv, { vmRef }, run = defaultRun) { await must(run, hv.docker, ['start', vmRef], { timeoutMs: 120000 }); },
+  async stop(hv, { vmRef }, run = defaultRun) { await must(run, hv.docker, ['stop', '-t', '30', vmRef], { timeoutMs: 120000 }); },
+  async running(hv, { vmRef }, run = defaultRun) {
+    const r = await run(hv.docker, ['container', 'inspect', '-f', '{{.State.Running}}', vmRef], { timeoutMs: 30000 });
+    return r.code === 0 && r.stdout.trim() === 'true';
+  },
+  async exists(hv, { vmRef }, run = defaultRun) { return (await run(hv.docker, ['container', 'inspect', vmRef], { timeoutMs: 30000 })).code === 0; },
+  async setupCode(hv, { vmRef }, run = defaultRun) {
+    const r = await run(hv.docker, ['exec', vmRef, 'cat', '/data/setup-code'], { timeoutMs: 30000 });
+    const code = r.code === 0 ? r.stdout.trim() : '';
+    return /^[A-Za-z0-9_-]{8,128}$/.test(code) ? code : null;
+  },
+  async remove(hv, { vmRef }, run = defaultRun) {
+    if (!vmRef.startsWith(CONTAINER_PREFIX)) throw new Error('Refusing to remove a container this app did not name.');
+    await must(run, hv.docker, ['rm', '-f', vmRef], { timeoutMs: 120000 });
+    const v = await run(hv.docker, ['volume', 'rm', `${vmRef}-data`], { timeoutMs: 120000 });
+    if (v.code !== 0 && !/no such volume/i.test(v.stderr)) throw new CommandError(hv.docker, ['volume', 'rm', `${vmRef}-data`], v);
+  },
+};
+
+const drivers = { virtualbox, vmware, docker };
+
+function lanAddresses(interfaces = require('node:os').networkInterfaces()) {
+  const virtual = /vEthernet|WSL|VirtualBox|VMware|Hyper-V|Loopback|Docker|Tailscale|ZeroTier|vpn/i;
+  const out = [];
+  for (const [name, list] of Object.entries(interfaces)) {
+    for (const a of list || []) {
+      if (a.family !== 'IPv4' && a.family !== 4) continue;
+      if (a.internal || a.address.startsWith('169.254.')) continue;
+      out.push({ name, address: a.address, preferred: !virtual.test(name) });
+    }
+  }
+  return out.sort((x, y) => Number(y.preferred) - Number(x.preferred));
+}
 
 module.exports = {
-  NAME_PATTERN, validateName, validateResources, defaultRun, CommandError, describe,
-  detectVirtualBox, detectVmware, parseBridgedAdapters, virtualBoxAdapters, setVmxKeys, drivers,
+  NAME_PATTERN, validateName, validateResources, validatePort, validateIpv4, defaultRun, CommandError, describe,
+  detectVirtualBox, detectVmware, detectDocker, parseBridgedAdapters, virtualBoxAdapters, setVmxKeys, lanAddresses, containerName, drivers,
 };

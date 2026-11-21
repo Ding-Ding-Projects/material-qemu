@@ -110,3 +110,5 @@ body.motion .failbody > .row:first-child { animation: shake 360ms ease-in-out 2;
 .notice { display: flex; gap: 12px; align-items: center; padding: 12px 20px; background: var(--fail2); color: var(--text); }
 .notice[hidden] { display: none; }
 .notice span { flex: 1; }
+.rail .stack { display: flex; flex-direction: column; gap: 4px; padding: 0 14px; font-size: 12px; color: var(--muted); }
+.rail .stack select { height: 36px; }

@@ -1,0 +1,17 @@
+#!/bin/sh
+# Grow the root partition and filesystem to fill the disk the appliance booted
+# from (a larger VM disk or a USB drive). Safe to run on every boot.
+set -u
+src=$(findmnt -n -o SOURCE /) || exit 0
+part=$(basename "$src")
+disk=$(lsblk -no pkname "$src" 2>/dev/null | head -n1)
+num=$(cat "/sys/class/block/$part/partition" 2>/dev/null || true)
+if [ -z "$disk" ] || [ -z "$num" ]; then
+  echo "material-qemu-growroot: root is not a plain partition; nothing to grow"
+  exit 0
+fi
+out=$(growpart "/dev/$disk" "$num" 2>&1); rc=$?
+echo "$out"
+case "$out" in *NOCHANGE*) exit 0 ;; esac
+[ "$rc" -eq 0 ] || exit 0
+resize2fs "$src"

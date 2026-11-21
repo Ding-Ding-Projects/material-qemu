@@ -80,7 +80,7 @@ jobs:
       - name: Install image tools
         run: |
           sudo apt-get update
-          sudo apt-get install -y --no-install-recommends libguestfs-tools qemu-utils qemu-system-x86
+          sudo apt-get install -y --no-install-recommends libguestfs-tools qemu-utils qemu-system-x86 cloud-guest-utils gdisk
           # passt cannot start on the hosted runner; without it libguestfs uses QEMU user networking.
           sudo apt-get remove -y passt || true
           sudo chmod 0644 /boot/vmlinuz-*
@@ -98,14 +98,25 @@ jobs:
         run: bash appliance/build-appliance.sh in/material-qemu-image.tar.gz "${{ needs.image.outputs.ref }}" "v${VERSION}" work
       - name: Boot check under QEMU
         run: bash appliance/boot-check.sh work/material-qemu-appliance.qcow2 logs
-      - name: Package the OVA
+      - name: Package the OVA and the USB image
         run: |
+          set -euo pipefail
           mkdir -p out
+          # USB image: the 8 GiB disk as raw bytes; it grows to fill the drive on first boot.
+          qemu-img convert -O raw work/material-qemu-appliance.qcow2 work/usb.img
+          raw_sha=$(sha256sum work/usb.img | cut -d' ' -f1)
+          raw_size=$(stat -c %s work/usb.img)
+          gzip -1 -c work/usb.img > "out/material-qemu-usb-x86_64-${VERSION}.img.gz"
+          rm work/usb.img
+          printf '{"rawSha256":"%s","rawBytes":%s}\n' "$raw_sha" "$raw_size" > "out/material-qemu-usb-x86_64-${VERSION}.img.json"
+          # VM disk: the same disk with a 64 GiB capacity.
+          qemu-img resize work/material-qemu-appliance.qcow2 64G
           qemu-img convert -O vmdk -o subformat=streamOptimized,adapter_type=lsilogic work/material-qemu-appliance.qcow2 work/disk.vmdk
           rm work/material-qemu-appliance.qcow2
           node appliance/make-ova.mjs work/disk.vmdk 64 "v${VERSION}" "out/material-qemu-appliance-${VERSION}.ova"
-          (cd out && sha256sum "material-qemu-appliance-${VERSION}.ova" > "material-qemu-appliance-${VERSION}.ova.sha256")
-          ls -l out; cat out/*.sha256
+          cd out
+          for f in *.ova *.img.gz; do sha256sum "$f" > "$f.sha256"; done
+          ls -l; cat *.sha256 *.json
       - uses: actions/upload-artifact@v4
         with:
           name: appliance

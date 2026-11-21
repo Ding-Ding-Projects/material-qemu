@@ -90,6 +90,45 @@ async function deploy({ registry, hypervisor, ovaFile, version, name, cpus, memo
   return { instance: registry.get(record.id), url: report.url, setup: report.setup, seconds: Math.round((Date.now() - started) / 1000) };
 }
 
+async function deployDocker({ registry, hypervisor, image, version, name, ip, port, emit = () => {}, run = defaultRun, signal, portFree = async () => true }) {
+  const { validatePort, validateIpv4, containerName } = require('./hypervisors.cjs');
+  validateName(name); validatePort(port); validateIpv4(ip);
+  if (registry.byName(name)) throw new Error(`An instance named ${name} already exists. Pick another name.`);
+  if (registry.items.some((i) => i.hypervisor === 'docker' && i.port === port)) throw new Error(`Port ${port} is already used by another instance. Pick another port.`);
+  if (!(await portFree(port))) throw new Error(`Port ${port} is already in use on this computer. Pick another port.`);
+  const d = drivers.docker;
+  const started = Date.now();
+  const step = (id, state, detail = '') => emit({ type: 'step', id, state, detail });
+  step('appliance', 'active', image);
+  await d.pull(hypervisor, { image }, run, (text) => emit({ type: 'output', text }));
+  step('appliance', 'done', image);
+  if (signal?.aborted) throw new Error('Cancelled before the container was created.');
+  step('import', 'active');
+  const id = crypto.randomUUID();
+  const url = `http://${ip}:${port}/`;
+  const { vmRef } = await d.create(hypervisor, { name, image, ip, port, instanceId: id }, run);
+  await registry.add({ id, name, hypervisor: 'docker', vmRef, port, ip, version, createdAt: new Date().toISOString(), lastUrl: url, setupCode: null, serialPath: null });
+  step('import', 'done', containerName(name));
+  step('configure', 'done', `port ${port}, ${ip}`);
+  step('start', 'active');
+  await d.start(hypervisor, { vmRef }, run);
+  step('start', 'done');
+  step('report', 'active', 'waiting for the service to answer');
+  let health = { ok: false };
+  for (let i = 0; i < 120 && !health.ok; i++) {
+    if (signal?.aborted) throw new Error('Cancelled while waiting for the service. The container is listed under Instances.');
+    health = await checkHealth(url, 3000);
+    if (!health.ok) await new Promise((r) => setTimeout(r, 2000));
+  }
+  if (!health.ok) throw new Error(`The container started but ${url} did not answer within 4 minutes (${health.detail || health.status}).`);
+  step('report', 'done', url);
+  step('health', 'active');
+  const setup = await d.setupCode(hypervisor, { vmRef }, run);
+  await registry.update(id, { setupCode: setup, lastHealth: health });
+  step('health', 'done', `healthy ${health.checkedAt}`);
+  return { instance: registry.get(id), url, setup, seconds: Math.round((Date.now() - started) / 1000) };
+}
+
 async function status({ registry, hypervisors, run = defaultRun }) {
   const out = [];
   for (const item of registry.items) {
@@ -106,4 +145,4 @@ async function status({ registry, hypervisors, run = defaultRun }) {
   return out;
 }
 
-module.exports = { Registry, STEPS, deploy, status };
+module.exports = { Registry, STEPS, deploy, deployDocker, status };

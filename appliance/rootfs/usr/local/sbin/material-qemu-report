@@ -6,7 +6,8 @@ set -u
 host=$(printf '%s' "$PUBLIC_ORIGIN" | sed 's#^[a-z]*://##; s#/.*##')
 version=$(cat /opt/material-qemu/version 2>/dev/null || echo unknown)
 serial() { printf '%s\r\n' "$1" > /dev/ttyS0 2>/dev/null || true; }
-serial "MQ-BOOT version=$version ip=$MQ_IP"
+rootsize=$(df -h / | awk 'NR==2{print $2}')
+serial "MQ-BOOT version=$version ip=$MQ_IP root=$rootsize"
 healthy=0
 i=0
 while [ "$i" -lt 900 ]; do

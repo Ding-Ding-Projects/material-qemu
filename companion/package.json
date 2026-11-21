@@ -20,9 +20,30 @@
   "build": {
     "appId": "io.github.dingdingprojects.materialqemu.deploy",
     "productName": "Material QEMU Deploy",
-    "directories": { "output": "dist" },
-    "files": ["main.cjs", "preload.cjs", "lib/**", "renderer/**", "package.json", "node_modules/@fontsource-variable/roboto-flex/files/roboto-flex-latin-wght-normal.woff2"],
-    "win": { "target": ["portable"] },
-    "portable": { "artifactName": "material-qemu-deploy-${version}-portable.exe" }
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "main.cjs",
+      "preload.cjs",
+      "lib/**",
+      "renderer/**",
+      "package.json",
+      "node_modules/@fontsource-variable/roboto-flex/files/roboto-flex-latin-wght-normal.woff2"
+    ],
+    "win": {
+      "target": [
+        "portable"
+      ]
+    },
+    "portable": {
+      "artifactName": "material-qemu-deploy-${version}-portable.exe"
+    },
+    "extraResources": [
+      {
+        "from": "scripts/flash-writer.ps1",
+        "to": "flash-writer.ps1"
+      }
+    ]
   }
 }

@@ -6,67 +6,75 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Material QEMU Deploy</title>
 <link rel="stylesheet" href="styles.css">
+<script src="i18n.js"></script>
 <script src="app.js" defer></script>
+<script src="flash.js" defer></script>
 </head>
 <body>
-<div id="notice" class="notice" role="alert" hidden><span id="noticeText"></span><button type="button" class="outline" id="noticeClose">Dismiss</button></div>
+<div id="notice" class="notice" role="alert" hidden><span id="noticeText"></span><button type="button" class="outline" id="noticeClose" data-i18n="Dismiss">Dismiss</button></div>
 <div class="shell">
   <nav class="rail" aria-label="Sections">
     <div class="brand">
       <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="4" width="18" height="12" rx="2"></rect><path d="M8 20h8M12 16v4"></path></svg>
-      <div><strong>Material QEMU</strong><span>Deploy Assistant</span></div>
+      <div><strong>Material QEMU</strong><span data-i18n="Deploy Assistant">Deploy Assistant</span></div>
     </div>
-    <button type="button" class="nav" data-view="deploy" aria-current="page">Deploy</button>
-    <button type="button" class="nav" data-view="instances">Instances</button>
+    <button type="button" class="nav" data-view="deploy" aria-current="page" data-i18n="Deploy">Deploy</button>
+    <button type="button" class="nav" data-view="instances" data-i18n="Instances">Instances</button>
+    <button type="button" class="nav" data-view="flash" data-i18n="Flash">Flash</button>
     <span class="grow"></span>
-    <label class="switch"><input type="checkbox" id="motion" checked> Animations</label>
+    <label class="stack"><span data-i18n="Language">Language</span>
+      <select id="lang"><option value="en">English</option><option value="yue">粵語</option><option value="both">English + 粵語</option></select></label>
+    <label class="switch"><input type="checkbox" id="motion" checked> <span data-i18n="Animations">Animations</span></label>
     <span class="muted small" id="appVersion"></span>
   </nav>
 
   <main id="deploy" class="view">
     <header>
-      <h1>Host Material QEMU in a virtual machine</h1>
-      <p class="muted">One click imports the appliance, puts it on your network and gives you its link.</p>
+      <h1 data-i18n="Host Material QEMU in a virtual machine">Host Material QEMU in a virtual machine</h1>
+      <p class="muted" data-i18n="One click imports the appliance, puts it on your network and gives you its link.">One click imports the appliance, puts it on your network and gives you its link.</p>
     </header>
     <section aria-labelledby="hvTitle">
-      <h2 id="hvTitle">1. Hypervisor</h2>
-      <div id="hvCards" class="cards"><p class="muted">Looking for VirtualBox and VMware…</p></div>
+      <div class="row"><h2 id="hvTitle" class="grow" data-i18n="1. Where to host">1. Where to host</h2><button type="button" class="text" id="hvRefresh" data-i18n="Refresh">Refresh</button></div>
+      <div id="hvCards" class="cards"><p class="muted" data-i18n="Looking for VirtualBox, VMware and Docker…">Looking for VirtualBox, VMware and Docker…</p></div>
     </section>
     <section aria-labelledby="srcTitle">
-      <h2 id="srcTitle">2. Appliance</h2>
-      <div class="panel row">
-        <label><input type="radio" name="src" value="release" checked> <span id="releaseLabel">Latest release (checking…)</span></label>
-        <label><input type="radio" name="src" value="local"> Local .ova file</label>
-        <button type="button" id="pickOva" class="outline" hidden>Choose file…</button>
+      <h2 id="srcTitle" data-i18n="2. Appliance">2. Appliance</h2>
+      <div class="panel row" id="ovaSource">
+        <label><input type="radio" name="src" value="release" checked> <span id="releaseLabel">Checking the latest release…</span></label>
+        <label><input type="radio" name="src" value="local"> <span data-i18n="Local .ova file">Local .ova file</span></label>
+        <button type="button" id="pickOva" class="outline" hidden data-i18n="Choose file…">Choose file…</button>
         <span id="localName" class="muted small"></span>
       </div>
+      <div class="panel" id="imageSource" hidden><span id="imageLabel"></span></div>
     </section>
     <section aria-labelledby="vmTitle">
-      <h2 id="vmTitle">3. Virtual machine</h2>
+      <h2 id="vmTitle" data-i18n="3. Settings">3. Settings</h2>
       <div class="grid4">
-        <label>Instance name<input id="name" value="material-qemu-1" maxlength="48" spellcheck="false"></label>
-        <label>CPUs<input id="cpus" type="number" min="1" max="64" value="4"></label>
-        <label>Memory (MB)<input id="memory" type="number" min="1024" max="262144" step="512" value="8192"></label>
-        <label>Bridged network adapter<select id="adapter"></select></label>
+        <label><span data-i18n="Instance name">Instance name</span><input id="name" value="material-qemu-1" maxlength="48" spellcheck="false"></label>
+        <label class="vmOnly"><span data-i18n="CPUs">CPUs</span><input id="cpus" type="number" min="1" max="64" value="4"></label>
+        <label class="vmOnly"><span data-i18n="Memory (MB)">Memory (MB)</span><input id="memory" type="number" min="1024" max="262144" step="512" value="8192"></label>
+        <label class="vmOnly"><span data-i18n="Bridged network adapter">Bridged network adapter</span><select id="adapter"></select></label>
+        <label class="dockerOnly" hidden><span data-i18n="LAN address">LAN address</span><select id="lanIp"></select></label>
+        <label class="dockerOnly" hidden><span data-i18n="Port">Port</span><input id="port" type="number" min="1024" max="65535" value="8080"></label>
       </div>
-      <label class="check"><input type="checkbox" id="nested" checked> Enable nested virtualization so guests can use hardware acceleration when the host allows it</label>
+      <label class="check vmOnly"><input type="checkbox" id="nested" checked> <span data-i18n="Enable nested virtualization so guests can use hardware acceleration when the host allows it">Enable nested virtualization so guests can use hardware acceleration when the host allows it</span></label>
       <p id="formError" class="error" role="alert"></p>
     </section>
     <footer class="actions">
-      <span class="muted small grow">The VM gets its own address on your network. Nothing is exposed to the internet.</span>
+      <span class="muted small grow" id="exposure"></span>
       <button type="button" id="deployBtn" class="filled">Deploy</button>
     </footer>
   </main>
 
   <main id="progress" class="view" hidden>
     <header>
-      <h1 id="progressTitle">Deploying</h1>
-      <p class="muted">Every step below reports what actually happened.</p>
+      <h1 id="progressTitle"></h1>
+      <p class="muted" data-i18n="Every step below reports what actually happened.">Every step below reports what actually happened.</p>
     </header>
     <ol id="steps" class="steps" aria-label="Deployment steps"></ol>
     <div class="bar" role="progressbar" aria-label="Download progress" aria-valuemin="0" aria-valuemax="100" id="bar"><div id="barFill"></div></div>
-    <pre id="liveOutput" class="output" aria-label="Command output"></pre>
-    <footer class="actions"><span class="grow"></span><button type="button" id="cancelBtn" class="outline">Cancel</button></footer>
+    <pre id="liveOutput" class="output" data-i18n-aria="Command output" aria-label="Command output"></pre>
+    <footer class="actions"><span class="grow"></span><button type="button" id="cancelBtn" class="outline" data-i18n="Cancel">Cancel</button></footer>
   </main>
 
   <main id="ready" class="view" hidden>
@@ -74,52 +82,54 @@
       <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#5eead4" stroke-width="2" role="img" aria-label="Ready"><circle cx="12" cy="12" r="10"></circle><path d="M7 12.5l3.2 3.2L17 9"></path></svg>
       <h1 id="readyTitle" tabindex="-1"></h1>
       <p id="readyDetail" class="muted"></p>
-      <div class="panel row"><span class="muted small">LAN link</span><a id="readyUrl" href="#" class="big"></a><button type="button" class="outline" id="copyUrl">Copy</button></div>
-      <div class="panel row" id="setupRow"><span class="muted small">First-run setup code</span><code id="setupCode"></code><button type="button" class="outline" id="copySetup">Copy</button></div>
-      <div class="row"><button type="button" class="filled" id="openReady">Open in browser</button><button type="button" class="outline" id="toInstances">Go to instances</button></div>
+      <div class="panel row"><span class="muted small" data-i18n="LAN link">LAN link</span><a id="readyUrl" href="#" class="big"></a><button type="button" class="outline" id="copyUrl" data-i18n="Copy">Copy</button></div>
+      <div class="panel row" id="setupRow"><span class="muted small" data-i18n="First-run setup code">First-run setup code</span><code id="setupCode"></code><button type="button" class="outline" id="copySetup" data-i18n="Copy">Copy</button></div>
+      <div class="row"><button type="button" class="filled" id="openReady" data-i18n="Open in browser">Open in browser</button><button type="button" class="outline" id="toInstances" data-i18n="Go to instances">Go to instances</button></div>
     </div>
   </main>
 
   <main id="instances" class="view" hidden>
     <header class="row">
-      <div class="grow"><h1>Instances</h1><p class="muted">Only virtual machines this app created are listed. Health is checked when you open this page or press Refresh.</p></div>
-      <button type="button" class="outline" id="refresh">Refresh</button>
-      <button type="button" class="filled" id="newDeploy">New deployment</button>
+      <div class="grow"><h1 data-i18n="Instances">Instances</h1><p class="muted" data-i18n="Only machines and containers this app created are listed. Health is checked when you open this page or press Refresh.">Only machines and containers this app created are listed. Health is checked when you open this page or press Refresh.</p></div>
+      <button type="button" class="outline" id="refresh" data-i18n="Refresh">Refresh</button>
+      <button type="button" class="filled" id="newDeploy" data-i18n="New deployment">New deployment</button>
     </header>
     <div id="instanceList" class="list" aria-live="polite"></div>
-    <button type="button" class="text" id="openFolder">Open the VM folder</button>
+    <button type="button" class="text" id="openFolder" data-i18n="Open the VM folder">Open the VM folder</button>
   </main>
+
+  <main id="flash" class="view" hidden></main>
 </div>
 
 <div id="failOverlay" class="overlay fail" role="alertdialog" aria-labelledby="failTitle" aria-describedby="failMsg" hidden>
   <div class="failbody">
     <div class="row"><svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="#ff9a93" stroke-width="2" aria-hidden="true"><path d="M12 3l10 18H2z"></path><path d="M12 10v5M12 18h.01"></path></svg>
-      <div><h1 id="failTitle">Deployment failed</h1><p id="failMsg"></p></div></div>
+      <div><h1 id="failTitle" data-i18n="Deployment failed">Deployment failed</h1><p id="failMsg"></p></div></div>
     <div class="grid3">
-      <div class="stat"><span>Exit code</span><strong id="failCode"></strong></div>
-      <div class="stat"><span>Time taken</span><strong id="failTime"></strong></div>
-      <div class="stat"><span>Failed at</span><strong id="failAt"></strong></div>
+      <div class="stat"><span data-i18n="Exit code">Exit code</span><strong id="failCode"></strong></div>
+      <div class="stat"><span data-i18n="Time taken">Time taken</span><strong id="failTime"></strong></div>
+      <div class="stat"><span data-i18n="Failed at">Failed at</span><strong id="failAt"></strong></div>
     </div>
-    <h2>Command</h2><pre id="failCommand" class="output"></pre>
-    <h2>Last output</h2><pre id="failOutput" class="output tall"></pre>
-    <div class="row"><button type="button" class="danger" id="failRetry">Back to deploy</button><button type="button" class="outline" id="failCopy">Copy details</button><span class="grow"></span><button type="button" class="outline" id="failDismiss">Dismiss (Esc)</button></div>
+    <h2 data-i18n="Command">Command</h2><pre id="failCommand" class="output"></pre>
+    <h2 data-i18n="Last output">Last output</h2><pre id="failOutput" class="output tall"></pre>
+    <div class="row"><button type="button" class="danger" id="failRetry" data-i18n="Back to deploy">Back to deploy</button><button type="button" class="outline" id="failCopy" data-i18n="Copy details">Copy details</button><span class="grow"></span><button type="button" class="outline" id="failDismiss" data-i18n="Dismiss (Esc)">Dismiss (Esc)</button></div>
   </div>
 </div>
 
-<div id="removeOverlay" class="overlay" role="dialog" aria-labelledby="removeTitle" hidden>
+<div id="removeOverlay" class="overlay" role="dialog" aria-labelledby="removeTitle" aria-describedby="removeText" hidden>
   <div class="dialog">
     <h1 id="removeTitle"></h1>
     <p id="removeText" class="muted"></p>
     <div class="keys">
-      <button type="button" class="key" id="key1" aria-pressed="false">Key 1: turn</button>
-      <button type="button" class="key" id="key2" aria-pressed="false">Key 2: turn</button>
+      <button type="button" class="key" id="key1" aria-pressed="false"></button>
+      <button type="button" class="key" id="key2" aria-pressed="false"></button>
     </div>
-    <label><span id="slideLabel">Turn both keys to unlock the slider</span>
-      <input type="range" id="removeSlide" min="0" max="100" value="0" disabled aria-valuetext="0 percent"></label>
+    <label><span id="slideLabel"></span>
+      <input type="range" id="removeSlide" min="0" max="100" value="0" disabled></label>
     <div class="slidebar" aria-hidden="true"><div id="slideFill"></div></div>
     <p id="removeDone" class="authorized" role="status" hidden></p>
     <p id="removeError" class="error" role="alert"></p>
-    <div class="row end"><button type="button" class="outline" id="removeCancel">Emergency exit (Esc)</button></div>
+    <div class="row end"><button type="button" class="outline" id="removeCancel" data-i18n="Emergency exit (Esc)">Emergency exit (Esc)</button></div>
   </div>
 </div>
 </body>

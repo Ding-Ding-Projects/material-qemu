@@ -7,7 +7,8 @@ disk=$(readlink -f "$1")
 logs=$2
 mkdir -p "$logs"
 overlay="$logs/boot-check-overlay.qcow2"
-qemu-img create -f qcow2 -b "$disk" -F qcow2 "$overlay" >/dev/null
+# A 64 GiB overlay also exercises the grow-to-fill service.
+qemu-img create -f qcow2 -b "$disk" -F qcow2 "$overlay" 64G >/dev/null
 accel=tcg
 if [ -w /dev/kvm ]; then accel=kvm; fi
 echo "Booting with accel=$accel"

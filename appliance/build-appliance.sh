@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
-# Build the Material QEMU appliance disk and OVA on an Ubuntu host.
+# Build the Material QEMU appliance disk (8 GiB, grows to fill its boot disk)
+# on an Ubuntu host. The workflow turns it into the OVA and the USB image.
 #
 # Usage: appliance/build-appliance.sh <image-archive.tar.gz> <image-ref> <version> <output-dir>
 #
@@ -25,20 +26,24 @@ curl -fsSL --retry 3 -o "$work/SHA512SUMS" "$base_url/SHA512SUMS"
 (cd "$work" && grep " $base_name\$" SHA512SUMS | sha512sum -c -)
 echo "::endgroup::"
 
-echo "::group::Expand the root partition to 64 GiB in place"
+echo "::group::Expand the root partition to 8 GiB in place"
 # Debian cloud images put the root partition (1) last on the disk, after the
 # BIOS boot (14) and EFI (15) partitions, so it can grow to the end of the
 # disk without renumbering anything.
 mv "$work/$base_name" "$work/disk.qcow2"
-qemu-img resize "$work/disk.qcow2" 64G
-guestfish -a "$work/disk.qcow2" <<'GF'
-run
-part-expand-gpt /dev/sda
-part-resize /dev/sda 1 -34
-e2fsck-f /dev/sda1
-resize2fs /dev/sda1
-GF
-virt-filesystems -a "$work/disk.qcow2" --long -h
+qemu-img resize "$work/disk.qcow2" 8G
+sudo modprobe nbd max_part=16
+nbd=/dev/nbd0
+sudo qemu-nbd --connect="$nbd" "$work/disk.qcow2"
+trap 'sudo qemu-nbd --disconnect "$nbd" >/dev/null 2>&1 || true; rm -rf "$work"' EXIT
+for _ in $(seq 1 20); do [ -e "${nbd}p1" ] && break; sleep 0.5; done
+sudo sgdisk -e "$nbd"
+sudo growpart "$nbd" 1
+sudo e2fsck -fy "${nbd}p1"
+sudo resize2fs "${nbd}p1"
+sudo lsblk "$nbd"
+sudo qemu-nbd --disconnect "$nbd"
+trap 'rm -rf "$work"' EXIT
 echo "::endgroup::"
 
 echo "::group::Prepare guest files"
@@ -57,12 +62,12 @@ echo "::endgroup::"
 echo "::group::Customize the guest"
 virt-customize -a "$work/disk.qcow2" --network \
   --run-command 'mkdir -p /opt/material-qemu /etc/material-qemu' \
-  --install docker.io,open-vm-tools,curl \
+  --install docker.io,open-vm-tools,curl,cloud-guest-utils \
   --run-command 'apt-get purge -y openssh-server || true' \
   --tar-in "$work/rootfs.tar:/" \
   --run-command 'rm -f /etc/network/interfaces.d/*cloud* /etc/netplan/*.yaml || true' \
   --run-command 'touch /etc/cloud/cloud-init.disabled' \
-  --run-command 'systemctl enable systemd-networkd systemd-networkd-wait-online docker material-qemu-load material-qemu material-qemu-report' \
+  --run-command 'systemctl enable systemd-networkd systemd-networkd-wait-online docker material-qemu-growroot material-qemu-load material-qemu material-qemu-report' \
   --hostname material-qemu \
   --timezone UTC \
   --root-password disabled \

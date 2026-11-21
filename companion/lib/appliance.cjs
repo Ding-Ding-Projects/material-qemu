@@ -72,16 +72,36 @@ async function latestRelease(fetchImpl = fetch) {
   if (res.status === 404) return { tag: null, ova: null, reason: 'No release has been published yet. Use a local .ova file.' };
   if (!res.ok) return { tag: null, ova: null, reason: `The release list could not be read (HTTP ${res.status}). Use a local .ova file.` };
   const rel = await res.json();
-  const ova = rel.assets.find((a) => /^material-qemu-appliance-.*\.ova$/.test(a.name));
-  const sum = ova && rel.assets.find((a) => a.name === `${ova.name}.sha256`);
-  if (!ova || !sum) return { tag: rel.tag_name, ova: null, reason: 'The latest release has no appliance OVA with a checksum.' };
-  return { tag: rel.tag_name, ova: { name: ova.name, size: ova.size, url: ova.browser_download_url }, sumUrl: sum.browser_download_url };
+  const asset = (re) => {
+    const f = rel.assets.find((x) => re.test(x.name));
+    const sum = f && rel.assets.find((x) => x.name === `${f.name}.sha256`);
+    if (!f || !sum) return null;
+    const meta = rel.assets.find((x) => x.name === f.name.replace(/\.img\.gz$/, '.img.json'));
+    return { name: f.name, size: f.size, url: f.browser_download_url, sumUrl: sum.browser_download_url, metaUrl: meta ? meta.browser_download_url : null };
+  };
+  const ova = asset(/^material-qemu-appliance-.*\.ova$/);
+  const usb = asset(/^material-qemu-usb-x86_64-.*\.img\.gz$/);
+  const rpi = asset(/^material-qemu-rpi-arm64-.*\.img\.gz$/);
+  return { tag: rel.tag_name, ova, usb, rpi, sumUrl: ova ? ova.sumUrl : null, reason: ova ? null : 'The latest release has no appliance OVA with a checksum.' };
 }
 
 async function sha256File(file) {
   const hash = crypto.createHash('sha256');
   for await (const chunk of fs.createReadStream(file)) hash.update(chunk);
   return hash.digest('hex');
+}
+
+async function downloadAsset(asset, cacheDir, opts = {}) {
+  return downloadVerified({ ova: asset, sumUrl: asset.sumUrl }, cacheDir, opts);
+}
+
+async function readMeta(asset, fetchImpl = fetch) {
+  if (!asset.metaUrl) throw new Error('The release has no image size and hash record for this image.');
+  const res = await fetchImpl(asset.metaUrl);
+  if (!res.ok) throw new Error(`The image record could not be downloaded (HTTP ${res.status}).`);
+  const m = await res.json();
+  if (!/^[0-9a-f]{64}$/.test(m.rawSha256) || !Number.isInteger(m.rawBytes) || m.rawBytes <= 0) throw new Error('The image record is malformed.');
+  return m;
 }
 
 async function downloadVerified(release, cacheDir, { onProgress, signal, fetchImpl = fetch } = {}) {
@@ -114,4 +134,4 @@ async function downloadVerified(release, cacheDir, { onProgress, signal, fetchIm
   return { file: target, sha256: actual, cached: false };
 }
 
-module.exports = { REPO, parseSerial, readSerial, checkHealth, waitForReport, latestRelease, downloadVerified, sha256File };
+module.exports = { REPO, parseSerial, readSerial, checkHealth, waitForReport, latestRelease, downloadVerified, downloadAsset, readMeta, sha256File };
