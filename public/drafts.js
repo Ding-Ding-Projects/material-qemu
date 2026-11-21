@@ -13,6 +13,7 @@ const fields = [
   "favourite",
   "preset",
   "startAfterCreate",
+  "configJson",
 ];
 const key = (id) => (id ? `mq-machine-edit-draft:${id}` : "mq-machine-draft");
 export function loadDraft(storage, id) {
