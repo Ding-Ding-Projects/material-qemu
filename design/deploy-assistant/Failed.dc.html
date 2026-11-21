@@ -8,52 +8,46 @@
 <body>
 <x-dc>
 <helmet>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto+Flex:opsz,wght@8..144,400..700&amp;family=Roboto+Mono&amp;display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto+Flex:opsz,wdth,wght@8..144,25..151,400..900&amp;family=Roboto+Mono:wght@400;500&amp;display=swap">
 <style>
 body{margin:0}
 a{color:#ff995c}a:hover{color:#ffb98f}
 button{font:inherit}
-@keyframes mqshake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+@keyframes mqfault{0%,100%{opacity:1}50%{opacity:.35}}
 </style>
 </helmet>
-<div role="alertdialog" aria-labelledby="ft" aria-describedby="fd" style="width: 1280px; height: 800px; box-sizing: border-box; padding: 48px 64px; display: flex; flex-direction: column; gap: 20px; background: #1d0c0a; color: #eeeae7; font-family: 'Roboto Flex', system-ui, sans-serif;">
-<div style="{{headStyle}}">
-<svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="{{danger}}" stroke-width="2" aria-hidden="true"><path d="M12 3l10 18H2z"></path><path d="M12 10v5M12 18h.01"></path></svg>
-<div style="display: flex; flex-direction: column; gap: 4px;">
-<h1 id="ft" style="margin: 0; font-size: 34px; font-weight: 700;">Deployment failed</h1>
-<p id="fd" style="margin: 0; font-size: 15px; color: #e7c6c2;">material-qemu-1 on VirtualBox stopped at step 3 of 7: Import OVA. Nothing was started.</p>
+<div role="alertdialog" aria-labelledby="ft" aria-describedby="fd" style="width: 1280px; height: 800px; box-sizing: border-box; display: flex; flex-direction: column; background: #120807; color: #ece6e1; font-family: 'Roboto Flex', system-ui, sans-serif;">
+<div aria-hidden="true" style="height: 18px; flex: none; background: repeating-linear-gradient(-45deg, {{danger}} 0 12px, #120807 12px 24px);"></div>
+<div style="flex: 1; min-height: 0; box-sizing: border-box; padding: 36px 56px; display: flex; flex-direction: column; gap: 18px;">
+<div style="display: flex; align-items: center; gap: 14px;"><span style="{{fault}}"></span><span style="font-family: 'Roboto Mono', monospace; font-size: 13px; letter-spacing: .16em; color: {{danger}};">FAULT · STEP 02 OF 06 · IMPORT</span></div>
+<h1 id="ft" style="margin: 0; font-size: 64px; line-height: .95; font-weight: 800; font-stretch: 62%; text-transform: uppercase;">Deployment failed</h1>
+<p id="fd" style="margin: 0; font-size: 17px; color: #e3c9c5;">material-qemu-1 on VirtualBox stopped while importing. Nothing was started.</p>
+<div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); border: 1px solid #4a2420; border-radius: 3px;">
+<div style="display: flex; flex-direction: column; gap: 4px; padding: 14px 18px; border-right: 1px solid #4a2420;"><span style="font-family: 'Roboto Mono', monospace; font-size: 11px; letter-spacing: .14em; color: #b8948f;">EXIT CODE</span><strong style="font: 500 26px 'Roboto Mono', monospace;">1</strong></div>
+<div style="display: flex; flex-direction: column; gap: 4px; padding: 14px 18px; border-right: 1px solid #4a2420;"><span style="font-family: 'Roboto Mono', monospace; font-size: 11px; letter-spacing: .14em; color: #b8948f;">ELAPSED</span><strong style="font: 500 26px 'Roboto Mono', monospace;">41 S</strong></div>
+<div style="display: flex; flex-direction: column; gap: 4px; padding: 14px 18px;"><span style="font-family: 'Roboto Mono', monospace; font-size: 11px; letter-spacing: .14em; color: #b8948f;">FAILED AT</span><strong style="font: 500 26px 'Roboto Mono', monospace;">19:42:07</strong></div>
 </div>
-</div>
-<div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px;">
-<div style="display: flex; flex-direction: column; gap: 4px; padding: 16px; border-radius: 14px; background: #2a1411;"><span style="font-size: 12px; color: #e7c6c2;">Exit code</span><strong style="font-size: 22px;">1</strong></div>
-<div style="display: flex; flex-direction: column; gap: 4px; padding: 16px; border-radius: 14px; background: #2a1411;"><span style="font-size: 12px; color: #e7c6c2;">Time taken</span><strong style="font-size: 22px;">41 s</strong></div>
-<div style="display: flex; flex-direction: column; gap: 4px; padding: 16px; border-radius: 14px; background: #2a1411;"><span style="font-size: 12px; color: #e7c6c2;">Failed at</span><strong style="font-size: 22px;">19:42:07</strong></div>
-</div>
-<section aria-label="Failing command" style="display: flex; flex-direction: column; gap: 8px;">
-<h2 style="margin: 0; font-size: 15px; font-weight: 600;">Command</h2>
-<pre style="margin: 0; padding: 14px 16px; border-radius: 12px; background: #0f0e0e; font-family: 'Roboto Mono', monospace; font-size: 13px; white-space: pre-wrap;">VBoxManage import material-qemu-appliance-0.1.0-build.42.ova --vsys 0 --vmname material-qemu-1 --cpus 4 --memory 8192</pre>
-</section>
-<section aria-label="Last output" style="display: flex; flex-direction: column; gap: 8px; flex-grow: 1; min-height: 0;">
-<h2 style="margin: 0; font-size: 15px; font-weight: 600;">Last output (illustrative)</h2>
-<pre style="margin: 0; padding: 14px 16px; border-radius: 12px; background: #0f0e0e; font-family: 'Roboto Mono', monospace; font-size: 13px; white-space: pre-wrap; overflow: auto; flex-grow: 1;">0%...10%...20%...
+<span style="font-family: 'Roboto Mono', monospace; font-size: 11px; letter-spacing: .14em; color: #b8948f;">COMMAND</span>
+<pre style="margin: -10px 0 0; padding: 12px 16px; border-left: 3px solid {{danger}}; background: #080404; font: 13px/1.5 'Roboto Mono', monospace; white-space: pre-wrap;">VBoxManage import material-qemu-appliance-0.1.0-build.6.ova --vsys 0 --vmname material-qemu-1 --cpus 4 --memory 8192</pre>
+<span style="font-family: 'Roboto Mono', monospace; font-size: 11px; letter-spacing: .14em; color: #b8948f;">LAST OUTPUT (ILLUSTRATIVE)</span>
+<pre style="margin: -10px 0 0; padding: 12px 16px; border-left: 3px solid #4a2420; background: #080404; font: 13px/1.5 'Roboto Mono', monospace; white-space: pre-wrap; flex-grow: 1;">0%...10%...20%...
 VBoxManage: error: Machine settings file 'material-qemu-1.vbox' already exists
 VBoxManage: error: Details: code VBOX_E_FILE_ERROR (0x80bb0004)</pre>
-</section>
-<div style="display: flex; gap: 12px; flex-wrap: wrap;">
-<button type="button" style="height: 48px; padding: 0 24px; border-radius: 24px; border: 0; background: {{danger}}; color: #1a1817; font-weight: 700;">Try again with another name</button>
-<button type="button" style="height: 48px; padding: 0 24px; border-radius: 24px; border: 1px solid #8a5550; background: transparent; color: #eeeae7;">Copy details</button>
-<button type="button" style="height: 48px; padding: 0 24px; border-radius: 24px; border: 1px solid #8a5550; background: transparent; color: #eeeae7;">Open log folder</button>
+<div style="display: flex; gap: 12px;">
+<a href="Main.dc.html" style="display: inline-flex; align-items: center; height: 52px; padding: 0 24px; border-radius: 3px; background: {{danger}}; color: #170807; font-family: 'Roboto Mono', monospace; font-size: 14px; font-weight: 500; letter-spacing: .1em; text-decoration: none;">TRY ANOTHER NAME</a>
+<button type="button" style="height: 52px; padding: 0 22px; border: 1px solid #6b2f2a; border-radius: 3px; background: transparent; color: #ece6e1; font-family: 'Roboto Mono', monospace; font-size: 13px; letter-spacing: .1em;">COPY DETAILS</button>
 <span style="flex-grow: 1;"></span>
-<button type="button" style="height: 48px; padding: 0 24px; border-radius: 24px; border: 1px solid #8a5550; background: transparent; color: #eeeae7;">Dismiss (Esc)</button>
+<a href="Main.dc.html" style="display: inline-flex; align-items: center; height: 52px; padding: 0 22px; border: 1px solid #6b2f2a; border-radius: 3px; color: #ece6e1; font-family: 'Roboto Mono', monospace; font-size: 13px; letter-spacing: .1em; text-decoration: none;">DISMISS · ESC</a>
+</div>
 </div>
 </div>
 </x-dc>
-<script type="text/x-dc" data-dc-script data-props='{"danger":{"editor":"color","default":"#ff9a93","options":["#ff9a93","#ffb4ab","#ff7a6b"]},"motion":{"editor":"boolean","default":true},"$preview":{"width":1280,"height":800}}'>
+<script type="text/x-dc" data-dc-script data-props='{"danger":{"editor":"color","default":"#ff6b5e","options":["#ff6b5e","#ff9a93","#ffb020"]},"motion":{"editor":"boolean","default":true},"$preview":{"width":1280,"height":800}}'>
 class Component extends DCLogic {
   renderVals() {
-    const danger = this.props.danger ?? '#ff9a93';
+    const danger = this.props.danger ?? '#ff6b5e';
     const motion = this.props.motion ?? true;
-    return { danger, headStyle: 'display:flex;gap:20px;align-items:center;' + (motion ? 'animation:mqshake 360ms ease-in-out 2;' : '') };
+    return { danger, fault: 'width:14px;height:14px;border-radius:7px;background:' + danger + ';box-shadow:0 0 12px ' + danger + ';' + (motion ? 'animation:mqfault 700ms steps(2) infinite;' : '') };
   }
 }
 </script>

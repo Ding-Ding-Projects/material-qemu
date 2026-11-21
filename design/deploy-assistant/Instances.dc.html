@@ -2,50 +2,72 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<title>Instances</title>
+<title>Instances rack</title>
 <script src="./support.js"></script>
 </head>
 <body>
 <x-dc>
 <helmet>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto+Flex:opsz,wght@8..144,400..700&amp;display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto+Flex:opsz,wdth,wght@8..144,25..151,400..900&amp;family=Roboto+Mono:wght@400;500&amp;display=swap">
 <style>
 body{margin:0}
 a{color:#ff995c}a:hover{color:#ffb98f}
 button{font:inherit}
+@keyframes mqblink{0%,100%{opacity:1}50%{opacity:.25}}
 </style>
 </helmet>
-<div style="width: 1280px; height: 800px; box-sizing: border-box; display: flex; background: #0f0e0e; color: #eeeae7; font-family: 'Roboto Flex', system-ui, sans-serif;">
-<nav aria-label="Sections" style="width: 232px; box-sizing: border-box; padding: 24px 16px; display: flex; flex-direction: column; gap: 6px; background: #181615; border-right: 1px solid #302b29;">
-<div style="display: flex; flex-direction: column; padding: 0 8px 20px;"><strong style="font-size: 15px;">Material QEMU</strong><span style="font-size: 12px; color: #ada6a1;">Deploy Assistant</span></div>
-<a href="Main.dc.html" style="display: flex; align-items: center; height: 44px; padding: 0 14px; border-radius: 22px; color: #ada6a1; text-decoration: none;">Deploy</a>
-<a href="Instances.dc.html" style="display: flex; align-items: center; height: 44px; padding: 0 14px; border-radius: 22px; background: #482612; color: #eeeae7; text-decoration: none; font-weight: 600;">Instances</a>
+<div style="width: 1280px; height: 800px; box-sizing: border-box; display: flex; background: #0d0c0b; color: #ece6e1; font-family: 'Roboto Flex', system-ui, sans-serif;">
+<nav aria-label="Sections" style="width: 208px; box-sizing: border-box; padding: 28px 0; display: flex; flex-direction: column; background: #141210; border-right: 1px solid #2a2522;">
+<div style="display: flex; flex-direction: column; gap: 2px; padding: 0 24px 28px;">
+<span style="font-family: 'Roboto Mono', monospace; font-size: 11px; letter-spacing: .12em; color: {{accent}};">MATERIAL QEMU</span>
+<strong style="font-size: 22px; font-weight: 800; font-stretch: 70%; letter-spacing: .02em; text-transform: uppercase;">Deploy</strong>
+</div>
+<a href="Main.dc.html" style="display: flex; align-items: center; gap: 12px; height: 48px; padding: 0 24px; color: #a39a93; text-decoration: none; font-family: 'Roboto Mono', monospace; font-size: 13px; letter-spacing: .08em;">01 DEPLOY</a>
+<a href="Instances.dc.html" style="display: flex; align-items: center; gap: 12px; height: 48px; padding: 0 24px 0 21px; color: #ece6e1; text-decoration: none; font-family: 'Roboto Mono', monospace; font-size: 13px; letter-spacing: .08em; border-left: 3px solid {{accent}}; background: #1c1916;">02 RACK</a>
+<a href="Flash.dc.html" style="display: flex; align-items: center; gap: 12px; height: 48px; padding: 0 24px; color: #a39a93; text-decoration: none; font-family: 'Roboto Mono', monospace; font-size: 13px; letter-spacing: .08em;">03 FLASH</a>
 </nav>
 <main style="flex: 1; min-width: 0; box-sizing: border-box; padding: 32px 40px; display: flex; flex-direction: column; gap: 20px;">
-<header style="display: flex; align-items: center; gap: 16px;">
-<div style="flex-grow: 1; display: flex; flex-direction: column; gap: 4px;">
-<h1 style="margin: 0; font-size: 30px; font-weight: 600;">Instances</h1>
-<p style="margin: 0; color: #ada6a1; font-size: 14px;">Only virtual machines this app created are listed. Health is checked when you open this page or press Refresh.</p>
+<header style="display: flex; align-items: flex-end; gap: 16px;">
+<div style="flex-grow: 1; display: flex; flex-direction: column; gap: 6px;">
+<span style="font-family: 'Roboto Mono', monospace; font-size: 12px; letter-spacing: .14em; color: #a39a93;">3 UNITS · 2 ONLINE · CHECKED 19:44</span>
+<h1 style="margin: 0; font-size: 44px; line-height: 1; font-weight: 800; font-stretch: 62%; text-transform: uppercase; letter-spacing: .01em;">Instances</h1>
 </div>
-<button type="button" style="height: 44px; padding: 0 20px; border-radius: 22px; border: 1px solid #5c5651; background: transparent; color: #eeeae7;">Refresh</button>
-<a href="Main.dc.html" style="display: inline-flex; align-items: center; height: 44px; padding: 0 22px; border-radius: 22px; background: {{accent}}; color: #1a1817; font-weight: 700; text-decoration: none;">New deployment</a>
+<button type="button" style="height: 44px; padding: 0 18px; border: 1px solid #4a423d; border-radius: 4px; background: transparent; color: #ece6e1; font-family: 'Roboto Mono', monospace; font-size: 13px; letter-spacing: .08em;">REFRESH</button>
+<a href="Main.dc.html" style="display: inline-flex; align-items: center; height: 44px; padding: 0 18px; border-radius: 4px; background: {{accent}}; color: #170f0a; font-family: 'Roboto Mono', monospace; font-size: 13px; font-weight: 500; letter-spacing: .08em; text-decoration: none;">+ NEW UNIT</a>
 </header>
-<div style="display: flex; flex-direction: column; gap: 12px;">
-<sc-for list="{{rows}}" as="r" hint-placeholder-count="3">
-<article style="display: flex; align-items: center; gap: 16px; padding: 16px 20px; border-radius: 16px; background: #181615; border: 1px solid #302b29; flex-wrap: wrap;">
-<span style="{{r.dot}}" aria-hidden="true"></span>
-<div style="display: flex; flex-direction: column; gap: 2px; min-width: 200px;">
-<strong style="font-size: 16px;">{{r.name}}</strong>
-<span style="font-size: 13px; color: #ada6a1;">{{r.hv}} · {{r.version}}</span>
+<div style="display: flex; gap: 0; flex-grow: 1; min-height: 0;">
+<div aria-hidden="true" style="width: 22px; background: #1a1715; border: 1px solid #2a2522; border-right: 0; display: flex; flex-direction: column; justify-content: space-around; align-items: center; padding: 12px 0;">
+<span style="width: 8px; height: 8px; border-radius: 2px; background: #0d0c0b;"></span><span style="width: 8px; height: 8px; border-radius: 2px; background: #0d0c0b;"></span><span style="width: 8px; height: 8px; border-radius: 2px; background: #0d0c0b;"></span><span style="width: 8px; height: 8px; border-radius: 2px; background: #0d0c0b;"></span><span style="width: 8px; height: 8px; border-radius: 2px; background: #0d0c0b;"></span><span style="width: 8px; height: 8px; border-radius: 2px; background: #0d0c0b;"></span>
 </div>
-<span style="font-size: 13px; min-width: 150px;">{{r.health}}</span>
-<span style="font-size: 14px; flex-grow: 1; color: #ff995c;">{{r.url}}</span>
-<button type="button" onClick="{{r.toggle}}" style="height: 40px; padding: 0 16px; border-radius: 20px; border: 1px solid #5c5651; background: transparent; color: #eeeae7;">{{r.toggleLabel}}</button>
-<button type="button" style="height: 40px; padding: 0 16px; border-radius: 20px; border: 1px solid #5c5651; background: transparent; color: #eeeae7;">Restart</button>
-<button type="button" style="height: 40px; padding: 0 16px; border-radius: 20px; border: 1px solid #5c5651; background: transparent; color: #eeeae7;">Copy link</button>
-<a href="Remove.dc.html" style="display: inline-flex; align-items: center; height: 40px; padding: 0 16px; border-radius: 20px; border: 1px solid #8a5550; color: #ff9a93; text-decoration: none;">Remove</a>
+<div style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 6px; padding: 6px; background: #080706; border: 1px solid #2a2522;">
+<sc-for list="{{rows}}" as="r" hint-placeholder-count="3">
+<article style="display: flex; align-items: stretch; height: 92px; background: #1d1a17; border: 1px solid #36302b; border-radius: 3px;">
+<div aria-hidden="true" style="width: 28px; display: flex; flex-direction: column; justify-content: space-between; align-items: center; padding: 10px 0; border-right: 1px solid #36302b;"><span style="width: 9px; height: 9px; border-radius: 5px; background: #0d0c0b; box-shadow: inset 0 1px 0 #4a423d;"></span><span style="width: 9px; height: 9px; border-radius: 5px; background: #0d0c0b; box-shadow: inset 0 1px 0 #4a423d;"></span></div>
+<div style="width: 74px; display: flex; flex-direction: column; justify-content: center; gap: 8px; padding: 0 14px; border-right: 1px solid #36302b;">
+<span style="display: flex; align-items: center; gap: 6px; font-family: 'Roboto Mono', monospace; font-size: 10px; color: #a39a93;"><span style="{{r.pwr}}"></span>PWR</span>
+<span style="display: flex; align-items: center; gap: 6px; font-family: 'Roboto Mono', monospace; font-size: 10px; color: #a39a93;"><span style="{{r.net}}"></span>NET</span>
+</div>
+<div style="flex: 1; min-width: 0; display: flex; flex-direction: column; justify-content: center; gap: 4px; padding: 0 20px;">
+<div style="display: flex; align-items: baseline; gap: 12px;">
+<strong style="font-size: 24px; font-weight: 800; font-stretch: 62%; text-transform: uppercase; letter-spacing: .02em;">{{r.name}}</strong>
+<span style="font-family: 'Roboto Mono', monospace; font-size: 11px; letter-spacing: .1em; padding: 2px 6px; border: 1px solid #4a423d; border-radius: 2px; color: #a39a93;">{{r.hv}}</span>
+</div>
+<span style="font-family: 'Roboto Mono', monospace; font-size: 14px; color: {{r.urlColor}};">{{r.url}}</span>
+<span style="font-family: 'Roboto Mono', monospace; font-size: 11px; color: #7d746d;">{{r.version}} · {{r.health}}</span>
+</div>
+<div style="display: flex; align-items: center; gap: 6px; padding: 0 14px;">
+<button type="button" onClick="{{r.toggle}}" style="width: 76px; height: 44px; border: 1px solid #4a423d; border-radius: 3px; background: #141210; color: #ece6e1; font-family: 'Roboto Mono', monospace; font-size: 12px; letter-spacing: .08em;">{{r.toggleLabel}}</button>
+<button type="button" style="width: 76px; height: 44px; border: 1px solid #4a423d; border-radius: 3px; background: #141210; color: #ece6e1; font-family: 'Roboto Mono', monospace; font-size: 12px; letter-spacing: .08em;">REBOOT</button>
+<button type="button" style="width: 76px; height: 44px; border: 1px solid #4a423d; border-radius: 3px; background: #141210; color: #ece6e1; font-family: 'Roboto Mono', monospace; font-size: 12px; letter-spacing: .08em;">OPEN</button>
+<a href="Remove.dc.html" style="display: inline-flex; align-items: center; justify-content: center; width: 76px; height: 44px; border: 1px solid #6b2f2a; border-radius: 3px; background: #1f0f0d; color: #ff9a93; font-family: 'Roboto Mono', monospace; font-size: 12px; letter-spacing: .08em; text-decoration: none;">PULL</a>
+</div>
 </article>
 </sc-for>
+<div aria-hidden="true" style="flex-grow: 1; border: 1px dashed #2a2522; border-radius: 3px; display: flex; align-items: center; justify-content: center; font-family: 'Roboto Mono', monospace; font-size: 11px; letter-spacing: .14em; color: #4a423d;">EMPTY BAYS</div>
+</div>
+<div aria-hidden="true" style="width: 22px; background: #1a1715; border: 1px solid #2a2522; border-left: 0; display: flex; flex-direction: column; justify-content: space-around; align-items: center; padding: 12px 0;">
+<span style="width: 8px; height: 8px; border-radius: 2px; background: #0d0c0b;"></span><span style="width: 8px; height: 8px; border-radius: 2px; background: #0d0c0b;"></span><span style="width: 8px; height: 8px; border-radius: 2px; background: #0d0c0b;"></span><span style="width: 8px; height: 8px; border-radius: 2px; background: #0d0c0b;"></span><span style="width: 8px; height: 8px; border-radius: 2px; background: #0d0c0b;"></span><span style="width: 8px; height: 8px; border-radius: 2px; background: #0d0c0b;"></span>
+</div>
 </div>
 </main>
 </div>
@@ -57,15 +79,17 @@ class Component extends DCLogic {
     const accent = this.props.accent ?? '#ff995c';
     const motion = this.props.motion ?? true;
     const base = [
-      { name: 'material-qemu-1', hv: 'VMware Workstation', version: 'v0.1.0-build.42', url: 'http://192.168.50.141:8080/' },
-      { name: 'material-qemu-test', hv: 'Oracle VirtualBox', version: 'v0.1.0-build.41', url: 'http://192.168.50.152:8080/' },
-      { name: 'material-qemu-lab', hv: 'Oracle VirtualBox', version: 'v0.1.0-build.40', url: 'Last seen http://192.168.50.163:8080/' }
+      { name: 'material-qemu-1', hv: 'VMWARE', version: 'v0.1.0-build.6', url: 'http://192.168.50.141:8080/' },
+      { name: 'material-qemu-test', hv: 'VIRTUALBOX', version: 'v0.1.0-build.6', url: 'http://192.168.50.152:8080/' },
+      { name: 'material-qemu-lab', hv: 'DOCKER', version: 'v0.1.0-build.5', url: 'http://192.168.50.10:8081/' }
     ];
+    const led = (color, glow, blink) => 'width:9px;height:9px;border-radius:5px;flex:none;background:' + color + ';' + (glow ? 'box-shadow:0 0 8px ' + color + ';' : '') + (blink && motion ? 'animation:mqblink 1.4s steps(2) infinite;' : '');
     const rows = base.map((r) => {
       const off = Boolean(this.state.off[r.name]);
-      return { ...r, health: off ? 'Stopped' : 'Healthy, checked 19:44',
-        dot: 'width:12px;height:12px;border-radius:6px;flex:none;background:' + (off ? '#5c5651' : '#5eead4') + ';' + (motion ? 'transition:background 200ms;' : ''),
-        toggleLabel: off ? 'Start' : 'Stop',
+      return { ...r, health: off ? 'POWERED OFF' : 'HEALTHY · CHECKED 19:44', urlColor: off ? '#7d746d' : accent,
+        pwr: off ? led('#3a3430', false, false) : led('#5eead4', true, false),
+        net: off ? led('#3a3430', false, false) : led(accent, true, true),
+        toggleLabel: off ? 'START' : 'STOP',
         toggle: () => this.setState({ off: { ...this.state.off, [r.name]: !off } }) };
     });
     return { accent, rows };

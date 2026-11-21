@@ -38,6 +38,7 @@ window.Flash = (() => {
     const gate = el('section', { class: 'panel gate', 'aria-labelledby': 'flashGateTitle' },
       el('h2', { id: 'flashGateTitle' }, s.disk ? t('Erase {name} and write the image?', { name: s.disk.name }) : t('Choose a disk first')),
       s.disk ? el('p', { class: 'muted' }, t('Everything on disk {n} ({name}, {size} GB) is erased and replaced by the Material QEMU image. This cannot be undone.', { n: s.disk.number, name: s.disk.name, size: gb(s.disk.size) })) : null,
+      s.disk && s.disk.size > 512 * 1073741824 ? el('p', { class: 'error', role: 'alert' }, t('This disk is larger than 512 GB, so it may be a backup or external drive rather than a spare USB stick. Check that it holds nothing you need.')) : null,
       el('div', { class: 'keys' },
         el('button', { type: 'button', class: 'key', 'aria-pressed': String(s.keys[0]), disabled: !canArm, onclick: () => { s.keys[0] = !s.keys[0]; draw(); } }, t(s.keys[0] ? 'Key {n}: turned' : 'Key {n}: turn', { n: 1 })),
         el('button', { type: 'button', class: 'key', 'aria-pressed': String(s.keys[1]), disabled: !canArm, onclick: () => { s.keys[1] = !s.keys[1]; draw(); } }, t(s.keys[1] ? 'Key {n}: turned' : 'Key {n}: turn', { n: 2 }))),
@@ -71,7 +72,7 @@ window.Flash = (() => {
       el('section', {}, el('div', { class: 'row' }, el('h2', { class: 'grow' }, t('2. Disk')), el('button', { type: 'button', class: 'text', disabled: s.busy, onclick: refreshDisks }, t('Refresh'))),
         el('p', { class: 'muted small' }, t('Only removable USB and SD disks are listed. The disk Windows runs from is never offered.')),
         diskList, tooSmall ? el('p', { class: 'error' }, t('That disk is smaller than the image.')) : null, s.error ? el('p', { class: 'error', role: 'alert' }, s.error) : null),
-      done || gate, status);
+      done || gate, ...(status ? [status] : []));
   }
 
   async function onSlide(e) {

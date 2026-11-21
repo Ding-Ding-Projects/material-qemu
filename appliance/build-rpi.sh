@@ -56,7 +56,7 @@ sudo cp --remove-destination -L /etc/resolv.conf "$mnt/etc/resolv.conf"
 sudo chroot "$mnt" /bin/bash -euxc '
   export DEBIAN_FRONTEND=noninteractive
   apt-get update
-  apt-get install -y --no-install-recommends docker.io curl
+  apt-get install -y --no-install-recommends docker.io iptables curl
   apt-get clean
   rm -rf /var/lib/apt/lists/*
 '

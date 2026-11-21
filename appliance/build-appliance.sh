@@ -68,7 +68,7 @@ for d in dev dev/pts proc sys run; do sudo mount --bind "/$d" "$mnt/$d"; done
 sudo chroot "$mnt" /bin/bash -euxc '
   export DEBIAN_FRONTEND=noninteractive
   apt-get update
-  apt-get install -y --no-install-recommends docker.io open-vm-tools curl cloud-guest-utils
+  apt-get install -y --no-install-recommends docker.io iptables open-vm-tools curl cloud-guest-utils
   apt-get purge -y openssh-server || true
   apt-get autoremove -y
   apt-get clean

@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Flash a USB drive or SD card</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto+Flex:opsz,wdth,wght@8..144,25..151,400..900&amp;family=Roboto+Mono:wght@400;500&amp;display=swap">
+<style>
+body{margin:0}
+a{color:#ff995c}a:hover{color:#ffb98f}
+button{font:inherit}
+@keyframes mqcrawl{from{background-position:0 0}to{background-position:28px 0}}
+</style>
+</helmet>
+<div style="width: 1280px; height: 800px; box-sizing: border-box; display: flex; background: #0d0c0b; color: #ece6e1; font-family: 'Roboto Flex', system-ui, sans-serif;">
+<nav aria-label="Sections" style="width: 208px; box-sizing: border-box; padding: 28px 0; display: flex; flex-direction: column; background: #141210; border-right: 1px solid #2a2522;">
+<div style="display: flex; flex-direction: column; gap: 2px; padding: 0 24px 28px;">
+<span style="font-family: 'Roboto Mono', monospace; font-size: 11px; letter-spacing: .12em; color: {{accent}};">MATERIAL QEMU</span>
+<strong style="font-size: 22px; font-weight: 800; font-stretch: 70%; text-transform: uppercase;">Deploy</strong>
+</div>
+<a href="Main.dc.html" style="display: flex; align-items: center; height: 48px; padding: 0 24px; color: #a39a93; text-decoration: none; font-family: 'Roboto Mono', monospace; font-size: 13px; letter-spacing: .08em;">01 DEPLOY</a>
+<a href="Instances.dc.html" style="display: flex; align-items: center; height: 48px; padding: 0 24px; color: #a39a93; text-decoration: none; font-family: 'Roboto Mono', monospace; font-size: 13px; letter-spacing: .08em;">02 RACK</a>
+<a href="Flash.dc.html" style="display: flex; align-items: center; height: 48px; padding: 0 24px 0 21px; color: #ece6e1; text-decoration: none; font-family: 'Roboto Mono', monospace; font-size: 13px; letter-spacing: .08em; border-left: 3px solid {{accent}}; background: #1c1916;">03 FLASH</a>
+</nav>
+<main style="flex: 1; min-width: 0; box-sizing: border-box; padding: 32px 40px; display: flex; flex-direction: column; gap: 18px;">
+<header style="display: flex; flex-direction: column; gap: 6px;">
+<span style="font-family: 'Roboto Mono', monospace; font-size: 12px; letter-spacing: .14em; color: #a39a93;">BARE METAL · SPARE PC OR RASPBERRY PI 4/5</span>
+<h1 style="margin: 0; font-size: 44px; line-height: 1; font-weight: 800; font-stretch: 62%; text-transform: uppercase;">Flash a boot drive</h1>
+</header>
+<div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px;">
+<button type="button" aria-pressed="true" style="display: flex; flex-direction: column; gap: 6px; align-items: flex-start; text-align: left; padding: 16px 18px; border-radius: 3px; background: #22170f; border: 1px solid {{accent}}; box-shadow: inset 3px 0 0 {{accent}}; color: #ece6e1;"><strong style="font-size: 22px; font-weight: 800; font-stretch: 62%; text-transform: uppercase;">PC · USB drive</strong><span style="font-family: 'Roboto Mono', monospace; font-size: 12px; color: #a39a93;">x86_64 · BIOS OR UEFI · 1.4 GB</span></button>
+<button type="button" aria-pressed="false" style="display: flex; flex-direction: column; gap: 6px; align-items: flex-start; text-align: left; padding: 16px 18px; border-radius: 3px; background: #141210; border: 1px solid #36302b; color: #ece6e1;"><strong style="font-size: 22px; font-weight: 800; font-stretch: 62%; text-transform: uppercase;">Raspberry Pi</strong><span style="font-family: 'Roboto Mono', monospace; font-size: 12px; color: #a39a93;">PI 4 / PI 5 · ARM64 · 1.2 GB</span></button>
+</div>
+<div style="display: flex; flex-direction: column; gap: 8px;">
+<span style="font-family: 'Roboto Mono', monospace; font-size: 11px; letter-spacing: .14em; color: #a39a93;">TARGET · REMOVABLE USB/SD ONLY · SYSTEM DISK NEVER LISTED</span>
+<button type="button" aria-pressed="true" style="display: flex; align-items: center; gap: 18px; padding: 14px 18px; border-radius: 3px; background: #22170f; border: 1px solid {{accent}}; color: #ece6e1; text-align: left;">
+<span aria-hidden="true" style="width: 54px; height: 22px; border-radius: 3px 8px 8px 3px; border: 2px solid #a39a93; display: flex; align-items: center; justify-content: flex-start; padding-left: 4px; box-sizing: border-box;"><span style="width: 10px; height: 10px; background: #a39a93; border-radius: 1px;"></span></span>
+<span style="display: flex; flex-direction: column; gap: 2px;"><strong style="font-size: 18px;">SanDisk Ultra</strong><span style="font-family: 'Roboto Mono', monospace; font-size: 12px; color: #a39a93;">DISK 3 · USB · 28.6 GB</span></span>
+</button>
+</div>
+<section aria-labelledby="g" style="display: flex; flex-direction: column; gap: 14px; padding: 18px 20px; border: 1px solid #4a2420; border-radius: 3px; background: #1a1715;">
+<span style="font-family: 'Roboto Mono', monospace; font-size: 11px; letter-spacing: .16em; color: {{danger}};">ERASES THE WHOLE DISK · CANNOT BE UNDONE</span>
+<h2 id="g" style="margin: 0; font-size: 26px; font-weight: 800; font-stretch: 62%; text-transform: uppercase;">Wipe SanDisk Ultra (28.6 GB) and write the PC image</h2>
+<div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px;">
+<sc-for list="{{keys}}" as="k" hint-placeholder-count="2">
+<button type="button" aria-pressed="{{k.pressed}}" onClick="{{k.turn}}" style="display: flex; align-items: center; gap: 14px; padding: 10px 14px; background: #0d0c0b; border: 1px solid {{k.border}}; border-radius: 3px; color: #ece6e1; text-align: left;">
+<span aria-hidden="true" style="width: 44px; height: 44px; border-radius: 22px; flex: none; display: flex; align-items: center; justify-content: center; background: #2a2522; border: 3px solid {{k.border}};"><span style="{{k.slot}}"></span></span>
+<span style="display: flex; flex-direction: column;"><span style="font-family: 'Roboto Mono', monospace; font-size: 11px; letter-spacing: .14em; color: #a39a93;">{{k.label}}</span><strong style="font-size: 18px; font-weight: 800; font-stretch: 62%; color: {{k.stateColor}};">{{k.state}}</strong></span>
+</button>
+</sc-for>
+</div>
+<label style="display: flex; flex-direction: column; gap: 8px;">
+<span style="font-family: 'Roboto Mono', monospace; font-size: 12px; letter-spacing: .12em; color: #a39a93;">{{sliderLabel}}</span>
+<span style="{{track}}"><span style="{{fill}}"></span></span>
+<input type="range" min="0" max="100" value="{{slide}}" disabled="{{locked}}" onInput="{{onSlide}}" aria-valuetext="{{slide}} percent" style="width: 100%; margin: -32px 0 0; height: 32px; opacity: .001;">
+</label>
+<span style="font-family: 'Roboto Mono', monospace; font-size: 11px; color: #7d746d;">WINDOWS ASKS FOR ADMINISTRATOR APPROVAL NEXT · DECLINING WRITES NOTHING · THE DISK IS READ BACK AND HASH-CHECKED</span>
+</section>
+</main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"accent":{"editor":"color","default":"#ff995c","options":["#ff995c","#5eead4","#9ab4ff"]},"danger":{"editor":"color","default":"#ff6b5e","options":["#ff6b5e","#ff9a93","#ffb020"]},"motion":{"editor":"boolean","default":true},"$preview":{"width":1280,"height":800}}'>
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = { k: [false, false], slide: 0 }; }
+  renderVals() {
+    const accent = this.props.accent ?? '#ff995c';
+    const danger = this.props.danger ?? '#ff6b5e';
+    const motion = this.props.motion ?? true;
+    const { k, slide } = this.state;
+    const armed = k[0] && k[1];
+    const keys = [0, 1].map((i) => ({ label: 'KEY ' + (i + 1), pressed: String(k[i]), state: k[i] ? 'ARMED' : 'SAFE', stateColor: k[i] ? danger : '#ece6e1', border: k[i] ? danger : '#4a423d',
+      slot: 'display:block;width:5px;height:24px;border-radius:3px;background:' + (k[i] ? danger : '#ece6e1') + ';transform:rotate(' + (k[i] ? 90 : 0) + 'deg);' + (motion ? 'transition:transform 260ms cubic-bezier(.3,1.6,.5,1);' : ''),
+      turn: () => { const n = [...k]; n[i] = !n[i]; this.setState({ k: n, slide: 0 }); } }));
+    return { accent, danger, keys, slide, locked: !armed,
+      onSlide: (e) => this.setState({ slide: Number(e.target.value) }),
+      sliderLabel: armed ? 'DRAG THE ARMING BAR ALL THE WAY TO START WRITING' : 'TURN BOTH KEYS TO ARMED TO UNLOCK THE BAR',
+      track: 'display:block;height:32px;border-radius:3px;border:1px solid ' + (armed ? danger : '#36302b') + ';background:#0d0c0b;overflow:hidden;',
+      fill: 'display:block;height:100%;width:' + slide + '%;background:repeating-linear-gradient(-45deg,' + danger + ' 0 10px,#3a1512 10px 20px);background-size:28px 28px;' + (motion && armed && slide > 0 && slide < 100 ? 'animation:mqcrawl 600ms linear infinite;' : '') };
+  }
+}
+</script>
+</body>
+</html>

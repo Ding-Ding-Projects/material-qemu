@@ -8,62 +8,62 @@
 <body>
 <x-dc>
 <helmet>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto+Flex:opsz,wght@8..144,400..700&amp;display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto+Flex:opsz,wdth,wght@8..144,25..151,400..900&amp;family=Roboto+Mono:wght@400;500&amp;display=swap">
 <style>
 body{margin:0}
 a{color:#ff995c}a:hover{color:#ffb98f}
 button{font:inherit}
 </style>
 </helmet>
-<div style="width: 1280px; height: 800px; box-sizing: border-box; display: flex; background: #0f0e0e; color: #eeeae7; font-family: 'Roboto Flex', system-ui, sans-serif;">
-<nav aria-label="Sections" style="width: 232px; box-sizing: border-box; padding: 24px 16px; display: flex; flex-direction: column; gap: 6px; background: #181615; border-right: 1px solid #302b29;">
-<div style="display: flex; align-items: center; gap: 10px; padding: 0 8px 20px;">
-<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="{{accent}}" stroke-width="2" aria-hidden="true"><rect x="3" y="4" width="18" height="12" rx="2"></rect><path d="M8 20h8M12 16v4"></path></svg>
-<div style="display: flex; flex-direction: column;"><strong style="font-size: 15px;">Material QEMU</strong><span style="font-size: 12px; color: #ada6a1;">Deploy Assistant</span></div>
+<div style="width: 1280px; height: 800px; box-sizing: border-box; display: flex; background: #0d0c0b; color: #ece6e1; font-family: 'Roboto Flex', system-ui, sans-serif;">
+<nav aria-label="Sections" style="width: 208px; box-sizing: border-box; padding: 28px 0; display: flex; flex-direction: column; background: #141210; border-right: 1px solid #2a2522;">
+<div style="display: flex; flex-direction: column; gap: 2px; padding: 0 24px 28px;">
+<span style="font-family: 'Roboto Mono', monospace; font-size: 11px; letter-spacing: .12em; color: {{accent}};">MATERIAL QEMU</span>
+<strong style="font-size: 22px; font-weight: 800; font-stretch: 70%; text-transform: uppercase;">Deploy</strong>
 </div>
-<a href="Main.dc.html" style="display: flex; align-items: center; gap: 12px; height: 44px; padding: 0 14px; border-radius: 22px; background: #482612; color: #eeeae7; text-decoration: none; font-weight: 600;">Deploy</a>
-<a href="Instances.dc.html" style="display: flex; align-items: center; gap: 12px; height: 44px; padding: 0 14px; border-radius: 22px; color: #ada6a1; text-decoration: none;">Instances</a>
+<a href="Main.dc.html" style="display: flex; align-items: center; height: 48px; padding: 0 24px 0 21px; color: #ece6e1; text-decoration: none; font-family: 'Roboto Mono', monospace; font-size: 13px; letter-spacing: .08em; border-left: 3px solid {{accent}}; background: #1c1916;">01 DEPLOY</a>
+<a href="Instances.dc.html" style="display: flex; align-items: center; height: 48px; padding: 0 24px; color: #a39a93; text-decoration: none; font-family: 'Roboto Mono', monospace; font-size: 13px; letter-spacing: .08em;">02 RACK</a>
+<a href="Flash.dc.html" style="display: flex; align-items: center; height: 48px; padding: 0 24px; color: #a39a93; text-decoration: none; font-family: 'Roboto Mono', monospace; font-size: 13px; letter-spacing: .08em;">03 FLASH</a>
 <div style="flex-grow: 1;"></div>
-<span style="font-size: 12px; color: #ada6a1; padding: 0 14px;">Version 0.1.0 · build 42</span>
+<label style="display: flex; flex-direction: column; gap: 6px; padding: 0 24px; font-family: 'Roboto Mono', monospace; font-size: 11px; letter-spacing: .12em; color: #a39a93;">LANGUAGE<select style="height: 36px; border-radius: 3px; border: 1px solid #4a423d; background: #0d0c0b; color: #ece6e1;"><option>English</option><option>粵語</option><option>English + 粵語</option></select></label>
 </nav>
-<main style="flex: 1; min-width: 0; box-sizing: border-box; padding: 32px 40px; display: flex; flex-direction: column; gap: 24px; overflow: hidden;">
+<main style="flex: 1; min-width: 0; box-sizing: border-box; padding: 32px 40px; display: flex; flex-direction: column; gap: 22px;">
 <header style="display: flex; flex-direction: column; gap: 6px;">
-<h1 style="margin: 0; font-size: 32px; font-weight: 600;">Host Material QEMU in a virtual machine</h1>
-<p style="margin: 0; color: #ada6a1; font-size: 15px;">One click imports the appliance, puts it on your network and gives you its link.</p>
+<span style="font-family: 'Roboto Mono', monospace; font-size: 12px; letter-spacing: .14em; color: #a39a93;">NEW UNIT · ONE CLICK FROM IMAGE TO LAN LINK</span>
+<h1 style="margin: 0; font-size: 44px; line-height: 1; font-weight: 800; font-stretch: 62%; text-transform: uppercase;">Rack a new Material QEMU</h1>
 </header>
-<section aria-labelledby="hv" style="display: flex; flex-direction: column; gap: 12px;">
-<h2 id="hv" style="margin: 0; font-size: 16px; font-weight: 600;">1. Hypervisor</h2>
-<div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px;">
-<sc-for list="{{hypervisors}}" as="h" hint-placeholder-count="2">
-<button type="button" onClick="{{h.pick}}" aria-pressed="{{h.pressed}}" style="{{h.cardStyle}}">
-<span style="font-size: 17px; font-weight: 600;">{{h.name}}</span>
-<span style="font-size: 13px; color: #ada6a1;">{{h.detail}}</span>
-<span style="font-size: 12px; color: #5eead4;">{{h.status}}</span>
+<section aria-labelledby="t1" style="display: flex; flex-direction: column; gap: 10px;">
+<h2 id="t1" style="margin: 0; font-family: 'Roboto Mono', monospace; font-size: 12px; font-weight: 500; letter-spacing: .14em; color: #a39a93;">01 · HOST</h2>
+<div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px;">
+<sc-for list="{{hosts}}" as="h" hint-placeholder-count="3">
+<button type="button" onClick="{{h.pick}}" aria-pressed="{{h.pressed}}" disabled="{{h.off}}" style="{{h.card}}">
+<span style="display: flex; align-items: center; justify-content: space-between; width: 100%;"><strong style="font-size: 22px; font-weight: 800; font-stretch: 62%; text-transform: uppercase;">{{h.name}}</strong><span style="{{h.led}}"></span></span>
+<span style="font-family: 'Roboto Mono', monospace; font-size: 12px; color: #a39a93;">{{h.detail}}</span>
+<span style="font-family: 'Roboto Mono', monospace; font-size: 11px; letter-spacing: .1em; color: {{h.statusColor}};">{{h.status}}</span>
 </button>
 </sc-for>
 </div>
 </section>
-<section aria-labelledby="src" style="display: flex; flex-direction: column; gap: 12px;">
-<h2 id="src" style="margin: 0; font-size: 16px; font-weight: 600;">2. Appliance</h2>
-<div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap; padding: 16px; border-radius: 16px; background: #181615; border: 1px solid #302b29;">
-<label style="display: flex; gap: 8px; align-items: center; font-size: 14px;"><input type="radio" name="src" checked> Latest release (v0.1.0-build.42, 1.1 GB, SHA-256 checked)</label>
-<label style="display: flex; gap: 8px; align-items: center; font-size: 14px;"><input type="radio" name="src"> Local .ova file</label>
+<section aria-labelledby="t2" style="display: flex; flex-direction: column; gap: 10px;">
+<h2 id="t2" style="margin: 0; font-family: 'Roboto Mono', monospace; font-size: 12px; font-weight: 500; letter-spacing: .14em; color: #a39a93;">02 · IMAGE</h2>
+<div style="display: flex; gap: 20px; align-items: center; padding: 14px 16px; border: 1px solid #36302b; border-radius: 3px; background: #141210; font-family: 'Roboto Mono', monospace; font-size: 13px;">
+<label style="display: flex; gap: 8px; align-items: center;"><input type="radio" name="src" checked> v0.1.0-build.6 · 1.4 GB · SHA-256 CHECKED</label>
+<label style="display: flex; gap: 8px; align-items: center; color: #a39a93;"><input type="radio" name="src"> LOCAL .OVA</label>
 </div>
 </section>
-<section aria-labelledby="vm" style="display: flex; flex-direction: column; gap: 12px;">
-<h2 id="vm" style="margin: 0; font-size: 16px; font-weight: 600;">3. Virtual machine</h2>
-<div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px;">
-<label style="display: flex; flex-direction: column; gap: 6px; font-size: 13px; color: #ada6a1;">Instance name<input value="material-qemu-1" style="height: 44px; padding: 0 12px; border-radius: 8px; border: 1px solid #5c5651; background: #232120; color: #eeeae7; font: inherit; font-size: 15px;"></label>
-<label style="display: flex; flex-direction: column; gap: 6px; font-size: 13px; color: #ada6a1;">CPUs<input value="4" inputmode="numeric" style="height: 44px; padding: 0 12px; border-radius: 8px; border: 1px solid #5c5651; background: #232120; color: #eeeae7; font: inherit; font-size: 15px;"></label>
-<label style="display: flex; flex-direction: column; gap: 6px; font-size: 13px; color: #ada6a1;">Memory (MB)<input value="8192" inputmode="numeric" style="height: 44px; padding: 0 12px; border-radius: 8px; border: 1px solid #5c5651; background: #232120; color: #eeeae7; font: inherit; font-size: 15px;"></label>
-<label style="display: flex; flex-direction: column; gap: 6px; font-size: 13px; color: #ada6a1;">Bridged network adapter<select style="height: 44px; padding: 0 12px; border-radius: 8px; border: 1px solid #5c5651; background: #232120; color: #eeeae7; font: inherit; font-size: 15px;"><option>Intel(R) Ethernet Controller</option><option>Wi-Fi</option></select></label>
+<section aria-labelledby="t3" style="display: flex; flex-direction: column; gap: 10px;">
+<h2 id="t3" style="margin: 0; font-family: 'Roboto Mono', monospace; font-size: 12px; font-weight: 500; letter-spacing: .14em; color: #a39a93;">03 · UNIT</h2>
+<div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px;">
+<label style="display: flex; flex-direction: column; gap: 6px; font-family: 'Roboto Mono', monospace; font-size: 11px; letter-spacing: .12em; color: #a39a93;">NAME<input value="material-qemu-1" style="height: 44px; padding: 0 12px; border-radius: 3px; border: 1px solid #4a423d; background: #0d0c0b; color: #ece6e1; font: 15px 'Roboto Mono', monospace;"></label>
+<label style="display: flex; flex-direction: column; gap: 6px; font-family: 'Roboto Mono', monospace; font-size: 11px; letter-spacing: .12em; color: #a39a93;">CPUS<input value="4" style="height: 44px; padding: 0 12px; border-radius: 3px; border: 1px solid #4a423d; background: #0d0c0b; color: #ece6e1; font: 15px 'Roboto Mono', monospace;"></label>
+<label style="display: flex; flex-direction: column; gap: 6px; font-family: 'Roboto Mono', monospace; font-size: 11px; letter-spacing: .12em; color: #a39a93;">MEMORY MB<input value="8192" style="height: 44px; padding: 0 12px; border-radius: 3px; border: 1px solid #4a423d; background: #0d0c0b; color: #ece6e1; font: 15px 'Roboto Mono', monospace;"></label>
+<label style="display: flex; flex-direction: column; gap: 6px; font-family: 'Roboto Mono', monospace; font-size: 11px; letter-spacing: .12em; color: #a39a93;">BRIDGE<select style="height: 44px; padding: 0 12px; border-radius: 3px; border: 1px solid #4a423d; background: #0d0c0b; color: #ece6e1; font: 14px 'Roboto Mono', monospace;"><option>Intel(R) Ethernet</option></select></label>
 </div>
-<label style="display: flex; gap: 10px; align-items: center; font-size: 14px;"><input type="checkbox" checked> Enable nested virtualization so guests can use hardware acceleration when the host allows it</label>
 </section>
 <div style="flex-grow: 1;"></div>
-<footer style="display: flex; gap: 12px; justify-content: flex-end; align-items: center;">
-<span style="font-size: 13px; color: #ada6a1; flex-grow: 1;">The VM gets its own address on your network. Nothing is exposed to the internet.</span>
-<a href="Deploying.dc.html" style="display: inline-flex; align-items: center; gap: 8px; height: 48px; padding: 0 28px; border-radius: 24px; background: {{accent}}; color: #1a1817; font-weight: 700; text-decoration: none;">Deploy to {{chosen}}</a>
+<footer style="display: flex; gap: 16px; align-items: center; padding-top: 16px; border-top: 1px solid #2a2522;">
+<span style="flex-grow: 1; font-family: 'Roboto Mono', monospace; font-size: 12px; color: #7d746d;">THE UNIT GETS ITS OWN LAN ADDRESS · NOTHING IS EXPOSED TO THE INTERNET</span>
+<a href="Deploying.dc.html" style="display: inline-flex; align-items: center; height: 52px; padding: 0 28px; border-radius: 3px; background: {{accent}}; color: #170f0a; font-family: 'Roboto Mono', monospace; font-size: 14px; font-weight: 500; letter-spacing: .1em; text-decoration: none;">RACK IT ON {{chosen}} →</a>
 </footer>
 </main>
 </div>
@@ -75,15 +75,18 @@ class Component extends DCLogic {
     const accent = this.props.accent ?? '#ff995c';
     const motion = this.props.motion ?? true;
     const list = [
-      { id: 'virtualbox', name: 'Oracle VirtualBox', detail: 'VBoxManage 7.2.22 found', status: 'Ready' },
-      { id: 'vmware', name: 'VMware Workstation', detail: 'vmrun 1.17 and OVF Tool found', status: 'Ready' }
+      { id: 'virtualbox', name: 'VirtualBox', detail: 'VBoxManage 7.2.22', ok: true },
+      { id: 'vmware', name: 'VMware', detail: 'vmrun + OVF Tool', ok: true },
+      { id: 'docker', name: 'Docker here', detail: 'engine not running', ok: false }
     ];
-    const hypervisors = list.map((h) => {
+    const hosts = list.map((h) => {
       const on = this.state.pick === h.id;
-      return { ...h, pressed: on ? 'true' : 'false', pick: () => this.setState({ pick: h.id }),
-        cardStyle: 'display:flex;flex-direction:column;gap:6px;align-items:flex-start;text-align:left;padding:20px;border-radius:16px;cursor:pointer;color:#eeeae7;background:' + (on ? '#2a1a10' : '#181615') + ';border:2px solid ' + (on ? accent : '#302b29') + ';' + (motion ? 'transition:border-color 180ms cubic-bezier(.2,0,0,1),background 180ms;' : '') };
+      return { ...h, pressed: String(on), off: !h.ok, pick: () => this.setState({ pick: h.id }),
+        status: h.ok ? 'READY' : 'START DOCKER DESKTOP, THEN REFRESH', statusColor: h.ok ? '#5eead4' : '#ff9a93',
+        led: 'width:10px;height:10px;border-radius:5px;background:' + (h.ok ? '#5eead4' : '#3a3430') + ';' + (h.ok ? 'box-shadow:0 0 8px #5eead4;' : ''),
+        card: 'display:flex;flex-direction:column;gap:6px;align-items:flex-start;text-align:left;padding:16px 18px;border-radius:3px;color:#ece6e1;cursor:' + (h.ok ? 'pointer' : 'not-allowed') + ';opacity:' + (h.ok ? 1 : .6) + ';background:' + (on ? '#22170f' : '#141210') + ';border:1px solid ' + (on ? accent : '#36302b') + ';box-shadow:' + (on ? 'inset 3px 0 0 ' + accent : 'none') + ';' + (motion ? 'transition:background 160ms,border-color 160ms;' : '') };
     });
-    return { accent, hypervisors, chosen: this.state.pick === 'vmware' ? 'VMware' : 'VirtualBox' };
+    return { accent, hosts, chosen: { vmware: 'VMWARE', docker: 'DOCKER', virtualbox: 'VIRTUALBOX' }[this.state.pick] };
   }
 }
 </script>

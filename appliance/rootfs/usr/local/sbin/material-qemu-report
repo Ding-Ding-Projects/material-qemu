@@ -25,6 +25,15 @@ while [ "$i" -lt 900 ]; do
 done
 mkdir -p /etc/issue.d
 if [ "$healthy" -ne 1 ]; then
+  # Put the evidence where the deploy app and the build's boot check can read it.
+  {
+    echo "MQ-DIAG systemctl status:"
+    systemctl --no-pager --lines=0 status docker material-qemu-load material-qemu 2>&1 | head -n 30
+    echo "MQ-DIAG journal:"
+    journalctl --no-pager -n 40 -u material-qemu -u material-qemu-load -u docker 2>&1 | tail -n 40
+    echo "MQ-DIAG containers:"
+    docker ps -a 2>&1 | head -n 10
+  } | while IFS= read -r l; do serial "MQ-DIAG $l"; done
   serial "MQ-FAILED version=$version reason=health-timeout"
   printf 'Material QEMU did not become healthy. Check: journalctl -u material-qemu\n\n' > /etc/issue.d/material-qemu.issue
   exit 1
