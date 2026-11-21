@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Material QEMU Build</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto+Flex:opsz,wdth,wght@8..144,25..151,300..900&amp;family=Roboto+Mono:wght@400;500&amp;display=swap">
+<style>body{margin:0}button{font:inherit}@keyframes sweep{from{width:0}}</style>
+</helmet>
+<div style="{{root}}">
+<header style="display: flex; align-items: center; gap: 12px;"><span style="width: 44px; height: 44px; border-radius: 14px; background: {{c.primaryContainer}}; color: {{c.onPrimaryContainer}}; display: flex; align-items: center; justify-content: center; font-weight: 800;">B</span><div style="flex: 1;"><strong style="display: block; font-size: 20px;">Material QEMU Build</strong><span style="font-size: 13px; color: {{c.onSurfaceVariant}};">Source of commit 6ce1b43, carried inside this file</span></div></header>
+<div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px;">
+<sc-for list="{{actions}}" as="a" hint-placeholder-count="3"><button type="button" onClick="{{a.run}}" style="{{a.style}}"><strong style="font-size: 17px;">{{a.title}}</strong><span style="font-size: 13px; opacity: .85;">{{a.text}}</span></button></sc-for>
+</div>
+<section style="display: flex; flex-direction: column; gap: 10px; padding: 18px; border-radius: 22px; background: {{c.surfaceContainer}};">
+<div style="display: flex; align-items: center; gap: 10px;"><strong style="flex: 1;">{{status}}</strong><button type="button" style="height: 40px; padding: 0 16px; border-radius: 20px; border: 1px solid {{c.outline}}; background: transparent; color: {{c.primary}}; font-weight: 700;">Stop</button></div>
+<div style="height: 8px; border-radius: 4px; background: {{c.surfaceHigh}}; overflow: hidden;"><div style="{{bar}}"></div></div>
+<pre style="margin: 0; padding: 12px; border-radius: 12px; background: #0b0908; color: #d8c2bb; font: 12px/1.5 'Roboto Mono', monospace; height: 150px; overflow: auto;">v24.22.1
+added 61 packages in 3s
+Runtime built in dist</pre>
+</section>
+<div style="display: flex; gap: 10px;"><button type="button" style="height: 40px; padding: 0 16px; border-radius: 20px; border: 0; background: {{c.secondaryContainer}}; color: {{c.onSurface}}; font-weight: 700;">Open source folder</button><button type="button" style="height: 40px; padding: 0 16px; border-radius: 20px; border: 0; background: {{c.secondaryContainer}}; color: {{c.onSurface}}; font-weight: 700;">Open installer folder</button></div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"mode":{"editor":"enum","default":"dark","options":["dark","light"]},"motion":{"editor":"boolean","default":true},"$preview":{"width":720,"height":620}}'>
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = { active: 'Build' }; }
+  renderVals() {
+    const d = (this.props.mode ?? 'dark') === 'dark'; const motion = this.props.motion ?? true; const s = this.state;
+    const c = { primary: d ? '#ffb68e' : '#9a4600', onPrimary: d ? '#532200' : '#fff', primaryContainer: d ? '#753400' : '#ffdbca', onPrimaryContainer: d ? '#ffdbca' : '#321200', secondaryContainer: d ? '#5d4037' : '#ffdbd0', surface: d ? '#151110' : '#fff8f6', surfaceContainer: d ? '#221d1b' : '#fceae5', surfaceHigh: d ? '#2d2725' : '#f6e4de', onSurface: d ? '#ede0dc' : '#231917', onSurfaceVariant: d ? '#d8c2bb' : '#53433f', outline: d ? '#a08d86' : '#85736e' };
+    const actions = [['Build', 'Run build.bat: packages and the web service'], ['Build and run', 'build.bat /run: build, then start it here'], ['Build installer', 'build-installer.bat: the Windows host app setup']]
+      .map(([title, text]) => ({ title, text, run: () => this.setState({ active: title }),
+        style: 'display:flex;flex-direction:column;gap:6px;align-items:flex-start;text-align:left;min-height:110px;padding:18px;border-radius:22px;cursor:pointer;border:0;background:' + (s.active === title ? c.primary : c.surfaceContainer) + ';color:' + (s.active === title ? c.onPrimary : c.onSurface) + ';' }));
+    return { c, actions, status: s.active + ' succeeded in 41 s',
+      bar: 'height:8px;width:100%;background:' + c.primary + ';' + (motion ? 'animation:sweep 900ms ease-out both;' : ''),
+      root: 'width:720px;min-height:620px;box-sizing:border-box;padding:24px;display:flex;flex-direction:column;gap:16px;background:' + c.surface + ';color:' + c.onSurface + ';font-family:"Roboto Flex",system-ui,sans-serif;' };
+  }
+}
+</script>
+</body>
+</html>

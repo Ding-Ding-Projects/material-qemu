@@ -9,3 +9,6 @@ site/
 host-app/payload/
 host-app/dist/
 host-app/renderer/fonts/
+build-companion/build/
+build-companion/dist/
+build-companion/renderer/fonts/

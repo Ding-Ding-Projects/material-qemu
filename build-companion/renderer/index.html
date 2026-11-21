@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; font-src 'self'">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Material QEMU Build</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<main class="host">
+<header class="top">
+<span class="mark" aria-hidden="true">B</span>
+<div class="grow"><h1 data-t="Material QEMU Build|Material QEMU 建置">Material QEMU Build</h1><p class="muted"><span data-t="Source of commit|提交版本來源">Source of commit</span> <code id="commit">…</code><span data-t=", carried inside this file|，已包含在此檔案內">, carried inside this file</span></p></div>
+<label class="sr-only" for="lang">Language</label>
+<select id="lang"><option value="en">English</option><option value="yue">廣東話</option><option value="both">English + 廣東話</option></select>
+</header>
+<div class="actions-grid" role="group" aria-label="Build actions">
+<button type="button" class="action" data-action="build"><strong data-t="Build|建置">Build</strong><span data-t="Run build.bat: packages and the web service|執行 build.bat：套件及網頁服務">Run build.bat: packages and the web service</span></button>
+<button type="button" class="action" data-action="run"><strong data-t="Build and run|建置並執行">Build and run</strong><span data-t="build.bat /run: build, then start it here|build.bat /run：建置後在此啟動">build.bat /run: build, then start it here</span></button>
+<button type="button" class="action" data-action="installer"><strong data-t="Build installer|建置安裝程式">Build installer</strong><span data-t="build-installer.bat: the Windows host app setup|build-installer.bat：Windows 主機程式安裝檔">build-installer.bat: the Windows host app setup</span></button>
+</div>
+<section class="card">
+<div class="row"><strong id="status" class="grow" role="status">…</strong><button type="button" id="stop" class="outlined" data-t="Stop|停止">Stop</button></div>
+<div class="bar" aria-hidden="true"><div id="bar"></div></div>
+<pre id="log" tabindex="0" aria-label="Build log"></pre>
+</section>
+<div class="row">
+<button type="button" id="open-source" class="tonal" data-t="Open source folder|打開原始碼資料夾">Open source folder</button>
+<button type="button" id="open-installer" class="tonal" data-t="Open installer folder|打開安裝程式資料夾">Open installer folder</button>
+</div>
+<p class="muted small-print" id="where"></p>
+</main>
+<script src="app.js"></script>
+</body>
+</html>

@@ -20,8 +20,17 @@ export async function buildRuntime(root, source, dirty) {
 }
 if(process.argv[1]===fileURLToPath(import.meta.url)) {
   const root=process.cwd();
-  const source=execFileSync('git',['rev-parse','HEAD'],{encoding:'utf8'}).trim();
-  const dirty=Boolean(execFileSync('git',['status','--porcelain','--untracked-files=all'],{encoding:'utf8'}).trim());
+  // A checkout records its commit with git. A source archive without .git (the
+  // portable build companion unpacks one) passes SOURCE_REVISION instead.
+  let source, dirty;
+  try {
+    source=execFileSync('git',['rev-parse','HEAD'],{encoding:'utf8',stdio:['ignore','pipe','ignore']}).trim();
+    dirty=Boolean(execFileSync('git',['status','--porcelain','--untracked-files=all'],{encoding:'utf8'}).trim());
+  } catch {
+    if(!/^[0-9a-f]{40}$/.test(process.env.SOURCE_REVISION||'')) throw new Error('This folder is not a git checkout and SOURCE_REVISION is not set, so the build cannot record its source.');
+    source=process.env.SOURCE_REVISION;
+    dirty=false;
+  }
   const receipt=await buildRuntime(root,source,dirty);
   console.log(`Runnable runtime staged in dist. Source: ${source}. Uncommitted source: ${receipt.dirty}. This is not an installer.`);
 }

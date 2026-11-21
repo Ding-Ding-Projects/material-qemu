@@ -1,0 +1,29 @@
+{
+  "name": "material-qemu-build",
+  "version": "0.1.0",
+  "description": "Portable window over Material QEMU's build.bat and build-installer.bat, carrying its own source",
+  "author": "Ding Ding Projects",
+  "main": "main.cjs",
+  "private": true,
+  "scripts": {
+    "start": "electron .",
+    "stage": "node scripts/stage-source.cjs",
+    "dist": "node scripts/stage-source.cjs && electron-builder --win portable --publish never"
+  },
+  "build": {
+    "appId": "io.github.dingdingprojects.materialqemu.build",
+    "productName": "Material QEMU Build",
+    "directories": { "output": "dist" },
+    "files": ["main.cjs", "preload.cjs", "renderer/**", "package.json"],
+    "extraResources": [
+      { "from": "build/source.zip", "to": "source.zip" },
+      { "from": "build/source.json", "to": "source.json" }
+    ],
+    "win": { "target": ["portable"], "icon": "../host-app/build/icon.ico" },
+    "portable": { "artifactName": "material-qemu-build-${version}-portable.exe" }
+  },
+  "devDependencies": {
+    "electron": "45.2.3",
+    "electron-builder": "26.18.0"
+  }
+}
