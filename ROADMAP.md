@@ -59,7 +59,8 @@
 - ~~Raspberry Pi image and flashing~~: deliberately not doing. The owner decided on 2026-11-21 that this runs on Intel and AMD CPUs only, so the Raspberry Pi job, scripts and Flash option were removed.
 - [x] Deliver appliance operating-system images and USB installer: every release carries the OVA and the x86_64 USB image with SHA-256 files (for example v0.1.0-build.23).
 - [x] Update an appliance in place from Settings: daily check, pull of the new release image, restart on the same data volume, automatic rollback; verified from build 31 to build 32 with a machine kept (evidence/appliance-update).
-- [ ] Deliver portable hosting/build companions and supported native packaging.
+- [x] Deliver native packaging: the Windows host app installs with Squirrel.Windows from every release and from build-installer.bat, installed and run on this computer (evidence/host-app). The portable deploy assistant is the hosting companion.
+- [ ] Deliver a portable build companion that runs build.bat and build-installer.bat with a window.
 - [ ] Complete the required-feature inventory and remaining acceptance.
 - [x] Publish the documentation site on GitHub Pages with every article and wiki page, screenshot guides, search with a regex builder, two languages, light and dark, and phone layouts; checked live (scripts/verify-site.mjs, evidence/docs-site).
 - [x] Clean up: merged helper worktrees and branches removed; only main exists locally and on GitHub (read back with git ls-remote on 2026-11-21).

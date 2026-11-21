@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Material QEMU Host</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto+Flex:opsz,wdth,wght@8..144,25..151,300..900&amp;family=Roboto+Mono:wght@400;500&amp;display=swap">
+<style>
+body{margin:0}
+button{font:inherit}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+@keyframes rise{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+</style>
+</helmet>
+<div style="{{root}}">
+<header style="display: flex; align-items: center; gap: 12px;">
+<span style="width: 44px; height: 44px; border-radius: 14px; background: {{c.primaryContainer}}; color: {{c.onPrimaryContainer}}; display: flex; align-items: center; justify-content: center; font-weight: 800;">Q</span>
+<div style="flex: 1;"><strong style="display: block; font-size: 20px;">Material QEMU Host</strong><span style="font-size: 13px; color: {{c.onSurfaceVariant}};">Runs the web app on this computer for your network</span></div>
+<span style="{{pill}}"><span style="{{led}}"></span>{{stateLabel}}</span>
+</header>
+<section style="{{card}}">
+<span style="font-size: 13px; font-weight: 700; color: {{c.primary}};">Open from any device on your network</span>
+<strong style="font-family: 'Roboto Mono', monospace; font-size: 26px;">http://192.168.50.183:8090/</strong>
+<div style="display: flex; gap: 10px; flex-wrap: wrap;"><button type="button" style="{{filled}}">Open in browser</button><button type="button" style="{{tonal}}">Copy address</button><button type="button" onClick="{{toggle}}" style="{{outlined}}">{{toggleLabel}}</button></div>
+</section>
+<div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px;">
+<sc-for list="{{facts}}" as="f" hint-placeholder-count="3"><div style="padding: 14px 16px; border-radius: 18px; background: {{c.surfaceContainer}};"><span style="font-size: 12px; color: {{c.onSurfaceVariant}};">{{f.k}}</span><strong style="display: block;">{{f.v}}</strong></div></sc-for>
+</div>
+<section style="{{card}}">
+<div style="display: flex; align-items: center;"><strong style="flex: 1;">Log</strong><span style="font-size: 13px; color: {{c.onSurfaceVariant}};">Last 200 lines</span></div>
+<pre style="margin: 0; padding: 12px; border-radius: 12px; background: #0b0908; color: #d8c2bb; font: 12px/1.5 'Roboto Mono', monospace; max-height: 140px; overflow: auto;">Material QEMU ready. Open the configured PUBLIC_ORIGIN.
+QEMU 11.1.0 found at C:\Program Files\qemu</pre>
+</section>
+<label style="display: flex; align-items: center; gap: 12px;"><input type="checkbox" checked> Start Material QEMU when I sign in to Windows</label>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"mode":{"editor":"enum","default":"dark","options":["dark","light"]},"motion":{"editor":"boolean","default":true},"$preview":{"width":720,"height":640}}'>
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = { running: true }; }
+  renderVals() {
+    const d = (this.props.mode ?? 'dark') === 'dark'; const motion = this.props.motion ?? true; const on = this.state.running;
+    const c = { primary: d ? '#ffb68e' : '#9a4600', onPrimary: d ? '#532200' : '#ffffff', primaryContainer: d ? '#753400' : '#ffdbca', onPrimaryContainer: d ? '#ffdbca' : '#321200', secondaryContainer: d ? '#5d4037' : '#ffdbd0', surface: d ? '#151110' : '#fff8f6', surfaceContainer: d ? '#221d1b' : '#fceae5', onSurface: d ? '#ede0dc' : '#231917', onSurfaceVariant: d ? '#d8c2bb' : '#53433f', outline: d ? '#a08d86' : '#85736e', ok: d ? '#80d99e' : '#1b6d3a' };
+    return { c, stateLabel: on ? 'Running' : 'Stopped', toggleLabel: on ? 'Stop' : 'Start', toggle: () => this.setState({ running: !on }),
+      facts: [{ k: 'QEMU', v: '11.1.0 · installed' }, { k: 'Data folder', v: 'Documents\\Material QEMU VMs\\host' }, { k: 'Port', v: '8090' }],
+      pill: 'display:flex;align-items:center;gap:8px;padding:6px 12px;border-radius:12px;font-weight:700;font-size:13px;background:' + (on ? '#1f3a29' : c.surfaceContainer) + ';color:' + (on ? c.ok : c.onSurfaceVariant) + ';',
+      led: 'width:8px;height:8px;border-radius:4px;background:' + (on ? c.ok : c.outline) + ';' + (on && motion ? 'animation:pulse 1.6s ease-in-out infinite;' : ''),
+      card: 'display:flex;flex-direction:column;gap:12px;padding:20px;border-radius:24px;background:' + c.surfaceContainer + ';' + (motion ? 'animation:rise 400ms cubic-bezier(.2,.9,.25,1.1) both;' : ''),
+      filled: 'height:44px;padding:0 20px;border:0;border-radius:22px;font-weight:700;background:' + c.primary + ';color:' + c.onPrimary + ';',
+      tonal: 'height:44px;padding:0 20px;border:0;border-radius:22px;font-weight:700;background:' + c.secondaryContainer + ';color:' + c.onSurface + ';',
+      outlined: 'height:44px;padding:0 20px;border-radius:22px;font-weight:700;background:transparent;border:1px solid ' + c.outline + ';color:' + c.primary + ';cursor:pointer;',
+      root: 'width:720px;min-height:640px;box-sizing:border-box;padding:24px;display:flex;flex-direction:column;gap:16px;background:' + c.surface + ';color:' + c.onSurface + ';font-family:"Roboto Flex",system-ui,sans-serif;' };
+  }
+}
+</script>
+</body>
+</html>

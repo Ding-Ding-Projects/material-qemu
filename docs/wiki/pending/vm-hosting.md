@@ -107,3 +107,7 @@ A failed step opens a full-screen failure view that stays until dismissed. It sh
 4. One normal GitHub release with all files, their SHA-256 sums and workflow timing.
 
 Local checks: `npm test` in `companion/` runs the assistant's unit tests, including the disk writer against an ordinary file.
+
+## Windows host app
+
+`material-qemu-host-0.1.<build>-setup.exe` (in each release, or from `build-installer.bat`) installs **Material QEMU Host** for the current Windows user with Squirrel.Windows. It runs the web service on this computer for your network and shows the address to open, with **Open in browser**, **Copy address**, **Start** and **Stop**, whether QEMU is installed (with **Install QEMU**, which uses Chocolatey and asks Windows for approval), the data folder (`Documents\Material QEMU VMs\host`), the port and the last 200 log lines. If port 8090 is taken it uses the next free port and says so. It can start when you sign in. Closing the window stops the service and the machines it started. Uninstall it from Windows Settings > Apps. The installer is unsigned, so Windows may warn about an unknown publisher (evidence/host-app).

@@ -6,3 +6,6 @@ coverage/
 *.log
 companion/dist/
 site/
+host-app/payload/
+host-app/dist/
+host-app/renderer/fonts/

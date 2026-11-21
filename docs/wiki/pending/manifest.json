@@ -1,5 +1,5 @@
 {
-  "sourceCommit": "7bca1c73dc00f5f9608ec9c874aaa519b5c34f7d",
+  "sourceCommit": "b97d4e3f8df63cd8ae4c46da07dcfaac1d129ac8",
   "wikiRemote": "https://github.com/Ding-Ding-Projects/material-qemu.wiki.git",
   "publicationState": "pending-first-page",
   "pages": [
@@ -83,9 +83,9 @@
     },
     {
       "source": "docs/features/vm-hosting.md",
-      "sourceSha256": "e167dab0de99adfcff0dc52b138d4f020b2fa2c1320fa79a1394dddfd61b8a66",
+      "sourceSha256": "68b8efc10fb55db9ca19ad033c019bc0a432c36d509799848e0b8639deebbdc0",
       "page": "vm-hosting.md",
-      "pageSha256": "e167dab0de99adfcff0dc52b138d4f020b2fa2c1320fa79a1394dddfd61b8a66"
+      "pageSha256": "68b8efc10fb55db9ca19ad033c019bc0a432c36d509799848e0b8639deebbdc0"
     },
     {
       "source": "docs/features/workspace.md",

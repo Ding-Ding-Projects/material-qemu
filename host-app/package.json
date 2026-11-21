@@ -1,0 +1,61 @@
+{
+  "name": "material-qemu-host",
+  "version": "0.1.0",
+  "description": "Runs Material QEMU on this Windows computer for your network",
+  "author": "Ding Ding Projects",
+  "main": "main.cjs",
+  "private": true,
+  "scripts": {
+    "start": "electron .",
+    "test": "node --test test/",
+    "stage": "node scripts/stage-payload.cjs",
+    "dist": "node scripts/stage-payload.cjs && electron-builder --win squirrel --publish never"
+  },
+  "build": {
+    "appId": "io.github.dingdingprojects.materialqemu.host",
+    "productName": "Material QEMU Host",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "main.cjs",
+      "preload.cjs",
+      "lib/**",
+      "renderer/**",
+      "package.json"
+    ],
+    "extraResources": [
+      {
+        "from": "payload",
+        "to": "payload",
+        "filter": [
+          "**/*",
+          "!node_modules/**"
+        ]
+      },
+      {
+        "from": "payload/node_modules",
+        "to": "payload/node_modules",
+        "filter": [
+          "**/*"
+        ]
+      }
+    ],
+    "win": {
+      "target": [
+        "squirrel"
+      ],
+      "icon": "build/icon.ico"
+    },
+    "squirrelWindows": {
+      "artifactName": "material-qemu-host-${version}-setup.exe",
+      "useAppIdAsId": false,
+      "iconUrl": "https://raw.githubusercontent.com/Ding-Ding-Projects/material-qemu/main/host-app/build/icon.ico"
+    }
+  },
+  "devDependencies": {
+    "electron": "45.2.3",
+    "electron-builder": "26.18.0",
+    "electron-builder-squirrel-windows": "26.18.0"
+  }
+}

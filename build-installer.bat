@@ -1,4 +1,6 @@
 @echo off
-echo Native installer, appliance images, and portable companions are not implemented in this release.
-echo The supported runtime is built with build.bat -Container and hosted with Compose.
-exit /b 2
+setlocal
+cd /d "%~dp0"
+rem Builds the Windows host app installer (Squirrel.Windows) into host-app\dist\squirrel-windows.
+powershell -NoProfile -ExecutionPolicy Bypass -File "%~dp0scripts\build-installer.ps1" %*
+exit /b %errorlevel%

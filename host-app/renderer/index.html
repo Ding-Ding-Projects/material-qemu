@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; font-src 'self'; img-src 'self' data:">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Material QEMU Host</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<main class="host">
+<header class="top">
+<span class="mark" aria-hidden="true">Q</span>
+<div class="grow"><h1 data-t="Material QEMU Host|Material QEMU 主機">Material QEMU Host</h1><p class="muted" data-t="Runs the web app on this computer for your network|喺呢部電腦為你嘅網絡運行網頁應用程式">Runs the web app on this computer for your network</p></div>
+<label class="sr-only" for="lang">Language</label>
+<select id="lang"><option value="en">English</option><option value="yue">廣東話</option><option value="both">English + 廣東話</option></select>
+<span id="state" class="pill" role="status"><span class="led" aria-hidden="true"></span><span id="state-text">…</span></span>
+</header>
+<section class="card" aria-labelledby="addr-h">
+<p id="addr-h" class="eyebrow" data-t="Open from any device on your network|喺網絡上任何裝置都可以打開">Open from any device on your network</p>
+<strong id="url" class="url">…</strong>
+<p id="error" class="error" role="alert" hidden></p>
+<div class="actions">
+<button type="button" id="open" class="filled" data-t="Open in browser|喺瀏覽器打開">Open in browser</button>
+<button type="button" id="copy" class="tonal" data-t="Copy address|複製網址">Copy address</button>
+<button type="button" id="toggle" class="outlined">…</button>
+</div>
+</section>
+<div class="facts">
+<div><span data-t="QEMU|QEMU">QEMU</span><strong id="qemu">…</strong><button type="button" id="install-qemu" class="tonal small" hidden data-t="Install QEMU|安裝 QEMU">Install QEMU</button></div>
+<div><span data-t="Data folder|資料夾">Data folder</span><strong id="data">…</strong><button type="button" id="open-data" class="text small" data-t="Open folder|打開資料夾">Open folder</button></div>
+<div><span data-t="Port|連接埠">Port</span><strong id="port">…</strong></div>
+</div>
+<section class="card" aria-labelledby="log-h">
+<div class="row"><h2 id="log-h" class="grow" data-t="Log|記錄">Log</h2><span class="muted" data-t="Last 200 lines|最後 200 行">Last 200 lines</span></div>
+<pre id="log" tabindex="0" aria-label="Log"></pre>
+</section>
+<label class="check"><input type="checkbox" id="login"> <span data-t="Start Material QEMU when I sign in to Windows|登入 Windows 時啟動 Material QEMU">Start Material QEMU when I sign in to Windows</span></label>
+<p class="muted small-print"><span data-t="Version|版本">Version</span> <span id="version"></span></p>
+</main>
+<script src="app.js"></script>
+</body>
+</html>
