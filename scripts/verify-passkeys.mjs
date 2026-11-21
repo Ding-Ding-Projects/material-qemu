@@ -1,0 +1,50 @@
+// Registers a passkey and signs in with it in headless Microsoft Edge, using the
+// browser's virtual WebAuthn authenticator instead of a physical key.
+// Usage: node scripts/verify-passkeys.mjs <origin> <password>
+import { spawn } from "node:child_process";
+import { rmSync } from "node:fs";
+import path from "node:path";
+import os from "node:os";
+import { createRequire } from "node:module";
+const require = createRequire(import.meta.url);
+const WebSocket = require("ws");
+const [origin, password] = process.argv.slice(2);
+const profile = path.join(os.tmpdir(), "mq-passkey-profile");
+rmSync(profile, { recursive: true, force: true });
+const port = 9344;
+const edge = spawn("C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe", ["--headless=new", `--remote-debugging-port=${port}`, `--user-data-dir=${profile}`, "--no-first-run", "about:blank"], { stdio: "ignore" });
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+let target;
+for (let i = 0; i < 40 && !target; i++) { await sleep(250); try { target = (await (await fetch(`http://127.0.0.1:${port}/json`)).json()).find((t) => t.type === "page"); } catch {} }
+const ws = new WebSocket(target.webSocketDebuggerUrl);
+await new Promise((r) => ws.once("open", r));
+let seq = 0; const pending = new Map();
+ws.on("message", (m) => { const d = JSON.parse(m); if (d.id && pending.has(d.id)) { pending.get(d.id)(d); pending.delete(d.id); } });
+const send = (method, params = {}) => new Promise((r) => { const id = ++seq; pending.set(id, r); ws.send(JSON.stringify({ id, method, params })); });
+const ev = async (body) => { const r = await send("Runtime.evaluate", { expression: `(async()=>{${body}})()`, awaitPromise: true, returnByValue: true }); return r.result?.exceptionDetails ? "EXC " + (r.result.exceptionDetails.exception?.description || "").slice(0, 200) : r.result?.result?.value; };
+const results = [];
+const check = (name, ok, detail = "") => { results.push({ name, ok: !!ok }); console.log(ok ? "PASS" : "FAIL", name, detail); };
+await send("Page.enable"); await send("Runtime.enable"); await send("WebAuthn.enable");
+const auth = await send("WebAuthn.addVirtualAuthenticator", { options: { protocol: "ctap2", transport: "internal", hasResidentKey: true, hasUserVerification: true, isUserVerified: true, automaticPresenceSimulation: true } });
+const authenticatorId = auth.result.authenticatorId;
+await send("Page.navigate", { url: origin }); await sleep(2500);
+console.log(await ev(`let s=await (await fetch('/api/session')).json(); if(!s.authenticated){await fetch('/api/login',{method:'POST',headers:{'content-type':'application/json','x-csrf-token':s.csrf||''},body:JSON.stringify({username:'owner',password:${JSON.stringify(password)}})});} s=await (await fetch('/api/session')).json(); await fetch('/api/preferences',{method:'POST',headers:{'content-type':'application/json','x-csrf-token':s.csrf},body:JSON.stringify({setup:{step:8,complete:true}})}); return 'auth '+s.authenticated;`));
+await send("Page.navigate", { url: origin }); await sleep(3000);
+const before = await ev(`return (await (await fetch('/api/state')).json()).owner.passkeys`);
+await ev(`document.querySelector('[data-action="page:settings"]').click(); return 1;`); await sleep(1200);
+console.log("register", await ev(`const b=document.querySelector('[data-action="register-passkey"]'); if(!b) return 'missing'; b.click(); return 'ok';`));
+await sleep(4000);
+const after = await ev(`return (await (await fetch('/api/state')).json()).owner.passkeys`);
+const creds = await send("WebAuthn.getCredentials", { authenticatorId });
+check("passkey registered through the settings page", after === before + 1, `${before} -> ${after}, authenticator holds ${creds.result.credentials.length}`);
+console.log("logout", await ev(`const s=await (await fetch('/api/session')).json(); const r=await fetch('/api/logout',{method:'POST',headers:{'content-type':'application/json','x-csrf-token':s.csrf}}); return r.status;`));
+await send("Page.navigate", { url: origin }); await sleep(2500);
+const signedOut = await ev(`return (await (await fetch('/api/session')).json()).authenticated`);
+check("signed out before passkey sign-in", signedOut === false);
+console.log("passkey login", await ev(`const b=document.querySelector('[data-action="passkey-login"]'); if(!b) return 'missing'; b.click(); return 'ok';`));
+await sleep(4000);
+const signedIn = await ev(`return (await (await fetch('/api/session')).json()).authenticated`);
+const counted = await send("WebAuthn.getCredentials", { authenticatorId });
+check("signed in with the passkey", signedIn === true, `sign count ${counted.result.credentials[0]?.signCount}`);
+ws.close(); edge.kill();
+process.exit(results.every((r) => r.ok) ? 0 : 1);

@@ -35,7 +35,8 @@
 - [x] Translate every server error message for Cantonese and bilingual modes, with a test that fails on an untranslated message.
 - [x] Verify swtpm TPM start-up, UEFI and Secure Boot discovery and KVM in the built container inside the VirtualBox appliance (evidence/appliance-build-19).
 - [x] Boot an installed guest operating system (Debian 13 imported from a VMDK) to its login prompt and shut it down through ACPI (evidence/installed-guest).
-- [ ] Verify physical authenticators (passkeys on real hardware keys or phones).
+- [x] Register a passkey in Settings, sign out and sign in with it in headless Edge using the browser's virtual authenticator (scripts/verify-passkeys.mjs).
+- [ ] Verify passkeys with a physical security key or phone.
 - [ ] Verify complete latest-source visual (the Material Design 3 Expressive remake is implemented; screenshots use mocked API data), language, keyboard and narrow-screen parity; retain historical evidence with original provenance.
 
 ## Delivery and broader design
