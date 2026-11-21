@@ -5,7 +5,12 @@ set -u
 . /run/material-qemu.env
 host=$(printf '%s' "$PUBLIC_ORIGIN" | sed 's#^[a-z]*://##; s#/.*##')
 version=$(cat /opt/material-qemu/version 2>/dev/null || echo unknown)
-serial() { printf '%s\r\n' "$1" > /dev/ttyS0 2>/dev/null || true; }
+serial() {
+  # ttyS0 on PCs and VMs; ttyAMA0 is the first UART on Raspberry Pi boards.
+  for port in /dev/ttyS0 /dev/ttyAMA0; do
+    [ -c "$port" ] && printf '%s\r\n' "$1" > "$port" 2>/dev/null || true
+  done
+}
 rootsize=$(df -h / | awk 'NR==2{print $2}')
 serial "MQ-BOOT version=$version ip=$MQ_IP root=$rootsize"
 healthy=0
