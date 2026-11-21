@@ -14,7 +14,8 @@ Every required feature of Material QEMU, its state, and where the proof is. **Ve
 | Search with an adjacent regular expression builder | Verified | `scripts/verify-search.mjs`, evidence/search |
 | Regex explain, test bench with groups, replace and split preview, saved library, one-second time limit | Verified in browser | `scripts/verify-regex-tools.mjs`, evidence/regex-tools |
 | Regex step debugger, flavour comparison (PCRE, Python, .NET, Java, Go), code generation in six languages, local file search | Verified in browser | `scripts/verify-regex-tools.mjs`, tests/regex-parity.test.mjs, evidence/regex-tools |
-| Running other flavours' engines, replacing inside files, regex in header search over storage, ISOs and docs and in the command palette | Pending | ROADMAP.md |
+| Header search over disk images, ISO images and help articles; command palette regex search | Verified in browser | `scripts/verify-search-everywhere.mjs`, tests/search-everywhere.test.mjs, evidence/search-everywhere |
+| Running other flavours' engines, replacing inside files | Pending | ROADMAP.md |
 | Notifications center | Verified | `scripts/verify-notifications.mjs`, evidence/notifications |
 | Workspace tabs, command palette, saved views, folders, tags | Verified | evidence/walkthrough, `tests/` |
 | Two-key slider confirmation for destructive actions | Verified | evidence/walkthrough steps 20 and 21, `tests/confirm-gate.test.mjs` |

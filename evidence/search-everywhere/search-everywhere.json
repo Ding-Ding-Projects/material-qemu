@@ -1,0 +1,46 @@
+{
+  "origin": "http://localhost:8097/",
+  "at": "2026-11-21T12:13:33.127Z",
+  "results": [
+    {
+      "name": "Plain search finds an ISO by name",
+      "ok": true,
+      "detail": "Also found ISO images 1 album debian-13.1-amd64-netinst.iso"
+    },
+    {
+      "name": "Plain search finds help articles",
+      "ok": true,
+      "detail": "Also found Help articles 1 menu_book Snapshots and storage"
+    },
+    {
+      "name": "Regex search finds the disk of the matching machine",
+      "ok": true,
+      "detail": "Also found Disk images 1 hard_drive Disk 1 Machine win11-test · qcow2"
+    },
+    {
+      "name": "A help result opens and focuses that article",
+      "ok": true,
+      "detail": "|ARTICLE|true|Create and start a machine\nUpload a trus"
+    },
+    {
+      "name": "The palette's regex search filters commands and reports the count",
+      "ok": true,
+      "detail": "2 of 34 match. | Theme,Language"
+    },
+    {
+      "name": "The palette explains its pattern",
+      "ok": true,
+      "detail": "7"
+    },
+    {
+      "name": "An invalid palette pattern is reported, not silently empty",
+      "ok": true,
+      "detail": "Not a valid pattern: /(theme/i: Unterminated group | true"
+    },
+    {
+      "name": "The palette search is independent of the header search",
+      "ok": true,
+      "detail": "trusted\\s+ISO"
+    }
+  ]
+}

@@ -39,6 +39,37 @@ import { createNotificationLog } from "./notifications.js";
 import { explainPattern, createLibrary } from "./regex-tools.js";
 import { runBounded } from "./regex-runner.js";
 import { flavourReport, generateCode, LANGUAGES } from "./regex-convert.js";
+import { searchEverywhere } from "./search-everywhere.js";
+
+// Help articles as plain text, rebuilt when the language changes, so the
+// header search can find them.
+let docsIndexCache = { key: "", items: [] };
+function docsIndex() {
+  const key = state.settings.language;
+  if (docsIndexCache.key === key) return docsIndexCache.items;
+  const doc = new DOMParser().parseFromString(views().docs(), "text/html");
+  const items = [...doc.querySelectorAll("article")].map((a) => ({ title: a.querySelector("h2")?.textContent.trim() || "", text: a.textContent.replace(/\s+/g, " ").trim() }));
+  docsIndexCache = { key, items };
+  return items;
+}
+function drawSearchElsewhere() {
+  const holder = document.querySelector("#search-elsewhere");
+  if (!holder) return;
+  const found = searchEverywhere(currentSearch(), { storage, docs: docsIndex() });
+  if (!found) { holder.innerHTML = ""; return; }
+  if (!found.storageKnown) loadStorage().then(() => storage && document.querySelector("#search-elsewhere") && drawSearchElsewhere());
+  // Highlight the hit in the field it was found in.
+  const mark = (value, x, field) => {
+    const v = String(value ?? "");
+    if (x.field !== field) return escape(v);
+    const [s, e] = x.span;
+    return `${escape(v.slice(0, s))}<mark>${escape(v.slice(s, e))}</mark>${escape(v.slice(e))}`;
+  };
+  const snip = (x) => `${x.cutStart ? "…" : ""}${escape(x.before)}<mark>${escape(x.hit)}</mark>${escape(x.after)}${x.cutEnd ? "…" : ""}`;
+  const entry = (action, icon, title, sub) => `<li>${button(action, `<span class="icon" aria-hidden="true">${icon}</span><span><strong>${title}</strong>${sub ? `<small>${sub}</small>` : ""}</span>`, "elsewhere-entry")}</li>`;
+  const group = (title, items, row) => items.length ? `<h3>${title} <span class="muted">${items.length}</span></h3><ul class="elsewhere-list">${items.map(row).join("")}</ul>` : "";
+  holder.innerHTML = `<section class="card search-elsewhere" aria-label="${t("Also found", "其他結果")}"><h2>${t("Also found", "其他結果")}</h2>${found.total ? "" : `<p class="muted-line">${found.storageKnown ? t("No disks, ISOs or help articles match.", "沒有符合的磁碟、ISO 或說明文章。") : t("Checking storage…", "正在檢查儲存空間…")}</p>`}${group(t("Disk images", "磁碟映像"), found.disks, (d) => entry("page:storage", "hard_drive", mark(d.name, d, "name"), [d.machineName ? t("Machine ", "機器 ") + mark(d.machineName, d, "machineName") : "", mark(d.format, d, "format")].filter(Boolean).join(" · ")))}${group(t("ISO images", "ISO 映像"), found.isos, (i) => entry("page:storage", "album", mark(i.name, i, "name"), ""))}${group(t("Help articles", "說明文章"), found.articles, (x) => entry(`open-doc:${x.index}`, "menu_book", mark(x.title, x, "title"), x.snippet ? snip(x.snippet) : ""))}</section>`;
+}
 
 // Regex builder tabs: explain, test bench, replace, split and the saved library.
 const regexLibrary = createLibrary();
@@ -532,6 +563,7 @@ function render() {
     }
     if (page === "storage") loadStorage();
     if (searchOpts.regex) refreshRegexOutput();
+    drawSearchElsewhere();
     restoreFocus(focus);
     if (page === "new") requestPreview();
     const search = $("#global-search");
@@ -1718,6 +1750,7 @@ function updateRegexStatus() {
   const el = $("#regex-status");
   if (el) el.textContent = regexStatusText();
   updateRegexTools();
+  drawSearchElsewhere();
 }
 function views() {
   thumbs.tick = Math.floor(Date.now() / 5000);
@@ -1924,6 +1957,22 @@ function navigateWorkspace(id) {
   } else page = id;
   render();
 }
+// The palette has its own search options, separate from the header search.
+let paletteSearch = { regex: false, flags: { i: true, m: false, s: false, u: false } };
+try { const saved = JSON.parse(localStorage.getItem("mq-palette-search") || "{}"); paletteSearch = { regex: Boolean(saved.regex), flags: { ...paletteSearch.flags, ...(saved.flags || {}) } }; } catch { /* storage unavailable */ }
+const savePaletteSearch = () => { try { localStorage.setItem("mq-palette-search", JSON.stringify(paletteSearch)); } catch { /* storage unavailable */ } };
+const paletteMatcher = (q) => compileSearch(paletteSearch.regex ? q : String(q).trim(), { regex: paletteSearch.regex, flags: paletteSearch.flags });
+function paletteBuilder() {
+  const toggle = button("palette-regex", '<span class="mono" aria-hidden="true">.*</span>', "regex-toggle small", `aria-pressed="${paletteSearch.regex}" aria-controls="palette-builder" aria-label="${escape(t("Regular expression search", "正規表達式搜尋"))}" title="${escape(t("Regular expression search", "正規表達式搜尋"))}"`);
+  if (!paletteSearch.regex) return `<div class="regex-row">${toggle}<span class="muted">${t("Plain-text search. Turn on .* for a regular expression.", "純文字搜尋。開啟 .* 可用正規表達式。")}</span></div>`;
+  const flag = (k, label) => `<label class="chip-check"><input type="checkbox" data-palette-flag="${k}" ${paletteSearch.flags[k] ? "checked" : ""}> <span class="mono">${k}</span> ${label}</label>`;
+  const tokens = ["\\d", "\\w", "\\s", ".", "*", "+", "?", "|", "^", "$", "()", "[]"];
+  return `<div class="regex-row">${toggle}${flag("i", t("ignore case", "不分大小寫"))}${flag("m", t("multiline", "多行"))}${flag("s", t("dot matches newline", "點號配對換行"))}${flag("u", "Unicode")}</div><div class="regex-row">${tokens.map((tok) => `<button type="button" class="token mono" data-action="palette-token" data-token="${escape(tok)}" aria-label="${escape(t("Insert ", "插入 ") + tok)}">${escape(tok)}</button>`).join("")}</div><p id="palette-status" class="muted-line" role="status"></p><ol class="explain" id="palette-explain"></ol>`;
+}
+function drawPaletteBuilder() {
+  const holder = document.querySelector("#palette-builder");
+  if (holder) holder.innerHTML = paletteBuilder();
+}
 function showCatalog(mode = "commands", query = "") {
   catalogMode = mode;
   catalogEntries = commandInventory(state, t);
@@ -1931,7 +1980,7 @@ function showCatalog(mode = "commands", query = "") {
     mode === "tabs"
       ? t("New tab catalog", "新增分頁目錄")
       : t("Command palette", "指令選單"),
-    `<div class="field"><label for="command-search">${t("Search destinations and controls", "搜尋目的地及控制")}</label><input id="command-search" type="search" maxlength="200" value="${escape(query)}" autocomplete="off"></div><p class="muted-line">${t("Plain-text search. Full regex construction is not available yet.", "純文字搜尋，完整正規表示式建構尚未提供。")}</p><div class="palette-settings">${select(
+    `<div class="field"><label for="command-search">${t("Search destinations and controls", "搜尋目的地及控制")}</label><input id="command-search" type="search" maxlength="200" value="${escape(query)}" autocomplete="off"></div><div id="palette-builder" class="palette-builder">${paletteBuilder()}</div><div class="palette-settings">${select(
       "palette-theme",
       t("Theme", "主題"),
       [
@@ -1957,7 +2006,13 @@ function showCatalog(mode = "commands", query = "") {
   $("#command-search").focus();
 }
 function renderCommands(query) {
-  const matches = searchCommands(catalogEntries, query);
+  const m = paletteMatcher(query);
+  const matches = !m.ok ? [] : paletteSearch.regex ? (m.active ? catalogEntries.filter((e) => m.span(e.label) || m.span(e.unavailable || e.description)) : catalogEntries) : searchCommands(catalogEntries, query);
+  $("#command-search")?.toggleAttribute("aria-invalid", !m.ok);
+  const status = $("#palette-status");
+  if (status) status.textContent = !m.ok ? t(`Not a valid pattern: ${m.error}`, `樣式無效：${m.error}`) : t(`${matches.length} of ${catalogEntries.length} match.`, `${catalogEntries.length} 項中有 ${matches.length} 項符合。`);
+  const explain = $("#palette-explain");
+  if (explain) explain.innerHTML = m.ok && m.active ? explainPattern(query).map((p) => `<li style="--depth:${p.depth}"><code>${escape(p.text)}</code><span>${escape(t(p.en, p.yue))}</span></li>`).join("") : "";
   $("#command-results").innerHTML =
     matches
       .map((entry) =>
@@ -1972,6 +2027,13 @@ function renderCommands(query) {
 }
 document.addEventListener("input", (event) => {
   if (event.target.id === "command-search") renderCommands(event.target.value);
+});
+document.addEventListener("change", (event) => {
+  const k = event.target.dataset?.paletteFlag;
+  if (!k) return;
+  paletteSearch.flags[k] = event.target.checked;
+  savePaletteSearch();
+  renderCommands($("#command-search")?.value || "");
 });
 document.addEventListener("change", async (event) => {
   if (
@@ -2066,10 +2128,11 @@ async function loadSnapshots(id) {
 }
 async function loadStorage(force = false) {
   if (storage && !force) return;
-  if (loadStorage.busy) return;
-  loadStorage.busy = true;
-  const result = await tryApi("/storage");
-  loadStorage.busy = false;
+  // Callers waiting on a load in progress get that same load, so they only
+  // continue once storage is actually known.
+  if (loadStorage.pending) return loadStorage.pending;
+  loadStorage.pending = tryApi("/storage");
+  const result = await loadStorage.pending.finally(() => { loadStorage.pending = null; });
   storage = normalizeStorage(result.ok ? result.data : null, state);
   if (page === "storage" && session?.authenticated) rerenderQuiet();
 }
@@ -2166,6 +2229,41 @@ async function handleExtra(action, b) {
     regexTab = action.slice(10);
     updateRegexTools();
     document.querySelector(`[data-action="regex-tab:${regexTab}"]`)?.focus();
+    return true;
+  }
+  if (action === "palette-regex") {
+    paletteSearch.regex = !paletteSearch.regex;
+    savePaletteSearch();
+    drawPaletteBuilder();
+    renderCommands($("#command-search")?.value || "");
+    document.querySelector('[data-action="palette-regex"]')?.focus();
+    return true;
+  }
+  if (action === "palette-token") {
+    const input = $("#command-search");
+    const tok = b.dataset.token;
+    const at = input.selectionStart ?? input.value.length;
+    input.value = input.value.slice(0, at) + tok + input.value.slice(input.selectionEnd ?? at);
+    const caret = at + (tok === "()" || tok === "[]" ? 1 : tok.length);
+    input.focus();
+    input.setSelectionRange(caret, caret);
+    renderCommands(input.value);
+    return true;
+  }
+  if (action.startsWith("open-doc:")) {
+    const index = Number(action.slice(9));
+    page = "docs";
+    render();
+    // The page may be drawn after an animated transition, so wait for it.
+    const focusArticle = (tries) => {
+      const article = page === "docs" && document.querySelectorAll("#main article")[index];
+      if (!article) { if (tries > 0) setTimeout(() => focusArticle(tries - 1), 50); return; }
+      article.setAttribute("tabindex", "-1");
+      article.classList.add("flash");
+      article.scrollIntoView({ block: "center", behavior: state.settings.motion ? "smooth" : "auto" });
+      article.focus({ preventScroll: true });
+    };
+    focusArticle(40);
     return true;
   }
   if (action.startsWith("regex-step:")) {

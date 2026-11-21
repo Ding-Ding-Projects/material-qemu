@@ -20,17 +20,20 @@ export function compileSearch(text, { regex = false, flags = { i: true, m: false
   const source = String(text ?? "");
   const use = fields.filter((f) => SEARCH_FIELDS.includes(f));
   const scope = use.length ? use : SEARCH_FIELDS;
-  if (!source) return { ok: true, active: false, test: () => true };
-  if (source.length > MAX_PATTERN) return { ok: false, active: true, error: `Use at most ${MAX_PATTERN} characters.`, test: () => false };
+  if (!source) return { ok: true, active: false, test: () => true, span: () => null };
+  if (source.length > MAX_PATTERN) return { ok: false, active: true, error: `Use at most ${MAX_PATTERN} characters.`, test: () => false, span: () => null };
   if (!regex) {
     const needle = source.toLowerCase();
-    return { ok: true, active: true, test: (m) => fieldText(m, scope).toLowerCase().includes(needle) };
+    // span(text) gives the first [start, end] found in any text, for other searchable lists.
+    const span = (value) => { const at = String(value).toLowerCase().indexOf(needle); return at < 0 ? null : [at, at + needle.length]; };
+    return { ok: true, active: true, test: (m) => fieldText(m, scope).toLowerCase().includes(needle), span };
   }
   let re;
   try {
     re = new RegExp(source, `${flags.i ? "i" : ""}${flags.m ? "m" : ""}${flags.s ? "s" : ""}${flags.u ? "u" : ""}`);
   } catch (error) {
-    return { ok: false, active: true, error: error.message.replace(/^Invalid regular expression: /, ""), test: () => false };
+    return { ok: false, active: true, error: error.message.replace(/^Invalid regular expression: /, ""), test: () => false, span: () => null };
   }
-  return { ok: true, active: true, regex: re, test: (m) => re.test(fieldText(m, scope)) };
+  const span = (value) => { const m = re.exec(String(value)); return m ? [m.index, m.index + m[0].length] : null; };
+  return { ok: true, active: true, regex: re, test: (m) => re.test(fieldText(m, scope)), span };
 }

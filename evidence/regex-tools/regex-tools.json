@@ -1,6 +1,6 @@
 {
   "origin": "http://localhost:8097/",
-  "at": "2026-11-21T11:28:05.729Z",
+  "at": "2026-11-21T12:10:16.881Z",
   "results": [
     {
       "name": "Explain describes each part, including the named group",
@@ -85,7 +85,7 @@
     {
       "name": "Search files lists matching lines from the chosen files",
       "ok": true,
-      "detail": "2 matching lines in 1 of 2 files 1 ms"
+      "detail": "2 matching lines in 1 of 2 files 0 ms"
     },
     {
       "name": "Chosen files are not sent to the server",

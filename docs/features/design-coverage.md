@@ -7,9 +7,9 @@ This inventory covers the controls in the supplied Main, Onboarding, Overview, M
 | Supplied control | Current state and exact limit |
 | --- | --- |
 | Brand, version, update timestamp | Implemented; runtime build time is generated or explicitly unavailable. |
-| Global search | Implemented for machine name, notes, folder, tags and architecture, with the field choice in the regex builder. Searching storage, ISOs and documentation from the header remains pending; the documentation site has its own search. |
+| Global search | Implemented for machine name, notes, folder, tags and architecture, with the field choice in the regex builder, and for disk images, ISO images and help articles in an Also found panel (scripts/verify-search-everywhere.mjs). |
 | Adjacent full regex builder | Implemented beside the header search: flags, fields searched, token insert buttons, bounded length, live match count and error message, remembered per browser (scripts/verify-search.mjs). Explain, test bench with numbered and named groups, replace and split previews, a saved pattern library and a one-second worker time limit are implemented (scripts/verify-regex-tools.mjs). A step debugger, a comparison with PCRE, Python, .NET, Java and Go, code generation in six languages and local file search are implemented (scripts/verify-regex-tools.mjs). Executing other flavours' engines and replacing inside files remain pending. |
-| Command palette shortcut and button | Implemented searchable real workflow commands and live theme/language/motion controls, from header and Ctrl+Shift+F. Full regex construction remains pending. |
+| Command palette shortcut and button | Implemented searchable real workflow commands and live theme/language/motion controls, from header and Ctrl+Shift+F, with its own regular expression search: flags, token buttons, status and explanation (scripts/verify-search-everywhere.mjs). |
 | Notifications center | Implemented: bell with unread badge, panel with the last 50 notices, mark read and clear, Escape and focus return (scripts/verify-notifications.mjs). |
 | Help | Implemented task-oriented runtime help and the published documentation site with guides, every article and wiki page (scripts/verify-site.mjs). |
 | Owner identity | Implemented for one owner; multiple users remain pending. |

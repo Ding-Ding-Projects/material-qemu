@@ -2663,3 +2663,73 @@ dialog:has(.annotation-canvas) {
   outline: 3px solid var(--primary, currentColor);
   outline-offset: 2px;
 }
+
+.search-elsewhere {
+  margin-top: 16px;
+}
+.search-elsewhere h2 {
+  margin: 0 0 8px;
+  font-size: 18px;
+}
+.search-elsewhere h3 {
+  margin: 12px 0 4px;
+  font-size: 14px;
+}
+.elsewhere-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+button.elsewhere-entry {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  width: 100%;
+  min-height: 48px;
+  text-align: left;
+  justify-content: flex-start;
+  background: transparent;
+  border-radius: 12px;
+  padding: 8px 12px;
+}
+button.elsewhere-entry:hover {
+  background: color-mix(in srgb, var(--primary) 10%, transparent);
+}
+button.elsewhere-entry span:last-child {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+button.elsewhere-entry small {
+  font-weight: 400;
+  opacity: 0.85;
+  overflow-wrap: anywhere;
+}
+button.elsewhere-entry mark {
+  background: var(--primary-container);
+  color: var(--on-primary-container);
+  border-radius: 3px;
+}
+article.flash {
+  outline: 3px solid var(--primary);
+  outline-offset: 4px;
+}
+@media (prefers-reduced-motion: no-preference) {
+  article.flash {
+    animation: doc-flash 1.6s ease-out 1;
+  }
+}
+@keyframes doc-flash {
+  from { box-shadow: 0 0 0 12px color-mix(in srgb, var(--primary) 35%, transparent); }
+  to { box-shadow: 0 0 0 0 transparent; }
+}
+
+.palette-builder {
+  margin: 4px 0 8px;
+}
+.palette-builder .regex-row {
+  flex-wrap: wrap;
+}
+.palette-builder .explain:empty {
+  display: none;
+}

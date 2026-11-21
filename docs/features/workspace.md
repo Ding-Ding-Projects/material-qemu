@@ -24,6 +24,14 @@ The builder also has five tool tabs, all using the JavaScript (ECMAScript) regul
 
 Test, Replace and Split run in a background worker that is stopped after one second, so a pattern that backtracks badly, such as `(a+)+$` on a long run of `a` followed by `!`, reports that it was stopped instead of freezing the page. The machine filter itself runs on short machine fields on the page. The debugger and file search also run in that worker, with a three-second limit. Not yet available: running other flavours' engines (the flavour tab reports known differences; it does not execute PCRE, .NET or Python), and replacing text inside files. `scripts/verify-regex-tools.mjs` checks every tab, the time limits, the library across a reload, the debugger's steps, local file search without upload, and the new tabs in Cantonese at 375 pixels in headless Edge (evidence/regex-tools).
 
+### Searching beyond machines
+
+The same search, plain or regular expression with its flags, also looks through disk images (by name, machine and format), ISO images and the help articles. Matches appear under the machine results in an **Also found** panel, with the matching part highlighted in the field where it was found and a short snippet for article text. Choosing a disk or ISO opens Storage; choosing an article opens Help and moves focus to that article. Storage is loaded when it is first needed. `scripts/verify-search-everywhere.mjs` checks this in headless Edge (evidence/search-everywhere).
+
+### Command palette search
+
+The command palette has its own search, separate from the header search, with its own **.\*** switch. With it on, the palette offers the same flags (ignore case, multiline, dot matches newline, Unicode), token buttons, a status line with the number of matches or the reason a pattern is not valid, and the part-by-part explanation. The label and the description of each command are matched separately, so `^` and `$` anchor to either. The palette's choices are remembered in this browser.
+
 ## Notifications center
 
 Every notice that appears at the bottom of the screen is also kept in the notifications center, the bell in the header. Its badge shows how many are unread. The panel lists the last 50, newest first, with the time; closing it (Escape, the close button or a click elsewhere) marks them read and returns focus to the bell, **Mark all read** and **Clear** do what they say. The list is kept in this browser only. `scripts/verify-notifications.mjs` checks it in headless Edge (evidence/notifications).
