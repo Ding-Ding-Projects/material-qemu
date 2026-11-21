@@ -27,12 +27,12 @@
 - [ ] Complete every remaining control listed in docs/features/design-coverage.md.
 - [ ] Deliver full regex-builder parity and all required search/settings behavior.
 - [x] Add the server model for advanced hardware, firmware (UEFI, Secure Boot, TPM), multiple disks, networking, display and devices (see docs/features/qemu-hardware.md).
-- [ ] Build the browser controls for the advanced hardware, firmware, storage and network workflows.
+- [ ] Verify the remade browser controls for advanced hardware, firmware, storage and network against the v2 server.
 - [x] Add server endpoints for live actions, snapshots, storage, resize, clone and disk import, tested against real QEMU.
-- [ ] Build the browser workflows for snapshots, import and the storage manager.
+- [ ] Verify the remade browser workflows for snapshots, import and the storage manager against the v2 server.
 - [ ] Verify swtpm TPM start-up and Docker-image UEFI discovery on a Linux host or the built container.
 - [ ] Verify physical authenticators, installed guest operating-system boot, actual KVM and guest ACPI handling.
-- [ ] Verify complete latest-source visual, language, keyboard and narrow-screen parity; retain historical evidence with original provenance.
+- [ ] Verify complete latest-source visual (the Material Design 3 Expressive remake is implemented; screenshots use mocked API data), language, keyboard and narrow-screen parity; retain historical evidence with original provenance.
 
 ## Delivery and broader design
 

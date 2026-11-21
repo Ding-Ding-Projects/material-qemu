@@ -3,6 +3,7 @@ export function commandInventory(state, t) {
     ...[
       ["overview", "Overview", "總覽"],
       ["machines", "All machines", "所有機器"],
+      ["storage", "Storage", "儲存空間"],
       ["new", "New machine", "新增機器"],
       ["settings", "Settings", "設定"],
       ["history", "Activity", "活動記錄"],
@@ -29,7 +30,7 @@ export function commandInventory(state, t) {
       ["manage-folders", "Manage folders", "管理資料夾"],
       ["removed-machines", "Restore retained machine", "還原保留機器"],
       ["save-view", "Save current machine view", "儲存目前機器檢視"],
-      ["import-iso", "Import installation ISO", "匯入安裝 ISO"],
+
     ].map(([action, en, yue]) => ({
       id: `action:${action}`,
       route: "machines",
