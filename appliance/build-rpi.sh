@@ -50,10 +50,11 @@ for d in dev dev/pts proc sys run; do sudo mount --bind "/$d" "$mnt/$d"; done
 echo "::endgroup::"
 
 echo "::group::Install Docker and the Material QEMU services"
-sudo cp /etc/resolv.conf "$mnt/etc/resolv.conf.mq" 2>/dev/null || true
+# Use the host's resolver inside the chroot, then put the image's own file back.
+sudo cp -a "$mnt/etc/resolv.conf" "$work/resolv.conf.orig" 2>/dev/null || sudo touch "$work/resolv.conf.orig"
+sudo cp --remove-destination -L /etc/resolv.conf "$mnt/etc/resolv.conf"
 sudo chroot "$mnt" /bin/bash -euxc '
   export DEBIAN_FRONTEND=noninteractive
-  [ -f /etc/resolv.conf.mq ] && cp --remove-destination /etc/resolv.conf.mq /etc/resolv.conf
   apt-get update
   apt-get install -y --no-install-recommends docker.io curl
   apt-get clean
@@ -73,10 +74,9 @@ sudo chroot "$mnt" /bin/bash -euxc '
   echo material-qemu > /etc/hostname
   sed -i "s/raspberrypi/material-qemu/g" /etc/hosts
   passwd -l root
-  rm -f /etc/resolv.conf.mq
   truncate -s 0 /etc/machine-id
 '
-sudo rm -f "$mnt/etc/resolv.conf.mq"
+sudo cp -a --remove-destination "$work/resolv.conf.orig" "$mnt/etc/resolv.conf"
 echo "::endgroup::"
 
 cleanup_mounts() {

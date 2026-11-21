@@ -197,6 +197,7 @@ const vmware = {
 function detectDocker(env = process.env) {
   const pathDirs = String(env.PATH || env.Path || '').split(path.delimiter).filter(Boolean);
   const candidates = [...pathDirs.map((d) => path.join(d, 'docker.exe')), ...programFiles(env).map((p) => path.join(p, 'Docker', 'Docker', 'resources', 'bin', 'docker.exe'))];
+  if (env.LOCALAPPDATA) candidates.push(path.join(env.LOCALAPPDATA, 'Programs', 'DockerDesktop', 'resources', 'bin', 'docker.exe'));
   const docker = firstExisting(candidates);
   return docker ? { id: 'docker', name: 'Docker on this computer', docker } : null;
 }
