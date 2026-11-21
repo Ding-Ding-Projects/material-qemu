@@ -26,10 +26,10 @@
 
 - [ ] Complete every remaining control listed in docs/features/design-coverage.md.
 - [ ] Deliver full regex-builder parity and all required search/settings behavior.
-- [ ] Complete advanced hardware, firmware, storage and network workflows without unsafe generic defaults.
+- [ ] Complete advanced hardware, firmware, storage and network workflows (the remade create form, storage manager and snapshot timeline exist in the browser; they depend on the v2 server endpoints and are unverified against them).
 - [ ] Complete snapshots, import and other pending supported destinations.
 - [ ] Verify physical authenticators, installed guest operating-system boot, actual KVM and guest ACPI handling.
-- [ ] Verify complete latest-source visual, language, keyboard and narrow-screen parity; retain historical evidence with original provenance.
+- [ ] Verify complete latest-source visual (the Material Design 3 Expressive remake is implemented; screenshots use mocked API data), language, keyboard and narrow-screen parity; retain historical evidence with original provenance.
 
 ## Delivery and broader design
 

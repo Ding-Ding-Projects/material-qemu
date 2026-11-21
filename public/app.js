@@ -295,7 +295,7 @@ function railHtml() {
 function render() {
   const focus = rememberFocus();
   if (rfb) {
-    rfb.disconnect();
+    try { rfb.disconnect(); } catch { /* already closed */ }
     rfb = null;
   }
   if (!session?.authenticated) {
@@ -1231,7 +1231,7 @@ document.addEventListener("click", async (e) => {
       );
     }
     if (action === "console-reconnect") {
-      if (rfb) rfb.disconnect();
+      if (rfb) { try { rfb.disconnect(); } catch { /* already closed */ } }
       return connectConsole();
     }
   } catch (error) {

@@ -715,7 +715,7 @@ fieldset {
 }
 .searchbar {
   flex: 1 1 260px;
-  max-width: 440px;
+  max-width: 520px;
   display: flex;
   align-items: center;
   gap: 12px;
@@ -1644,7 +1644,7 @@ pre.code {
 }
 .storage-row {
   display: grid;
-  grid-template-columns: minmax(160px, 2fr) repeat(3, minmax(70px, 1fr)) auto;
+  grid-template-columns: minmax(160px, 2fr) 96px 72px 96px 340px;
   gap: 8px 16px;
   align-items: center;
   padding: 12px 16px;
@@ -2227,6 +2227,43 @@ dialog .actions {
 }
 .gauge-text {
   min-width: 0;
+  flex: 1;
+  display: grid;
+  gap: 2px;
+}
+.gauge small {
+  display: none;
+}
+.machine {
+  align-content: start;
+}
+.tabstrip {
+  scrollbar-width: none;
+}
+.tab-controls {
+  max-width: 0;
+  opacity: 0;
+  overflow: hidden;
+  transition:
+    max-width var(--dur-m) var(--ease-emphasized),
+    opacity var(--dur-s);
+}
+.tab-item:hover .tab-controls,
+.tab-item:focus-within .tab-controls {
+  max-width: 80px;
+  opacity: 1;
+}
+.tab-route {
+  padding-right: 14px;
+}
+.timeline li {
+  flex-wrap: wrap;
+}
+.timeline li strong {
+  overflow-wrap: anywhere;
+}
+.timeline li > button:first-of-type {
+  margin-left: auto;
 }
 html[data-silent] .card,
 html[data-silent] .gauge,
