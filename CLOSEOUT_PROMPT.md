@@ -6,7 +6,7 @@ Finish the remaining roadmap items and push each one to main as it is completed.
 
 ## State of main
 
-Main was at cbc81aca1ec959ff39ca0bf01f7173ccb96a575c, released as v0.1.0-build.60 (a normal release, all six build jobs succeeded, 16 assets), before the commit that adds this record. There is one checkout, one branch (main) and no stash. Nothing is uncommitted.
+Main was at 8737170bdb2a43f92e8a420ee11bb4e0349f2e94 before the commit that adds this record; the latest release is v0.1.0-build.61 (from that commit). There is one checkout, one branch (main) and no stash. Nothing is uncommitted.
 
 Delivered and verified in this stretch, each with tests and a headless browser check against real QEMU, and evidence under evidence/:
 
@@ -22,12 +22,13 @@ Delivered and verified in this stretch, each with tests and a headless browser c
 
 ## Remaining work
 
-- Guest agent: the tab is verified against QEMU without an agent and against a fake agent. A reply from a real agent is not verified. The appliance image installs qemu-guest-agent from build.52 on; checking it means downloading that appliance (about 850 MB), which waits on the owner's approval.
-- Not built: network bridges, SPICE consoles and USB redirection. This host's QEMU supports SPICE, QXL and usb-redir; a browser SPICE client (spice-html5, LGPL) would have to be vendored. USB redirection from a browser is not possible through spice-html5; host USB passthrough on Windows needs a WinUSB driver.
+- Guest agent: the tab is verified against QEMU without an agent and against a fake agent. A reply from a real agent is not verified. The owner approved downloading the latest appliance OVA (build.61, about 770 MB) for this check and for checking the console LAN address in VirtualBox and VMware (both installed on this host). The download has not started.
+- Appliance console LAN address: verified only under QEMU user networking (10.0.2.15) in CI; not yet seen with a real LAN address in VirtualBox or VMware.
+- Not built: network bridges, SPICE consoles and USB redirection. The owner chose the SPICE console next. This host's QEMU supports SPICE, QXL and usb-redir; a browser SPICE client (spice-html5, LGPL) would have to be vendored. USB redirection from a browser is not possible through spice-html5; host USB passthrough on Windows needs a WinUSB driver.
 - The other 50 design boards.
 - Owner steps: a LAN check from a second device, a real USB flash and boot on a PC, and creating the wiki's first page so the prepared pages in docs/wiki/pending/ can be published.
-- Owner decision: an earlier commit, 7da8359, recorded local file paths in evidence; the current files are clean. Removing them from history needs a rewrite and force-push, which has not been done.
+- Decided: commit 7da8359 recorded local file paths in evidence. The owner chose to leave history as it is; no rewrite or force-push.
 
 ## Next session
 
-Fetch and verify main, read AGENTS.md, ROADMAP.md and docs/features/design-coverage.md, pick one bounded unfinished item, verify its real behaviour, and push it promptly. Keep local paths and account names out of evidence (scripts/redact-paths.mjs). Use scripts/browser-process.mjs in browser checks so no browser is left running. This record does not authorize downloads, history rewrites, publication or host changes.
+Fetch and verify main, read AGENTS.md, ROADMAP.md and docs/features/design-coverage.md, pick one bounded unfinished item, verify its real behaviour, and push it promptly. Keep local paths and account names out of evidence (scripts/redact-paths.mjs). Use scripts/browser-process.mjs in browser checks so no browser is left running. Next: download the approved OVA, run the two checks without touching the existing VMs, then build the SPICE console. This record does not authorize other downloads, history rewrites, publication or host changes.
