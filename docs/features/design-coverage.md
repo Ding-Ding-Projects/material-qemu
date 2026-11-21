@@ -7,11 +7,11 @@ This inventory covers the controls in the supplied Main, Onboarding, Overview, M
 | Supplied control | Current state and exact limit |
 | --- | --- |
 | Brand, version, update timestamp | Implemented; runtime build time is generated or explicitly unavailable. |
-| Global search | Implemented for machine name, notes, folder and architecture. Other product categories remain pending. |
-| Adjacent full regex builder | Pending; no misleading placeholder is displayed. |
+| Global search | Implemented for machine name, notes, folder, tags and architecture, with the field choice in the regex builder. Searching storage, ISOs and documentation from the header remains pending; the documentation site has its own search. |
+| Adjacent full regex builder | Implemented beside the header search: flags, fields searched, token insert buttons, bounded length, live match count and error message, remembered per browser (scripts/verify-search.mjs). Full RegexBuddy-level parity (explain, debug, test bench, libraries) remains pending. |
 | Command palette shortcut and button | Implemented searchable real workflow commands and live theme/language/motion controls, from header and Ctrl+Shift+F. Full regex construction remains pending. |
-| Notifications center | Pending; transient action notifications exist, not the designed center. |
-| Help | Implemented task-oriented runtime help; complete documentation delivery remains pending. |
+| Notifications center | Implemented: bell with unread badge, panel with the last 50 notices, mark read and clear, Escape and focus return (scripts/verify-notifications.mjs). |
+| Help | Implemented task-oriented runtime help and the published documentation site with guides, every article and wiki page (scripts/verify-site.mjs). |
 | Owner identity | Implemented for one owner; multiple users remain pending. |
 | Health/LAN indicator | Actual host connection shown; LAN reachability is not claimed. |
 | Workspace tabs, close/pin, Open every tab, New tab catalog | Implemented for actual destinations, with persistent closes, new-destination offering, pin/close controls, keyboard navigation and a searchable catalog. Advanced groups/reordering and unfinished destinations remain pending. |
@@ -36,12 +36,12 @@ This inventory covers the controls in the supplied Main, Onboarding, Overview, M
 | --- | --- |
 | Owner account/passkey | Password owner setup implemented: the first account created becomes the owner; passkey registration lives in Settings, not the owner step. |
 | Language | Implemented and persisted. |
-| Hardware check | QEMU executable/version and host resources implemented; IOMMU, hugepages, VFIO and confidential-computing discovery pending. |
+| Hardware check | QEMU executable/version, host resources and, on Linux, read-only IOMMU, hugepages, VFIO, nested virtualization and SEV/TDX discovery, shown under Settings > Host. Other platforms say they are not checked. |
 | Disk/NFS pool selection | Pending; current runtime uses its managed persistent volume and does not modify host partitions. |
 | Pool name/filesystem/reflink settings | Pending; no formatting occurs. |
 | Keep data/erase confirmation | Host disk erasure is not implemented or authorized by the runtime workflow. |
 | Network bridge configuration | Pending; current guest network is disconnected or restricted user-mode networking. |
-| ISO library | File discovery implemented; authenticated streaming import added with bounds, no-overwrite and cleanup tests. New browser proof pending. |
+| ISO library | File discovery, authenticated streaming upload with bounds and no-overwrite, ISO deletion refused while attached, and the Storage page ISO tab. |
 | First machine step | Implemented actual machine editor route inside onboarding, returning to final review after save. |
 | Back/Next, save/resume, finish | Implemented, including persisted optional-step skipping and Save and finish later sign-out/resume. |
 
@@ -52,13 +52,13 @@ This inventory covers the controls in the supplied Main, Onboarding, Overview, M
 | Host CPU/memory/uptime | Actual bounded sampled history and CPU/memory charts implemented; host-visible versus container scope is explicit. No fabricated initial history. |
 | Disk I/O and network rates | Explicitly unavailable; not simulated. |
 | New machine | Implemented. |
-| Machine import | Server endpoint implemented (see storage and import in qemu-hardware.md); the browser workflow is pending. |
+| Machine import | Implemented end to end: Storage drop zone or file picker, format detected from content, converted to qcow2 (VMDK import checked in scripts/verify-browser-workflows.mjs). |
 | State/architecture chips | Independent persisted Overview state/architecture filters implemented. |
 | Machine console/start/pause/details | Implemented against real runtime. |
-| Live thumbnails, guest CPU/RAM | Pending guest measurement and framebuffer preview integration. |
+| Live thumbnails, guest CPU/RAM | Implemented: live console thumbnails on running cards, and per-guest CPU (share of its vCPUs) and resident memory measured from the QEMU process on Linux and Windows (evidence/guest-usage). |
 | Recent activity | Persisted actual action history implemented. |
 | Running jobs | Pending background-job product model. |
-| Appliance updates/pool health | Pending; no appliance release or pool-health claim is made. |
+| Appliance updates/pool health | Appliance updates implemented and verified from build 31 to build 32 (evidence/appliance-update). Storage pool health remains pending with pools. |
 
 ## Machines
 
@@ -66,15 +66,15 @@ This inventory covers the controls in the supplied Main, Onboarding, Overview, M
 | --- | --- |
 | All/Favourites/Running | Implemented; Paused/Stopped also available. |
 | Needs attention/Recently used | Implemented from actual error state and last-use timestamps; recent means the last seven days, newest first. |
-| Search, list/compact/cards, columns | Implemented text search and three layouts. Full regex builder pending. |
+| Search, list/compact/cards, columns | Implemented text and regular expression search and three layouts. |
 | Folder creation, rename/removal | Implemented; rename preserves machine and view assignments; removal explicitly retains machines in Unfiled. |
 | Persisted collapsible folder groups | Implemented across cards/list/compact views, with rename/removal state preservation. |
-| Drag to folder / Move to folder menu | Direct and bulk Move to folder controls implemented, preserving running state; drag-and-drop remains pending. |
+| Drag to folder / Move to folder menu | Implemented: direct and bulk Move to folder, and dragging a card onto a folder group or chip (scripts/verify-bulk-and-drag.mjs). Running machines keep running. |
 | Saved views and deletion | Implemented query/state/folder persistence and confirmed deletion. |
 | Details panel and favourites | Implemented, including editable bounded tags. Firmware/network/snapshot details beyond supported hardware remain pending. |
 | Bulk Start/Pause | Implemented with individual outcomes. |
-| Bulk Snapshot/Shut down/Move/Delete | Move, graceful shutdown and confirmed record removal implemented with individual outcomes and retained disks. Snapshot has a server endpoint (frontend pending); permanent disk deletion is not offered. |
-| Import | Server endpoint implemented (qcow2, raw, vmdk, vdi, vhdx; format detected from content, converted to qcow2); the browser workflow is pending. |
+| Bulk Snapshot/Shut down/Move/Delete | Implemented: Snapshot selected (one name, result per machine), graceful shutdown, move and confirmed record removal with retained disks. Permanent disk deletion stays a separate, per-disk Storage action. |
+| Import | Implemented end to end (qcow2, raw, VMDK, VDI, VHDX; format detected from content, converted to qcow2). |
 
 ## New machine
 
@@ -84,11 +84,11 @@ This inventory covers the controls in the supplied Main, Onboarding, Overview, M
 | Presets | Blank, lightweight server and installed-platform Linux resource presets implemented. Windows/cloud-init/microvm/Raspberry Pi/retro/confidential presets retain specific unsupported reasons. |
 | All system targets | Supplied 29-target catalog plus bounded PATH discovery implemented. Actual installed targets, incomplete discovery and unavailable recipes are distinguished. No claim that all targets are installed. |
 | Machine type and accelerator | Binary-derived inventory and supported recipe selectors implemented. KVM eligibility is explicitly launch-unverified; other unsupported accelerators retain reasons. Final image launch acceptance pending. |
-| CPU/memory | Server-side: sockets, cores, threads, CPU model, up to 64 CPUs, up to 256 GiB and a balloon device. NUMA and flags pending. |
-| Firmware | Server-side: BIOS or UEFI, Secure Boot and a swtpm TPM, discovered per host. Custom firmware images pending. |
-| Storage | Server-side: up to eight disks (virtio, SATA, NVMe, SCSI, IDE; qcow2 or raw), up to four CD-ROMs, grow-only resize, full-copy clone and import. Browser workflow pending. |
-| Network | Server-side: user mode with port forwards, NIC model and MAC, or none. Bridges pending. |
-| Display/devices | Server-side: display adapter, sound, USB tablet and keyboard, serial log, RNG, boot order and boot menu. VNC stays loopback-private. Browser controls pending. |
+| CPU/memory | Implemented in the server and the create form: sockets, cores, threads, CPU model, up to 64 CPUs, up to 256 GiB and a balloon device. NUMA and individual CPU flags pending. |
+| Firmware | Implemented in the server and the create form: BIOS or UEFI, Secure Boot and a swtpm TPM, discovered per host and verified with KVM in the appliance. Custom firmware images pending. |
+| Storage | Implemented in the server and the browser: up to eight disks (virtio, SATA, NVMe, SCSI, IDE; qcow2 or raw), up to four CD-ROMs, grow-only resize, full-copy clone and import. |
+| Network | Implemented in the server and the create form: user mode with port forwards, NIC model and MAC, restricted user mode, or none. Bridges pending. |
+| Display/devices | Implemented in the server and the create form: display adapter, sound, USB tablet and keyboard, serial log, RNG, boot order and boot menu. VNC stays loopback-private. |
 | Name and UUID | Name implemented; UUID generated server-side. User override pending. |
 | Start after creating | Implemented explicit opt-in, real QEMU startup and console navigation. Failed startup retains the saved machine and reports the actual error. |
 | Readconfig/cloud image/cloud-init import | Pending. Browser-supplied arbitrary command strings are not accepted. |
@@ -99,17 +99,17 @@ This inventory covers the controls in the supplied Main, Onboarding, Overview, M
 | Supplied control | Current state and exact limit |
 | --- | --- |
 | Pause/resume/shutdown/force off | Implemented. Graceful ACPI outcome depends on the guest; forced stop waits for process exit. |
-| Reset | Implemented visible confirmation and server-owned QMP command; newer browser acceptance pending. |
+| Reset | Implemented visible confirmation and server-owned QMP command, with pause, resume, ACPI shutdown and power off checked against a real guest. |
 | VNC | Actual authenticated noVNC connection implemented. |
 | SPICE/D-Bus | Pending transports, never presented as supported. |
 | Fit/scaling/fullscreen/reconnect | Implemented controls; complete native fullscreen/device acceptance pending. |
-| Keyboard release | Persistent view-only toggle with visible state and aria-pressed implemented; designed Ctrl+Alt release shortcut pending. |
+| Keyboard release | Implemented: the Guest input toggle and Ctrl+Alt pressed alone, without catching Ctrl+Alt+Del (scripts/verify-console-export.mjs). |
 | Ctrl+Alt+Del | Implemented alongside Ctrl+Alt+F1/F2, Escape, Enter, Print Screen and system key in a bounded key menu. |
 | Clipboard/type text | Implemented explicit user text transfer, with 256-character bound and truthful guest-support limitation. Guest acceptance remains unverified. |
-| Media change/eject, USB redirection | Pending. |
-| Screenshot/record/drawing | Pending. Runtime evidence capture is independent of these product features. |
+| Media change/eject, USB redirection | Media change and eject implemented through QMP (Change CD). USB redirection pending. |
+| Screenshot/record/drawing | Implemented: QEMU screenshot proven pixel-identical to the live framebuffer, bounded WebM recording, and annotation with separate original and annotated downloads (scripts/verify-console-export.mjs, scripts/verify-console-media.mjs). |
 | Summary/hardware/snapshots/migrate/guest-agent/monitor/stats/log tabs | Pending broader board implementations. |
-| Guest FPS/latency/CPU/RAM | Pending real measurements; no sample values are displayed. |
+| Guest FPS/latency/CPU/RAM | Guest CPU and RAM measured from the QEMU process. Display FPS and latency pending; no sample values are shown. |
 
 ## Explicit preservation checkpoint
 

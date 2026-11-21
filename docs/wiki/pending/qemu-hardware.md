@@ -73,3 +73,7 @@ The tests in `tests/hardware-config.test.mjs`, `tests/qemu-hardware.test.mjs` an
 ## Guest CPU and memory
 
 While a machine runs, the server measures its QEMU process every 5 seconds: on Linux (the container and the appliance) from `/proc/<pid>/stat` and `statm`, on Windows from one `Get-Process` query for the QEMU processes. CPU is shown as a share of the machine's own vCPUs, so 100% means all of them are busy; memory is the process's resident size, which includes QEMU itself. `/api/state` returns this as `usage` on each running machine with the last 30 CPU readings, and `guestUsageSupported` says whether the host platform is measured at all. The machine page shows it in the CPU and memory tiles and running machine cards show a one-line summary; other platforms show a plain note instead of a guess (evidence/guest-usage).
+
+## Host hardware discovery
+
+`GET /api/host` includes `hardware`. On Linux it is read only from `/sys` and `/proc`: whether an IOMMU is on and how many groups it has, reserved and free hugepages with their size and the transparent hugepage mode, whether VFIO is available, whether KVM allows nested virtualization, and whether AMD SEV, SEV-ES, SEV-SNP or Intel TDX are enabled in KVM or only advertised by the CPU. Nothing is changed or loaded. Inside a container only what the container can see is reported. Other platforms return `checked: false` with the reason. Settings > Host lists these facts.

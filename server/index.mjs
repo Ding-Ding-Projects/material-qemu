@@ -37,6 +37,7 @@ import { updateOrganization, requireFolder } from "./organization.mjs";
 import { receiveIso, MAX_ISO_BYTES } from "./media.mjs";
 import { MetricSampler } from "./resources.mjs";
 import { GuestUsage } from "./guest-usage.mjs";
+import { hardwareFacts } from "./hardware-facts.mjs";
 import { dataDirectory } from "./paths.mjs";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
@@ -498,7 +499,7 @@ export async function createApplication(options = {}) {
         return json(res, 202, result);
       }
       if (route === "/api/host" && req.method === "GET")
-        return json(res, 200, hostSummary(qemu.host, qemu.capabilities));
+        return json(res, 200, { ...hostSummary(qemu.host, qemu.capabilities), hardware: await hardwareFacts() });
       if (route === "/api/storage" && req.method === "GET")
         return json(res, 200, await storageReport(store, qemu));
       if (route === "/api/storage/disks/resize" && req.method === "POST") {
