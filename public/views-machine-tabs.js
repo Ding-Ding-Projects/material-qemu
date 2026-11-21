@@ -63,6 +63,7 @@ ${section(t("Firmware", "韌體"), "shield", [
     [t("TPM 2.0", "TPM 2.0"), yesNo(t, m.tpm)],
     [t("Boot menu", "開機選單"), yesNo(t, m.bootMenu)],
     [t("Boot order", "開機次序"), escape((m.bootOrder || []).join(" → ") || t("Default", "預設"))],
+    [t("Cloud-init seed", "Cloud-init 種子"), m.cloudInit?.enabled ? t(`On · ${new Blob([m.cloudInit.userData || ""]).size} bytes of user-data${m.cloudInit.networkConfig ? " and a network-config" : ""}`, `開啟 · user-data ${new Blob([m.cloudInit.userData || ""]).size} 位元組${m.cloudInit.networkConfig ? "及 network-config" : ""}`) : t("Off", "關閉")],
   ])}
 <section class="card hw-card wide"><h2><span class="icon" aria-hidden="true">hard_drive</span>${t("Disks and media", "磁碟及媒體")}</h2><div class="table-wrap"><table><thead><tr><th>${t("Name", "名稱")}</th><th>${t("Size", "容量")}</th><th>${t("Format", "格式")}</th><th>${t("Bus", "匯流排")}</th><th>${t("Cache", "快取")}</th></tr></thead><tbody>${disks.map((d) => `<tr><td>${escape(d.name || "")}</td><td>${escape(String(d.sizeGiB ?? ""))} GiB</td><td>${escape(d.format || "qcow2")}</td><td>${escape(d.bus || "virtio")}</td><td>${escape(d.cache || "writeback")}</td></tr>`).join("")}${(m.cdroms || (m.iso ? [m.iso] : [])).map((c) => `<tr><td><span class="icon small" aria-hidden="true">album</span> ${escape(c)}</td><td>–</td><td>ISO</td><td>${t("CD-ROM", "光碟機")}</td><td>–</td></tr>`).join("")}</tbody></table></div></section>
 ${section(t("Network", "網絡"), "lan", [

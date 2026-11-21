@@ -41,6 +41,7 @@ export function defaultConfig(arch = "x86_64", machineType = "") {
     cpuFlags: [],
     numaNodes: 0,
     firmwareImage: "",
+    cloudInit: { enabled: false, userData: "", networkConfig: "" },
     sockets: 1,
     cores: 2,
     threads: 1,
@@ -143,6 +144,7 @@ export function normalizeMachine(record = {}) {
   }
   cfg.cpuFlags = Array.isArray(record.cpuFlags) ? record.cpuFlags.map((f) => ({ name: String(f.name || ""), on: f.on !== false })) : [];
   cfg.numaNodes = toInt(record.numa?.nodes, 0, 0, 8);
+  cfg.cloudInit = { enabled: Boolean(record.cloudInit?.enabled), userData: String(record.cloudInit?.userData || ""), networkConfig: String(record.cloudInit?.networkConfig || "") };
   cfg.bootOrder = Array.isArray(record.bootOrder)
     ? record.bootOrder.filter((d) => BOOT_DEVICES.includes(d))
     : base.bootOrder;
@@ -166,6 +168,7 @@ export function toV2Payload(cfg) {
     cpuFlags: (cfg.cpuFlags || []).filter((f) => String(f.name || "").trim()).map((f) => ({ name: String(f.name).trim().toLowerCase(), on: f.on !== false && f.on !== "false" })),
     numa: { nodes: toInt(cfg.numaNodes, 0, 0, 8) },
     firmwareImage: String(cfg.firmwareImage || ""),
+    cloudInit: cfg.cloudInit?.enabled ? { enabled: true, userData: String(cfg.cloudInit.userData || ""), networkConfig: String(cfg.cloudInit.networkConfig || "") } : { enabled: false },
     sockets: toInt(cfg.sockets, 1, 1, 8),
     cores: toInt(cfg.cores, 1, 1, 64),
     threads: toInt(cfg.threads, 1, 1, 4),

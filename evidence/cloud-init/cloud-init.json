@@ -1,0 +1,41 @@
+{
+  "origin": "http://localhost:8097/",
+  "at": "2026-11-21T13:25:39.816Z",
+  "results": [
+    {
+      "name": "The launch preview attaches the seed read-only, not as a boot device",
+      "ok": true,
+      "detail": "\"file=<cloud-init seed>,format=raw,if=none,media=cdrom,readonly=on,id=cloud-init-seed\""
+    },
+    {
+      "name": "The machine starts in QEMU",
+      "ok": true,
+      "detail": "2312a8a9-7ace-4767-a348-fe62864f443a"
+    },
+    {
+      "name": "QEMU was given the seed as a read-only CD",
+      "ok": true,
+      "detail": "<data>\\runtime\\2312a8a9-7ace-4767-a348-fe62864f443a\\cloud-init-seed.iso"
+    },
+    {
+      "name": "The seed's meta-data names the machine",
+      "ok": true,
+      "detail": "\"instance-id: 2312a8a9-7ace-4767-a348-fe62864f443a\\nlocal-hostname: cloud-seed-514385\\n\""
+    },
+    {
+      "name": "The seed's user-data is what the form saved",
+      "ok": true,
+      "detail": "\"#cloud-config\\nusers:\\n  - name: admin\\n   \""
+    },
+    {
+      "name": "The Hardware tab reports the seed",
+      "ok": true,
+      "detail": "Cloud-init seed "
+    },
+    {
+      "name": "Linux finds the seed by its cidata label and reads the meta-data",
+      "ok": true,
+      "detail": "/dev/sr0: BLOCK_SIZE=\"2048\" UUID=\"2026-11-21-13-25-22-00\" LABEL=\"cidata\" TYPE=\"iso9660\""
+    }
+  ]
+}

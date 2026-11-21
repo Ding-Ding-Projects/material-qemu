@@ -1,3 +1,4 @@
+import { buildCloudInitSeed } from "./cloud-init.mjs";
 import { firmwareImagePath } from "./firmware-images.mjs";
 import { spawn, execFile } from "node:child_process";
 import { promisify } from "node:util";
@@ -7,6 +8,7 @@ import {
   realpath,
   stat,
   access,
+  writeFile,
 } from "node:fs/promises";
 import path from "node:path";
 import net from "node:net";
@@ -197,6 +199,11 @@ export class Qemu {
     }
     else if (customFirmware) options.biosImage = customFirmware;
     if (machine.serial) options.serialLog = path.join(runtime, "serial.log");
+    if (machine.cloudInit?.enabled) {
+      // Rebuilt at every start, so edits to the user-data take effect.
+      options.seedIso = path.join(runtime, "cloud-init-seed.iso");
+      await writeFile(options.seedIso, buildCloudInitSeed(machine), { mode: 0o600 });
+    }
     let tpm = null;
     if (machine.tpm) {
       if (!this.host.swtpm)

@@ -18,6 +18,7 @@ All fields are optional on input. Older records (`diskGiB`, a `network` string, 
 | `memory`, `balloon` | 128 to 262144 MiB; virtio balloon device. |
 | `cpuFlags` | Up to 24 `{ name, on }` entries, x86 only. Names must be in this QEMU build's own recognized CPUID flag list (from `-cpu help`), each listed once. Passed as `-cpu model,name=on` or `name=off`. |
 | `firmwareImage` | Empty for the built-in firmware, or the name of a custom image in managed storage (`.fd`, `.bin` or `.rom`). BIOS machines and other targets boot it as `-bios`; UEFI machines use it as the read-only UEFI code image, with variables still started from the host's template. A missing file stops the start with a clear message. |
+| `cloudInit` | `{ enabled, userData, networkConfig }`. When on, user-data (up to 32 KiB, plain text, not empty) and an optional network-config (up to 8 KiB) are written with generated meta-data to a `cidata` seed disc at every start, attached read-only on the media SCSI bus with no boot index. |
 | `numa` | `{ nodes }`, 0 (off) or 2 to 8. Memory and virtual CPUs are split evenly: one `memory-backend-ram` and one `-numa node` per node, with contiguous CPU ranges and any remainder on the first nodes. Each node needs at least one virtual CPU and 64 MiB. |
 | `disks` | 1 to 8 entries of `{id, name, sizeGiB 1..4096, bus virtio\|sata\|nvme\|scsi\|ide, format qcow2\|raw, cache none\|writeback\|writethrough, discard}`. IDE is x86 only, at most two. On Windows hosts `cache none` launches as `writethrough`, because QEMU for Windows cannot open images with O_DIRECT. |
 | `cdroms` | 0 to 4 managed ISO names (replaces `iso`). |
@@ -92,6 +93,14 @@ Storage has a **Firmware** tab for adding firmware files: `.fd`, `.bin` or `.rom
 Endpoints: `GET /api/firmware` lists `{ images: [{ name, bytes, usedBy }] }`; `POST /api/firmware?name=…` takes the file as `application/octet-stream` and appears as a running job; `DELETE /api/firmware/{name}` removes an unused file.
 
 `tests/firmware-images.test.mjs` checks names, the no-overwrite rule, deletion while in use, and the `-bios` argument. `scripts/verify-firmware-images.mjs` adds copies of QEMU's own SeaBIOS and OVMF code through the Firmware tab, then starts a BIOS machine and a UEFI machine in QEMU and reads their command lines: one boots the custom file as `-bios`, the other as its UEFI code (evidence/firmware-images).
+
+## Cloud-init seed
+
+Cloud images (Debian, Ubuntu and others, imported in Storage as a qcow2 or raw disk) configure themselves on first boot from cloud-init. The Boot and automation section has **Attach a cloud-init seed**, a user-data editor with an example to start from, and an optional network-config. At every start the server writes `cloud-init-seed.iso` in the machine's runtime folder: an ISO 9660 image with Joliet names and the volume label `cidata`, holding `user-data`, `network-config` when given, and `meta-data` with `instance-id` set to the machine ID and `local-hostname` made from its name. It is attached as a read-only CD on the media SCSI bus and is never a boot device. Because it is rebuilt at every start, edited user-data is on the disc the next time the machine starts; cloud-init itself applies most settings only once per instance ID.
+
+Not offered: QEMU `-readconfig` files, because they would pass arbitrary QEMU configuration from the browser, which the server does not accept.
+
+`tests/cloud-init.test.mjs` reads the image back (label, Joliet names, contents) and checks validation and the launch arguments. `scripts/verify-cloud-init.mjs` turns the seed on in the form, starts the machine in QEMU, reads the seed QEMU was given with 7-Zip, and boots a Debian kernel against it: Linux's `blkid` reports `LABEL="cidata" TYPE="iso9660"` and the mounted disc holds the machine's instance ID (evidence/cloud-init).
 
 ## SMBIOS UUID
 

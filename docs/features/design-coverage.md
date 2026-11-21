@@ -91,7 +91,7 @@ This inventory covers the controls in the supplied Main, Onboarding, Overview, M
 | Display/devices | Implemented in the server and the create form: display adapter, sound, USB tablet and keyboard, serial log, RNG, boot order and boot menu. VNC stays loopback-private. |
 | Name and UUID | Implemented: the guest sees a stable SMBIOS UUID (the machine id by default) that can be set in the create form; clones get a new one. |
 | Start after creating | Implemented explicit opt-in, real QEMU startup and console navigation. Failed startup retains the saved machine and reports the actual error. |
-| Readconfig/cloud image/cloud-init import | Pending. Browser-supplied arbitrary command strings are not accepted. |
+| Readconfig/cloud image/cloud-init import | Cloud images import through Storage as qcow2 or raw disks. A cloud-init NoCloud seed (user-data, network-config, generated meta-data) is built at every start and read by Linux by its cidata label (scripts/verify-cloud-init.mjs). QEMU -readconfig files are deliberately not offered: browser-supplied QEMU configuration is not accepted. |
 | Live command preview | Implemented using the same server-owned argument builder as execution, with labelled placeholders for private paths and ports. Preview executes nothing. |
 
 ## Console

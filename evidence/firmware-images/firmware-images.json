@@ -25,12 +25,12 @@
     {
       "name": "A BIOS machine boots the custom image as -bios",
       "ok": true,
-      "detail": "-bios \"C:\\Users\\cntow\\Documents\\Material"
+      "detail": "-bios \"<home>\\Documents\\Material"
     },
     {
       "name": "A UEFI machine boots the custom image as its UEFI code",
       "ok": true,
-      "detail": "unit=0,readonly=on,file=C:\\Users\\cntow\\Documents\\Material QEMU VMs\\regex-check\\firmware\\ovmf-679314.fd"
+      "detail": "unit=0,readonly=on,file=<data>\\firmware\\ovmf-679314.fd"
     },
     {
       "name": "Both machines are running in QEMU",

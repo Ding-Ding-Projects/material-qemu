@@ -35,6 +35,7 @@ export function launchPlan(machineRecord, options = {}) {
     tpmSocket = "<private TPM socket>",
     serialLog = "<serial log>",
     biosImage = null,
+    seedIso = "<cloud-init seed>",
   } = options;
   const arch = machine.arch,
     target = targets[arch];
@@ -192,6 +193,16 @@ export function launchPlan(machineRecord, options = {}) {
       `scsi-cd,drive=${id},bus=media-scsi.0${boot("cdrom", i)},id=cd-${i}`,
     );
   });
+  // cloud-init seed: read-only, on the media bus, never a boot device.
+  if (machine.cloudInit?.enabled) {
+    if (!media.length) args.push("-device", "virtio-scsi-pci,id=media-scsi");
+    args.push(
+      "-drive",
+      `file=${escape(seedIso)},format=raw,if=none,media=cdrom,readonly=on,id=cloud-init-seed`,
+      "-device",
+      "scsi-cd,drive=cloud-init-seed,bus=media-scsi.0,id=cd-cloud-init",
+    );
+  }
   // Network.
   const net = machine.network;
   if (net.mode === "user") {
