@@ -84,7 +84,7 @@ This inventory covers the controls in the supplied Main, Onboarding, Overview, M
 | Presets | Blank, lightweight server and installed-platform Linux resource presets implemented. Windows/cloud-init/microvm/Raspberry Pi/retro/confidential presets retain specific unsupported reasons. |
 | All system targets | Supplied 29-target catalog plus bounded PATH discovery implemented. Actual installed targets, incomplete discovery and unavailable recipes are distinguished. No claim that all targets are installed. |
 | Machine type and accelerator | Binary-derived inventory and supported recipe selectors implemented. KVM eligibility is explicitly launch-unverified; other unsupported accelerators retain reasons. Final image launch acceptance pending. |
-| CPU/memory | Implemented in the server and the create form: sockets, cores, threads, CPU model, up to 64 CPUs, up to 256 GiB and a balloon device. NUMA and individual CPU flags pending. |
+| CPU/memory | Implemented in the server and the create form: sockets, cores, threads, CPU model, up to 64 CPUs, up to 256 GiB, a balloon device, 2–8 NUMA nodes and individual CPU flags checked against the installed QEMU, verified by starting a machine in QEMU (scripts/verify-cpu-numa.mjs). |
 | Firmware | Implemented in the server and the create form: BIOS or UEFI, Secure Boot and a swtpm TPM, discovered per host and verified with KVM in the appliance. Custom firmware images pending. |
 | Storage | Implemented in the server and the browser: up to eight disks (virtio, SATA, NVMe, SCSI, IDE; qcow2 or raw), up to four CD-ROMs, grow-only resize, full-copy clone and import. |
 | Network | Implemented in the server and the create form: user mode with port forwards, NIC model and MAC, restricted user mode, or none. Bridges pending. |
@@ -108,7 +108,7 @@ This inventory covers the controls in the supplied Main, Onboarding, Overview, M
 | Clipboard/type text | Implemented explicit user text transfer, with 256-character bound and truthful guest-support limitation. Guest acceptance remains unverified. |
 | Media change/eject, USB redirection | Media change and eject implemented through QMP (Change CD). USB redirection pending. |
 | Screenshot/record/drawing | Implemented: QEMU screenshot proven pixel-identical to the live framebuffer, bounded WebM recording, and annotation with separate original and annotated downloads (scripts/verify-console-export.mjs, scripts/verify-console-media.mjs). |
-| Summary/hardware/snapshots/migrate/guest-agent/monitor/stats/log tabs | Overview (console, CPU and memory use, disks, snapshots and activity), Hardware (every saved setting), Monitor (twelve read-only QEMU queries from a fixed server list) and Log (QEMU messages and the serial log tail) tabs are implemented and checked against a running QEMU machine (scripts/verify-machine-tabs.mjs). Migrate and guest-agent tabs remain pending. |
+| Summary/hardware/snapshots/migrate/guest-agent/monitor/stats/log tabs | Overview (console, CPU and memory use, disks, snapshots and activity), Hardware (every saved setting), Monitor (thirteen read-only QEMU queries from a fixed server list) and Log (QEMU messages and the serial log tail) tabs are implemented and checked against a running QEMU machine (scripts/verify-machine-tabs.mjs). Migrate and guest-agent tabs remain pending. |
 | Guest FPS/latency/CPU/RAM | Guest CPU and RAM measured from the QEMU process. Display FPS and latency pending; no sample values are shown. |
 
 ## Explicit preservation checkpoint

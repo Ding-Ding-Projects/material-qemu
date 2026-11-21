@@ -1,3 +1,4 @@
+import { validateCpuFlags, validateNuma } from "./cpu-numa.mjs";
 import { randomBytes } from "node:crypto";
 import { targets, supportedMachine } from "./capabilities.mjs";
 import { cpuModelAllowList } from "./host.mjs";
@@ -293,6 +294,8 @@ export function validateMachine(rawInput, capabilities, host) {
     secureBoot,
     tpm,
     cpuModel: validateCpuModel(input.cpuModel, { arch, accelerator, host }),
+    cpuFlags: validateCpuFlags(input.cpuFlags, { arch, host }),
+    numa: validateNuma(input.numa, { memory, cpus }),
     memory,
     balloon: bool(input.balloon),
     cpus,

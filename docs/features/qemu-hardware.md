@@ -16,6 +16,8 @@ All fields are optional on input. Older records (`diskGiB`, a `network` string, 
 | `cpuModel` | `host` (KVM only), `max`, `qemu64`, `Skylake-Client`, `EPYC`; checked against `-cpu help` when it could be read. Default: `host` with KVM, `max` on x86 otherwise, the target default on Arm. |
 | `sockets`, `cores`, `threads` | Integers; the product is the CPU count (maximum 64). Without topology the CPU count becomes cores. |
 | `memory`, `balloon` | 128 to 262144 MiB; virtio balloon device. |
+| `cpuFlags` | Up to 24 `{ name, on }` entries, x86 only. Names must be in this QEMU build's own recognized CPUID flag list (from `-cpu help`), each listed once. Passed as `-cpu model,name=on` or `name=off`. |
+| `numa` | `{ nodes }`, 0 (off) or 2 to 8. Memory and virtual CPUs are split evenly: one `memory-backend-ram` and one `-numa node` per node, with contiguous CPU ranges and any remainder on the first nodes. Each node needs at least one virtual CPU and 64 MiB. |
 | `disks` | 1 to 8 entries of `{id, name, sizeGiB 1..4096, bus virtio\|sata\|nvme\|scsi\|ide, format qcow2\|raw, cache none\|writeback\|writethrough, discard}`. IDE is x86 only, at most two. On Windows hosts `cache none` launches as `writethrough`, because QEMU for Windows cannot open images with O_DIRECT. |
 | `cdroms` | 0 to 4 managed ISO names (replaces `iso`). |
 | `network` | `{mode user\|none, model virtio\|e1000e\|e1000\|rtl8139, mac, forwards}`. The MAC (`52:54:00:xx:xx:xx`) is generated when missing. At most 16 forwards of `{proto, hostPort 1024..65535, guestPort 1..65535}`. |
@@ -77,6 +79,10 @@ While a machine runs, the server measures its QEMU process every 5 seconds: on L
 ## Host hardware discovery
 
 `GET /api/host` includes `hardware`. On Linux it is read only from `/sys` and `/proc`: whether an IOMMU is on and how many groups it has, reserved and free hugepages with their size and the transparent hugepage mode, whether VFIO is available, whether KVM allows nested virtualization, and whether AMD SEV, SEV-ES, SEV-SNP or Intel TDX are enabled in KVM or only advertised by the CPU. Nothing is changed or loaded. Inside a container only what the container can see is reported. Other platforms return `checked: false` with the reason. Settings > Host lists these facts.
+
+## NUMA and CPU flags
+
+The create form's CPU and memory section offers the number of NUMA nodes (only counts that leave each node a CPU and 64 MiB) and a list of CPU flags, each turned on or off, with this QEMU build's flag names suggested as you type. The server reports the recognized flag names in `GET /api/host` as `cpuFlags`. The machine page's Hardware tab lists both, and its Monitor tab's **Memory backends** question shows one backend per node. `tests/cpu-numa.test.mjs` checks the parsing, validation and arguments; `scripts/verify-cpu-numa.mjs` sets two nodes and turns AVX2 off through the form, starts the machine in QEMU, and reads back two 512 MiB backends and two CPUs on each node (evidence/cpu-numa).
 
 ## SMBIOS UUID
 

@@ -15,6 +15,7 @@ export const QUERY_LABELS = {
   cpus: ["Virtual CPUs", "虛擬處理器"],
   memory: ["Memory size", "記憶體大小"],
   balloon: ["Memory balloon", "記憶體氣球"],
+  memdev: ["Memory backends", "記憶體後端"],
   block: ["Block devices", "區塊裝置"],
   blockstats: ["Disk input and output", "磁碟讀寫"],
   chardev: ["Character devices", "字元裝置"],
@@ -50,6 +51,8 @@ ${section(t("Processor and memory", "處理器及記憶體"), "memory", [
     [t("Virtual CPUs", "虛擬處理器"), String(cpus)],
     [t("Topology", "拓撲"), m.sockets ? t(`${m.sockets} sockets × ${m.cores} cores × ${m.threads || 1} threads`, `${m.sockets} 插槽 × ${m.cores} 核心 × ${m.threads || 1} 執行緒`) : ""],
     [t("CPU model", "處理器型號"), mono(m.cpuModel || "default")],
+    [t("CPU flags", "處理器旗標"), (m.cpuFlags || []).length ? m.cpuFlags.map((fl) => mono(`${fl.name}=${fl.on ? "on" : "off"}`)).join(" ") : t("Model defaults", "型號預設")],
+    [t("NUMA nodes", "NUMA 節點"), m.numa?.nodes >= 2 ? t(`${m.numa.nodes}, memory and CPUs split evenly`, `${m.numa.nodes} 個，記憶體及處理器平均分配`) : t("Off", "關閉")],
     [t("Memory", "記憶體"), `${m.memory} MiB`],
     [t("Memory balloon", "記憶體氣球"), yesNo(t, m.balloon)],
   ])}

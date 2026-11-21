@@ -1,3 +1,4 @@
+import { parseCpuFlags } from "./cpu-numa.mjs";
 import { execFile } from "node:child_process";
 import { promisify } from "node:util";
 import { access } from "node:fs/promises";
@@ -119,6 +120,7 @@ export async function discoverHost(capabilities = {}) {
     firmware[arch] = await findFirmware(arch, [...new Set(directories)]);
   const swtpm = await findOnPath(["swtpm", "swtpm.exe"]);
   const cpuModels = {};
+  const cpuFlags = {};
   for (const arch of ["x86_64", "i386"]) {
     if (!capabilities[arch]?.installed) continue;
     try {
@@ -127,11 +129,12 @@ export async function discoverHost(capabilities = {}) {
         maxBuffer: 512 * 1024,
       });
       cpuModels[arch] = parseCpuModels(stdout);
+      cpuFlags[arch] = parseCpuFlags(stdout);
     } catch {
       /* Fall back to the allow-list. */
     }
   }
-  return { firmware, swtpm, cpuModels };
+  return { firmware, swtpm, cpuModels, cpuFlags };
 }
 export function hostSummary(host, capabilities) {
   const available = Object.entries(capabilities).filter(([, c]) => c.available);
@@ -159,5 +162,6 @@ export function hostSummary(host, capabilities) {
           (m) => m === "host" || discovered.includes(m),
         )
       : cpuModelAllowList,
+    cpuFlags: host.cpuFlags?.x86_64 || [],
   };
 }

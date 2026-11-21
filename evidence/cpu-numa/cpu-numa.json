@@ -1,0 +1,41 @@
+{
+  "origin": "http://localhost:8097/",
+  "at": "2026-11-21T12:32:43.006Z",
+  "results": [
+    {
+      "name": "The server reports the CPU flags this QEMU build recognizes",
+      "ok": true,
+      "detail": "407"
+    },
+    {
+      "name": "The flag field suggests the recognized flags",
+      "ok": true,
+      "detail": "407"
+    },
+    {
+      "name": "The launch preview shows the flag and both NUMA nodes",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "QEMU starts the machine with two NUMA nodes and the flag off",
+      "ok": true,
+      "detail": "8424aee3-eab6-492f-8706-0982264e9445"
+    },
+    {
+      "name": "The machine record keeps the NUMA nodes and flag",
+      "ok": true,
+      "detail": "{\"numa\":{\"nodes\":2},\"cpuFlags\":[{\"name\":\"avx2\",\"on\":false}]}"
+    },
+    {
+      "name": "QEMU reports two 512 MiB memory backends",
+      "ok": true,
+      "detail": "[[\"numa-mem0\",536870912],[\"numa-mem1\",536870912]]"
+    },
+    {
+      "name": "QEMU places two CPUs on each node",
+      "ok": true,
+      "detail": "[0,0,1,1]"
+    }
+  ]
+}

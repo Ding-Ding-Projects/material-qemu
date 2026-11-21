@@ -38,6 +38,8 @@ export function defaultConfig(arch = "x86_64", machineType = "") {
     secureBoot: false,
     tpm: false,
     cpuModel: "max",
+    cpuFlags: [],
+    numaNodes: 0,
     sockets: 1,
     cores: 2,
     threads: 1,
@@ -138,6 +140,8 @@ export function normalizeMachine(record = {}) {
     cfg.cores = toInt(record.cpus, 2, 1, 256);
     cfg.threads = 1;
   }
+  cfg.cpuFlags = Array.isArray(record.cpuFlags) ? record.cpuFlags.map((f) => ({ name: String(f.name || ""), on: f.on !== false })) : [];
+  cfg.numaNodes = toInt(record.numa?.nodes, 0, 0, 8);
   cfg.bootOrder = Array.isArray(record.bootOrder)
     ? record.bootOrder.filter((d) => BOOT_DEVICES.includes(d))
     : base.bootOrder;
@@ -158,6 +162,8 @@ export function toV2Payload(cfg) {
     secureBoot: Boolean(cfg.secureBoot && cfg.firmware === "uefi"),
     tpm: Boolean(cfg.tpm),
     cpuModel: cfg.cpuModel,
+    cpuFlags: (cfg.cpuFlags || []).filter((f) => String(f.name || "").trim()).map((f) => ({ name: String(f.name).trim().toLowerCase(), on: f.on !== false && f.on !== "false" })),
+    numa: { nodes: toInt(cfg.numaNodes, 0, 0, 8) },
     sockets: toInt(cfg.sockets, 1, 1, 8),
     cores: toInt(cfg.cores, 1, 1, 64),
     threads: toInt(cfg.threads, 1, 1, 4),

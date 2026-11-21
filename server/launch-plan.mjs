@@ -1,3 +1,4 @@
+import { cpuArgument, numaArguments } from "./cpu-numa.mjs";
 import { targets } from "./capabilities.mjs";
 import { migrateMachine } from "./machine-config.mjs";
 
@@ -57,11 +58,12 @@ export function launchPlan(machineRecord, options = {}) {
     "-accel",
     machine.accelerator || "tcg",
     "-cpu",
-    cpuModel,
+    cpuArgument(cpuModel, machine.cpuFlags || []),
     "-m",
     String(machine.memory),
     "-smp",
     topology,
+    ...numaArguments(machine.numa, Number(machine.memory), cpus),
     "-qmp",
     `tcp:127.0.0.1:${qmp},server=on,wait=off`,
     "-vnc",

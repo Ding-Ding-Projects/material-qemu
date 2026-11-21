@@ -10,6 +10,7 @@ export const MONITOR_QUERIES = Object.freeze({
   cpus: "query-cpus-fast",
   memory: "query-memory-size-summary",
   balloon: "query-balloon",
+  memdev: "query-memdev",
   block: "query-block",
   blockstats: "query-blockstats",
   chardev: "query-chardev",

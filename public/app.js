@@ -2461,6 +2461,8 @@ async function handleExtra(action, b) {
     else if (verb === "cfg-add-cd") createCfg.cdroms.push(state.media[0] || "");
     else if (verb === "cfg-del-cd") createCfg.cdroms.splice(Number(args[0]), 1);
     else if (verb === "cfg-add-fwd") addForward(createCfg);
+    else if (verb === "cfg-add-flag") { createCfg.cpuFlags = [...(createCfg.cpuFlags || []), { name: "", on: true }].slice(0, 24); }
+    else if (verb === "cfg-del-flag") (createCfg.cpuFlags || []).splice(Number(args[0]), 1);
     else if (verb === "cfg-del-fwd") createCfg.network.forwards.splice(Number(args[0]), 1);
     else if (verb === "cfg-boot") moveBoot(createCfg, args[0], Number(args[1]));
     persistDraft();
