@@ -36,6 +36,66 @@ import { createReleaseChord } from "./input-release.js";
 import { createConsoleTools } from "./console-tools.js";
 import { compileSearch, SEARCH_FIELDS, MAX_PATTERN } from "./search-pattern.js";
 import { createNotificationLog } from "./notifications.js";
+import { explainPattern, createLibrary } from "./regex-tools.js";
+import { runBounded } from "./regex-runner.js";
+
+// Regex builder tabs: explain, test bench, replace, split and the saved library.
+const regexLibrary = createLibrary();
+let regexTab = "explain", regexSample = null, regexReplacement = "", regexRun = 0, regexLast = { key: "", html: "" };
+const regexFlagString = () => `${searchOpts.flags.i ? "i" : ""}${searchOpts.flags.m ? "m" : ""}${searchOpts.flags.s ? "s" : ""}${searchOpts.flags.u ? "u" : ""}`;
+function regexSampleText() {
+  return regexSample ?? state.machines.map((m) => `${m.name}\t${m.arch}\t${m.folder || ""}\t${(m.tags || []).join(" ")}\t${m.notes || ""}`).join("\n");
+}
+function regexTabBody() {
+  const tab = (id, en, yue) => button(`regex-tab:${id}`, t(en, yue), regexTab === id ? "selected" : "", `role="tab" aria-selected="${regexTab === id}" aria-controls="regex-tab-body"`);
+  const tabs = `<div class="chips regex-tabs" role="tablist" aria-label="${t("Builder tools", "建構工具")}">${tab("explain", "Explain", "解釋")}${tab("test", "Test", "測試")}${tab("replace", "Replace", "取代")}${tab("split", "Split", "分割")}${tab("library", "Library", "樣式庫")}</div>`;
+  let body = "";
+  if (regexTab === "explain") {
+    const s = currentSearch();
+    body = !query ? `<p class="muted-line">${t("Type a pattern to see what each part means.", "輸入樣式，即可看到每部分的意思。")}</p>`
+      : !s.ok ? `<p class="muted-line">${t("Fix the pattern first.", "請先修正樣式。")}</p>`
+      : `<ol class="explain">${explainPattern(query).map((p) => `<li style="--depth:${p.depth}"><code>${escape(p.text)}</code><span>${escape(t(p.en, p.yue))}</span></li>`).join("")}</ol>`;
+  } else if (regexTab === "test" || regexTab === "replace" || regexTab === "split") {
+    body = `<label class="field"><span>${t("Sample text (starts as your machines, one per line)", "範例文字（預設為你的機器，每行一部）")}</span><textarea id="regex-sample" rows="4" spellcheck="false" class="mono">${escape(regexSampleText())}</textarea></label>${regexTab === "replace" ? `<label class="field"><span>${t("Replace with ($1, $<name>, $& are allowed)", "取代為（可用 $1、$<name>、$&）")}</span><input id="regex-replacement" class="mono" value="${escape(regexReplacement)}" spellcheck="false"></label>` : ""}<div id="regex-output" class="regex-output" aria-live="polite"></div>`;
+  } else if (regexTab === "library") {
+    const items = regexLibrary.list();
+    body = `<div class="regex-row"><input id="regex-lib-name" maxlength="60" placeholder="${t("Name this pattern", "為此樣式命名")}" aria-label="${t("Pattern name", "樣式名稱")}">${button("regex-save", t("Save current pattern", "儲存目前樣式"), "", query ? "" : "disabled")}</div>${items.length ? `<ul class="regex-library">${items.map((p, i) => `<li><span><strong>${escape(p.name)}</strong><code>/${escape(p.pattern)}/${escape(p.flags)}</code></span>${button(`regex-use:${i}`, t("Use", "使用"))}${button(`regex-delete:${i}`, '<span class="icon" aria-hidden="true">delete</span>', "icon-btn", `aria-label="${escape(t("Delete ", "刪除 ") + p.name)}"`)}</li>`).join("")}</ul>` : `<p class="muted-line">${t("No saved patterns yet.", "暫時沒有已儲存的樣式。")}</p>`}`;
+  }
+  return `${tabs}<div id="regex-tab-body" role="tabpanel">${body}</div><p class="muted-line flavour">${t("JavaScript (ECMAScript) flavour: look-ahead and look-behind, named groups, Unicode properties with u. No possessive quantifiers, atomic groups or recursion. Test runs stop after one second.", "JavaScript（ECMAScript）語法：支援前瞻及後顧、具名群組、u 旗標下的 Unicode 屬性；不支援佔有量詞、原子群組或遞迴。測試超過一秒會停止。")}</p>`;
+}
+async function refreshRegexOutput() {
+  const out = document.querySelector("#regex-output");
+  if (!out) return;
+  const s = currentSearch();
+  if (!query) { out.innerHTML = `<p class="muted-line">${t("Type a pattern in the search box.", "請在搜尋框輸入樣式。")}</p>`; return; }
+  if (!s.ok) { out.innerHTML = `<p class="muted-line">${t("Fix the pattern first.", "請先修正樣式。")}</p>`; return; }
+  const sample = regexSampleText();
+  const flags = regexFlagString();
+  const key = JSON.stringify([regexTab, query, flags, sample, regexReplacement]);
+  if (key === regexLast.key) { out.innerHTML = regexLast.html; return; }
+  const run = ++regexRun;
+  const op = regexTab === "replace" ? ["previewReplace", [query, flags, sample, regexReplacement]] : regexTab === "split" ? ["previewSplit", [query, flags, sample]] : ["findMatches", [query, flags, sample]];
+  out.innerHTML = `<p class="muted-line">${t("Running…", "執行中…")}</p>`;
+  const r = await runBounded(op[0], op[1]);
+  if (run !== regexRun) return;
+  const show = (html) => { regexLast = { key, html }; const el = document.querySelector("#regex-output"); if (el) el.innerHTML = html; };
+  if (!r.ok) { show(`<p class="error-text" role="alert">${escape(r.timedOut ? t("Stopped after one second: this pattern backtracks too much on this text.", "一秒後已停止：此樣式在這段文字上回溯太多。") : localizeServerError(r.error, t))}</p>`); return; }
+  const ms = `<span class="muted">${r.ms} ms</span>`;
+  if (regexTab === "replace") { show(`<p class="muted-line">${t("Preview, nothing is changed:", "預覽，不會更改任何內容：")} ${ms}</p><pre class="regex-preview">${escape(r.result)}</pre>`); return; }
+  if (regexTab === "split") { show(`<p class="muted-line">${t(`${r.result.length} parts`, `共 ${r.result.length} 部分`)} ${ms}</p><ol class="regex-parts">${r.result.map((p) => `<li><code>${escape(p) || "∅"}</code></li>`).join("")}</ol>`); return; }
+  const { matches, truncated } = r.result;
+  let html = "", at = 0;
+  for (const m of matches) { html += escape(sample.slice(at, m.index)) + `<mark>${escape(m.text) || "|"}</mark>`; at = m.end; }
+  html += escape(sample.slice(at));
+  show(`<p class="muted-line">${t(`${matches.length}${truncated ? "+" : ""} matches`, `${matches.length}${truncated ? "+" : ""} 個配對`)} ${ms}</p><pre class="regex-preview">${html}</pre>${matches.length ? `<div class="table-wrap"><table class="regex-matches"><thead><tr><th>#</th><th>${t("Match", "配對")}</th><th>${t("Position", "位置")}</th><th>${t("Groups", "群組")}</th></tr></thead><tbody>${matches.slice(0, 50).map((m, i) => `<tr><td>${i + 1}</td><td><code>${escape(m.text)}</code></td><td>${m.index}–${m.end}</td><td>${m.groups.map((g) => `<code>${g.number}:${g.value === null ? "–" : escape(g.value)}</code>`).join(" ")}${Object.entries(m.named).map(([k, v]) => ` <code>${escape(k)}=${escape(v ?? "–")}</code>`).join("")}</td></tr>`).join("")}</tbody></table></div>` : ""}`);
+}
+function updateRegexTools() {
+  const holder = document.querySelector("#regex-tools");
+  if (!holder) return;
+  const focusId = document.activeElement?.id;
+  if (!["regex-sample", "regex-replacement", "regex-lib-name"].includes(focusId)) holder.innerHTML = regexTabBody();
+  refreshRegexOutput();
+}
 
 // Every notice is also kept in the notifications center (this browser only).
 const notificationLog = createNotificationLog();
@@ -107,9 +167,9 @@ let session,
   searchOpts = (() => {
     try {
       const saved = JSON.parse(localStorage.getItem("mq-search") || "{}");
-      return { regex: saved.regex === true, flags: { i: saved.flags?.i !== false, m: saved.flags?.m === true, s: saved.flags?.s === true }, fields: Array.isArray(saved.fields) && saved.fields.length ? saved.fields.filter((f) => SEARCH_FIELDS.includes(f)) : [...SEARCH_FIELDS] };
+      return { regex: saved.regex === true, flags: { i: saved.flags?.i !== false, m: saved.flags?.m === true, s: saved.flags?.s === true, u: saved.flags?.u === true }, fields: Array.isArray(saved.fields) && saved.fields.length ? saved.fields.filter((f) => SEARCH_FIELDS.includes(f)) : [...SEARCH_FIELDS] };
     } catch {
-      return { regex: false, flags: { i: true, m: false, s: false }, fields: [...SEARCH_FIELDS] };
+      return { regex: false, flags: { i: true, m: false, s: false, u: false }, fields: [...SEARCH_FIELDS] };
     }
   })(),
   filter = "all",
@@ -399,6 +459,7 @@ function render() {
       loadSnapshots(selected);
     }
     if (page === "storage") loadStorage();
+    if (searchOpts.regex) refreshRegexOutput();
     restoreFocus(focus);
     if (page === "new") requestPreview();
     const search = $("#global-search");
@@ -1427,6 +1488,14 @@ const releaseChord = createReleaseChord(() => {
   updateConsoleControls();
   notify(t("Keyboard and mouse released from the guest. Choose Guest input to capture them again.", "已從客體釋放鍵盤和滑鼠，按「客體輸入」可再次控制。"));
 });
+let regexInputTimer = null;
+document.addEventListener("input", (e) => {
+  if (e.target.id === "regex-sample") regexSample = e.target.value;
+  else if (e.target.id === "regex-replacement") regexReplacement = e.target.value;
+  else return;
+  clearTimeout(regexInputTimer);
+  regexInputTimer = setTimeout(refreshRegexOutput, 250);
+});
 document.addEventListener("change", (e) => {
   consoleTools().change(e);
   const flag = e.target.dataset?.searchFlag, field = e.target.dataset?.searchField;
@@ -1552,7 +1621,7 @@ function regexPanel() {
   const names = { name: t("Name", "名稱"), notes: t("Notes", "備註"), folder: t("Folder", "資料夾"), tags: t("Tags", "標籤"), arch: t("Architecture", "架構") };
   const flag = (k, label) => `<label class="chip-check"><input type="checkbox" data-search-flag="${k}" ${searchOpts.flags[k] ? "checked" : ""}> <span class="mono">${k}</span> ${label}</label>`;
   const tokens = [["\\d", t("digit", "數字")], ["\\w", t("word", "字元")], ["\\s", t("space", "空白")], [".", t("any", "任何")], ["*", t("0 or more", "零或多個")], ["+", t("1 or more", "一或多個")], ["?", t("optional", "可有可無")], ["|", t("or", "或")], ["^", t("start", "開頭")], ["$", t("end", "結尾")], ["()", t("group", "群組")], ["[]", t("set", "集合")]];
-  return `<section id="regex-panel" class="regex-panel" aria-label="${t("Regular expression builder", "正規表達式建構器")}"><div class="regex-row"><span class="label">${t("Flags", "旗標")}</span>${flag("i", t("ignore case", "不分大小寫"))}${flag("m", t("multiline", "多行"))}${flag("s", t("dot matches newline", "點號配對換行"))}</div><div class="regex-row"><span class="label">${t("Search in", "搜尋範圍")}</span>${SEARCH_FIELDS.map((f) => `<label class="chip-check"><input type="checkbox" data-search-field="${f}" ${searchOpts.fields.includes(f) ? "checked" : ""}> ${names[f]}</label>`).join("")}</div><div class="regex-row"><span class="label">${t("Insert", "插入")}</span>${tokens.map(([tok, label]) => `<button type="button" class="token mono" data-action="regex-token" data-token="${escape(tok)}" title="${escape(label)}" aria-label="${escape(t("Insert ", "插入 ") + tok + " (" + label + ")")}">${escape(tok)}</button>`).join("")}</div><p id="regex-status" class="muted-line" role="status">${escape(regexStatusText())}</p></section>`;
+  return `<section id="regex-panel" class="regex-panel" aria-label="${t("Regular expression builder", "正規表達式建構器")}"><div class="regex-row"><span class="label">${t("Flags", "旗標")}</span>${flag("i", t("ignore case", "不分大小寫"))}${flag("m", t("multiline", "多行"))}${flag("s", t("dot matches newline", "點號配對換行"))}${flag("u", t("Unicode", "Unicode"))}</div><div class="regex-row"><span class="label">${t("Search in", "搜尋範圍")}</span>${SEARCH_FIELDS.map((f) => `<label class="chip-check"><input type="checkbox" data-search-field="${f}" ${searchOpts.fields.includes(f) ? "checked" : ""}> ${names[f]}</label>`).join("")}</div><div class="regex-row"><span class="label">${t("Insert", "插入")}</span>${tokens.map(([tok, label]) => `<button type="button" class="token mono" data-action="regex-token" data-token="${escape(tok)}" title="${escape(label)}" aria-label="${escape(t("Insert ", "插入 ") + tok + " (" + label + ")")}">${escape(tok)}</button>`).join("")}</div><p id="regex-status" class="muted-line" role="status">${escape(regexStatusText())}</p><div id="regex-tools">${regexTabBody()}</div></section>`;
 }
 // Text for the builder status line; used when the panel is drawn (including the
 // periodic redraw) and while typing.
@@ -1567,6 +1636,7 @@ function updateRegexStatus() {
   $("#global-search")?.toggleAttribute("aria-invalid", !currentSearch().ok);
   const el = $("#regex-status");
   if (el) el.textContent = regexStatusText();
+  updateRegexTools();
 }
 function views() {
   thumbs.tick = Math.floor(Date.now() / 5000);
@@ -2009,6 +2079,38 @@ async function handleExtra(action, b) {
     render();
     $("#global-search")?.focus();
     updateRegexStatus();
+    return true;
+  }
+  if (action.startsWith("regex-tab:")) {
+    regexTab = action.slice(10);
+    updateRegexTools();
+    document.querySelector(`[data-action="regex-tab:${regexTab}"]`)?.focus();
+    return true;
+  }
+  if (action === "regex-save") {
+    try {
+      regexLibrary.add($("#regex-lib-name")?.value || "", query, regexFlagString());
+      notify(t("Pattern saved to the library.", "樣式已儲存到樣式庫。"));
+    } catch (error) {
+      notify(localizeServerError(error.message, t));
+    }
+    $("#regex-tools").innerHTML = regexTabBody();
+    return true;
+  }
+  if (action.startsWith("regex-use:") || action.startsWith("regex-delete:")) {
+    const item = regexLibrary.list()[Number(action.split(":")[1])];
+    if (!item) return true;
+    if (action.startsWith("regex-delete:")) regexLibrary.remove(item.name);
+    else {
+      query = item.pattern;
+      searchOpts.flags = { i: item.flags.includes("i"), m: item.flags.includes("m"), s: item.flags.includes("s"), u: item.flags.includes("u") };
+      saveSearchOpts();
+      regexTab = "test";
+      render();
+      updateRegexStatus();
+      return true;
+    }
+    $("#regex-tools").innerHTML = regexTabBody();
     return true;
   }
   if (action === "regex-token") {

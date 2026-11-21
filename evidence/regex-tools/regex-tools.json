@@ -1,0 +1,46 @@
+{
+  "origin": "http://localhost:8097/",
+  "at": "2026-11-21T11:18:47.048Z",
+  "results": [
+    {
+      "name": "Explain describes each part, including the named group",
+      "ok": true,
+      "detail": "^ start of the text (or of a line with the m flag) | (?<os> start of group 1, named os (captured) | debian the text “debian” | | or: the alternative after this "
+    },
+    {
+      "name": "Test lists the matches",
+      "ok": true,
+      "detail": "\"2 matches 0 ms\\n\\ndebian-13-dev\\tx86_64\\t\\t\\t\\nwin11-test\\tx86_64\\t\\t\\t\\nubuntu-server\\tx86_64\\t\\t\\t\\n#\\tMatch\\tPosition\\tGroups\\n1\\tdebian\\t0–\""
+    },
+    {
+      "name": "Test shows numbered and named groups",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "Replace previews the result without changing anything",
+      "ok": true,
+      "detail": " / [debian]-13-dev\tx86_64\t\t\t"
+    },
+    {
+      "name": "Split cuts the sample at each match",
+      "ok": true,
+      "detail": "13 parts 0 ms"
+    },
+    {
+      "name": "A catastrophic pattern is stopped after one second",
+      "ok": true,
+      "detail": "Stopped after one second: this pattern backtracks too much on this text."
+    },
+    {
+      "name": "The library keeps a saved pattern after a reload",
+      "ok": true,
+      "detail": "Servers /server$/im Use delete"
+    },
+    {
+      "name": "Using a saved pattern puts it in the search",
+      "ok": true,
+      "detail": ""
+    }
+  ]
+}

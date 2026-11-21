@@ -12,7 +12,8 @@ Every required feature of Material QEMU, its state, and where the proof is. **Ve
 | Phone width with nothing removed | Verified | `scripts/verify-site.mjs`, evidence/walkthrough step 22 |
 | Keyboard-only use with visible focus | Verified | `scripts/verify-keyboard.mjs`, evidence/keyboard |
 | Search with an adjacent regular expression builder | Verified | `scripts/verify-search.mjs`, evidence/search |
-| Full RegexBuddy-level regex parity (explain, debug, test bench, library) | Pending | ROADMAP.md |
+| Regex explain, test bench with groups, replace and split preview, saved library, one-second time limit | Verified in browser | `scripts/verify-regex-tools.mjs`, evidence/regex-tools |
+| Full RegexBuddy-level parity: step debugger, other flavours, code generation, file search | Pending | ROADMAP.md |
 | Notifications center | Verified | `scripts/verify-notifications.mjs`, evidence/notifications |
 | Workspace tabs, command palette, saved views, folders, tags | Verified | evidence/walkthrough, `tests/` |
 | Two-key slider confirmation for destructive actions | Verified | evidence/walkthrough steps 20 and 21, `tests/confirm-gate.test.mjs` |

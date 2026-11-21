@@ -28,7 +28,7 @@ export function compileSearch(text, { regex = false, flags = { i: true, m: false
   }
   let re;
   try {
-    re = new RegExp(source, `${flags.i ? "i" : ""}${flags.m ? "m" : ""}${flags.s ? "s" : ""}`);
+    re = new RegExp(source, `${flags.i ? "i" : ""}${flags.m ? "m" : ""}${flags.s ? "s" : ""}${flags.u ? "u" : ""}`);
   } catch (error) {
     return { ok: false, active: true, error: error.message.replace(/^Invalid regular expression: /, ""), test: () => false };
   }

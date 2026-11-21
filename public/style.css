@@ -2486,3 +2486,87 @@ dialog:has(.annotation-canvas) {
 .usage-line .icon {
   font-size: 16px;
 }
+/* Regex builder tools: tabs, explanation, test bench, previews and library. */
+.regex-tabs {
+  margin: 4px 0 12px;
+}
+.explain {
+  list-style: none;
+  margin: 8px 0 0;
+  padding: 0;
+  display: grid;
+  gap: 4px;
+  max-height: 260px;
+  overflow: auto;
+}
+.explain li {
+  display: grid;
+  grid-template-columns: minmax(90px, auto) 1fr;
+  gap: 12px;
+  align-items: baseline;
+  padding: 6px 10px 6px calc(10px + var(--depth, 0) * 18px);
+  border-radius: var(--shape-s, 8px);
+  background: var(--surface-container-high);
+}
+.explain code,
+.regex-library code,
+.regex-matches code,
+.regex-parts code {
+  font-family: var(--mono);
+  color: var(--primary);
+  overflow-wrap: anywhere;
+}
+#regex-sample {
+  width: 100%;
+  min-height: 96px;
+}
+.regex-output {
+  display: grid;
+  gap: 8px;
+  margin-top: 8px;
+}
+.regex-preview {
+  margin: 0;
+  max-height: 200px;
+  overflow: auto;
+  padding: 12px;
+  border-radius: var(--shape-m);
+  background: var(--surface-container-high);
+  font: 13px/1.5 var(--mono);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.regex-preview mark {
+  background: var(--primary-container);
+  color: var(--on-primary-container);
+  border-radius: 3px;
+}
+.regex-library {
+  list-style: none;
+  margin: 8px 0 0;
+  padding: 0;
+  display: grid;
+  gap: 6px;
+}
+.regex-library li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: var(--shape-m);
+  background: var(--surface-container-high);
+}
+.regex-library li > span {
+  flex: 1;
+  display: grid;
+  min-width: 0;
+}
+.regex-parts {
+  margin: 0;
+  padding-left: 24px;
+  max-height: 200px;
+  overflow: auto;
+}
+.flavour {
+  font-size: 12px;
+}

@@ -10,6 +10,16 @@ Tabs support arrow keys, Home/End, accessible selection state, close/pin control
 
 The search box in the header filters machines by name, notes, folder, tags and architecture. The **.\*** button beside it switches to regular expression search and opens a builder under the header: flags (ignore case, multiline, dot matches newline), which fields are searched, insert buttons for common tokens (digit, word, space, any, repeats, alternatives, anchors, groups and sets) and a status line that says how many machines match or why a pattern is not valid. Patterns are limited to 200 characters, an invalid pattern filters nothing out silently, and the choice is remembered in this browser. `scripts/verify-search.mjs` checks this in headless Edge (evidence/search).
 
+The builder also has five tool tabs, all using the JavaScript (ECMAScript) regular expression flavour of the browser:
+
+- **Explain** lists each part of the pattern in order with what it means, indented by group depth: anchors, classes and sets, escapes (including hex and Unicode), quantifiers (greedy or lazy), numbered and named groups, look-ahead and look-behind, and back-references. Explanations are in English and Cantonese.
+- **Test** runs the pattern over sample text, which starts as one line per machine and can be edited. Matches are highlighted, and a table lists each match with its position and its numbered and named groups. At most 1,000 matches are listed.
+- **Replace** previews the result of a replacement (`$1`, `$<name>`, `$&`). Nothing is changed.
+- **Split** shows the parts the sample breaks into at each match.
+- **Library** saves the current pattern and flags under a name in this browser, then reuses or deletes it. A pattern that does not compile is not saved.
+
+Test, Replace and Split run in a background worker that is stopped after one second, so a pattern that backtracks badly, such as `(a+)+$` on a long run of `a` followed by `!`, reports that it was stopped instead of freezing the page. The machine filter itself runs on short machine fields on the page. Not yet available: a step-by-step match debugger, other regex flavours (PCRE, .NET, Python), code generation and searching files. `scripts/verify-regex-tools.mjs` checks the tabs, the time limit and the library across a reload in headless Edge (evidence/regex-tools).
+
 ## Notifications center
 
 Every notice that appears at the bottom of the screen is also kept in the notifications center, the bell in the header. Its badge shows how many are unread. The panel lists the last 50, newest first, with the time; closing it (Escape, the close button or a click elsewhere) marks them read and returns focus to the bell, **Mark all read** and **Clear** do what they say. The list is kept in this browser only. `scripts/verify-notifications.mjs` checks it in headless Edge (evidence/notifications).

@@ -14,6 +14,7 @@ export const SERVER_ERRORS = {
   "Authentication challenge expired. Try again.": "驗證挑戰已過期，請再試一次。",
   "CPU count must be 1–64.": "處理器數目必須介乎 1 至 64。",
   "Choose check or apply.": "請選擇檢查或套用。",
+  "Give the pattern a name.": "請為樣式命名。",
   "Choose tcp or udp for every port forward.": "每個端口轉送都要選擇 tcp 或 udp。",
   "Collapsed folder selection is invalid.": "收合資料夾的選擇無效。",
   "Complete onboarding from the final review step.": "請在最後檢查步驟完成初始設定。",
