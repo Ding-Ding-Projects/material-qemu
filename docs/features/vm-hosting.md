@@ -74,7 +74,7 @@ A failed step opens a full-screen failure view that stays until dismissed. It sh
 ## Known limits
 
 - Plain HTTP on a LAN address is not a secure browser context, so passkey sign-in needs HTTPS in front of the service; password sign-in works.
-- QEMU guests use software emulation unless nested virtualization reaches the VM.
+- QEMU guests use software emulation unless nested virtualization reaches the VM. When the appliance sees `/dev/kvm` at boot it passes the device and its group into the web service container, so the new-machine form offers KVM; without it only TCG is offered.
 - Only Intel and AMD (x86_64) machines are supported. Raspberry Pi and other Arm boards are deliberately out of scope.
 - Network cards that need non-free firmware may not work when booting the USB image on a physical PC.
 

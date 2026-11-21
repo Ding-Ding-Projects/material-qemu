@@ -6,9 +6,10 @@ After=docker.service network-online.target material-qemu-load.service
 
 [Service]
 EnvironmentFile=/opt/material-qemu/image.env
+EnvironmentFile=-/run/material-qemu.args
 ExecStartPre=/usr/local/sbin/material-qemu-env
 ExecStartPre=-/usr/bin/docker rm -f material-qemu
-ExecStart=/usr/bin/docker run --rm --name material-qemu --env-file /run/material-qemu.env -p 8080:8080 -v material-qemu-data:/data --cap-drop ALL --security-opt no-new-privileges:true --stop-timeout 30 ${MQ_IMAGE}
+ExecStart=/usr/bin/docker run --rm --name material-qemu --env-file /run/material-qemu.env -p 8080:8080 -v material-qemu-data:/data --cap-drop ALL --security-opt no-new-privileges:true --stop-timeout 30 $MQ_KVM_ARGS ${MQ_IMAGE}
 ExecStop=/usr/bin/docker stop -t 30 material-qemu
 Restart=on-failure
 RestartSec=5

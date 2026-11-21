@@ -36,3 +36,11 @@ if [ -s /etc/material-qemu/public-origin ]; then
 fi
 umask 022
 printf 'PUBLIC_ORIGIN=%s\nMQ_IP=%s\nMQ_PORT=%s\n' "$origin" "$ip" "$port" > /run/material-qemu.env
+# Hand the hardware accelerator to the container when this machine has one
+# (a physical host, or a hypervisor with nested virtualization). The web
+# service runs as a non-root user, so it also joins the device's group.
+kvm_args=""
+if [ -c /dev/kvm ]; then
+  kvm_args="--device /dev/kvm --group-add $(stat -c %g /dev/kvm)"
+fi
+printf 'MQ_KVM_ARGS=%s\n' "$kvm_args" > /run/material-qemu.args
