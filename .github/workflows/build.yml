@@ -190,14 +190,40 @@ jobs:
             host-app/dist/squirrel-windows/RELEASES
           retention-days: 3
 
+  build-companion:
+    runs-on: windows-2025
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Build the portable build companion (carries the source of this commit)
+        shell: pwsh
+        run: |
+          npm ci --no-audit --no-fund --ignore-scripts
+          Set-Location build-companion
+          npm ci --no-audit --no-fund
+          node scripts/stage-source.cjs
+          npx electron-builder --win portable --publish never "-c.extraMetadata.version=$env:VERSION"
+          $exe = Get-ChildItem dist -Filter '*-portable.exe' | Select-Object -First 1
+          (Get-FileHash $exe.FullName -Algorithm SHA256).Hash.ToLower() + '  ' + $exe.Name | Set-Content -NoNewline -Encoding ascii "$($exe.FullName).sha256"
+          Get-ChildItem dist -File
+      - uses: actions/upload-artifact@v4
+        with:
+          name: build-companion
+          path: |
+            build-companion/dist/*-portable.exe
+            build-companion/dist/*-portable.exe.sha256
+          retention-days: 3
+
   release:
     runs-on: ubuntu-24.04
-    needs: [image, appliance, deploy-assistant, host-app]
+    needs: [image, appliance, deploy-assistant, host-app, build-companion]
     steps:
       - uses: actions/download-artifact@v4
         with:
           path: assets
-          pattern: '{appliance,deploy-assistant,host-app}'
+          pattern: '{appliance,deploy-assistant,host-app,build-companion}'
           merge-multiple: true
       - name: Publish the release
         env:
@@ -227,6 +253,7 @@ jobs:
           - **material-qemu-usb-x86_64-${VERSION}.img.gz**: the same appliance as a raw disk image for a USB drive (8 GiB or larger). The deploy assistant's Flash page writes and verifies it; it grows to fill the drive on first boot.
           - **material-qemu-installer-x86_64-${VERSION}.iso**: bare-metal installer for an Intel or AMD PC. Write it to a USB drive with Rufus or the deploy assistant (or use it as a DVD), boot from it and it installs Material QEMU onto an internal disk, asking before it writes and checking the result against the release hash.
           - **material-qemu-host-0.1.${{ github.run_number }}-setup.exe**: Windows app that runs Material QEMU on this computer for your network and shows the address to open, with Start and Stop, the log and QEMU status. Installed per user with Squirrel.Windows (with its .nupkg and RELEASES files for updates); unsigned, so Windows may warn about an unknown publisher.
+          - **material-qemu-build-${VERSION}-portable.exe**: portable build companion. It carries the complete source of this release and runs build.bat (Build, or Build and run) and build-installer.bat (Build installer) with a live log, so the release can be rebuilt without a checkout. Unsigned.
           - Container image: \`${IMAGE_REF}\` (digest \`${IMAGE_DIGEST}\`).
 
           ## Checks
