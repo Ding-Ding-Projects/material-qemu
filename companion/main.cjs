@@ -113,8 +113,17 @@ ipcMain.handle('shell:open', (_e, url) => { const u = safeUrl(url); if (u) shell
 ipcMain.handle('shell:openFolder', () => shell.openPath(vmRoot()));
 ipcMain.handle('clipboard:write', (_e, text) => { clipboard.writeText(String(text).slice(0, 4096)); return true; });
 
+let startupNotice = null;
+ipcMain.handle('app:notice', () => startupNotice);
+
 app.whenReady().then(async () => {
-  registry = await new Registry(path.join(dataDir(), 'instances.json')).load();
+  try {
+    registry = await new Registry(path.join(dataDir(), 'instances.json')).load();
+    if (registry.recovered) startupNotice = `The saved instance list could not be read (${registry.recovered.reason}). It was kept as ${registry.recovered.kept} and a new empty list was started. Your virtual machines were not changed.`;
+  } catch (err) {
+    registry = new Registry(path.join(dataDir(), 'instances.json'));
+    startupNotice = `The saved instance list could not be opened (${err.message}). Instances are not shown until this is fixed; your virtual machines were not changed.`;
+  }
   createWindow();
 });
 app.on('window-all-closed', () => app.quit());

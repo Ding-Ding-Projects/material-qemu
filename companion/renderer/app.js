@@ -213,6 +213,9 @@
   });
 
   (async () => {
+    const notice = await api.notice();
+    if (notice) { $('noticeText').textContent = notice; $('notice').hidden = false; }
+    $('noticeClose').addEventListener('click', () => { $('notice').hidden = true; });
     const info = await api.info();
     $('appVersion').textContent = `Version ${info.version}`;
     renderSteps();

@@ -3,6 +3,7 @@ const { contextBridge, ipcRenderer } = require('electron');
 
 contextBridge.exposeInMainWorld('deployApi', {
   info: () => ipcRenderer.invoke('app:info'),
+  notice: () => ipcRenderer.invoke('app:notice'),
   hypervisors: () => ipcRenderer.invoke('hv:list'),
   adapters: (id) => ipcRenderer.invoke('hv:adapters', id),
   latestRelease: () => ipcRenderer.invoke('release:latest'),

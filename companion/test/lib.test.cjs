@@ -87,3 +87,14 @@ test('registry persists atomically', async () => {
   assert.equal((await new Registry(file).load()).items.length, 0);
   fs.rmSync(dir, { recursive: true, force: true });
 });
+
+test('an unreadable registry is kept aside and replaced by an empty list', async () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'mqc-'));
+  const file = path.join(dir, 'i.json');
+  fs.writeFileSync(file, '{"version":1,"instances":[{not json');
+  const reg = await new Registry(file).load();
+  assert.equal(reg.items.length, 0);
+  assert.ok(reg.recovered && fs.existsSync(reg.recovered.kept));
+  assert.equal(fs.existsSync(file), false);
+  fs.rmSync(dir, { recursive: true, force: true });
+});

@@ -25,10 +25,20 @@ curl -fsSL --retry 3 -o "$work/SHA512SUMS" "$base_url/SHA512SUMS"
 (cd "$work" && grep " $base_name\$" SHA512SUMS | sha512sum -c -)
 echo "::endgroup::"
 
-echo "::group::Expand the root partition to 64 GiB"
-qemu-img create -f qcow2 "$work/disk.qcow2" 64G
-virt-resize --expand /dev/sda1 "$work/$base_name" "$work/disk.qcow2"
-rm -f "$work/$base_name"
+echo "::group::Expand the root partition to 64 GiB in place"
+# Debian cloud images put the root partition (1) last on the disk, after the
+# BIOS boot (14) and EFI (15) partitions, so it can grow to the end of the
+# disk without renumbering anything.
+mv "$work/$base_name" "$work/disk.qcow2"
+qemu-img resize "$work/disk.qcow2" 64G
+guestfish -a "$work/disk.qcow2" <<'GF'
+run
+part-expand-gpt /dev/sda
+part-resize /dev/sda 1 -34
+e2fsck-f /dev/sda1
+resize2fs /dev/sda1
+GF
+virt-filesystems -a "$work/disk.qcow2" --long -h
 echo "::endgroup::"
 
 echo "::group::Prepare guest files"

@@ -12,7 +12,20 @@ const { waitForReport, checkHealth } = require('./appliance.cjs');
 class Registry {
   constructor(file) { this.file = file; this.items = []; }
   async load() {
-    try { this.items = JSON.parse(await fsp.readFile(this.file, 'utf8')).instances || []; } catch (e) { if (e.code !== 'ENOENT') throw e; this.items = []; }
+    this.recovered = null;
+    let text;
+    try { text = await fsp.readFile(this.file, 'utf8'); } catch (e) { if (e.code !== 'ENOENT') throw e; this.items = []; return this; }
+    try {
+      const parsed = JSON.parse(text);
+      if (!parsed || !Array.isArray(parsed.instances)) throw new Error('missing instances list');
+      this.items = parsed.instances.filter((i) => i && typeof i.id === 'string' && typeof i.name === 'string');
+    } catch (e) {
+      // Keep the unreadable file for recovery instead of overwriting or crashing.
+      const kept = `${this.file}.unreadable-${Date.now()}`;
+      await fsp.rename(this.file, kept);
+      this.items = [];
+      this.recovered = { kept, reason: e.message };
+    }
     return this;
   }
   async save() {
