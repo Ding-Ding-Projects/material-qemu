@@ -1,0 +1,51 @@
+{
+  "origin": "http://localhost:8097/",
+  "at": "2026-11-21T07:21:53.138Z",
+  "comparison": {
+    "signature": true,
+    "png": [
+      1280,
+      800
+    ],
+    "live": [
+      1280,
+      800
+    ],
+    "bytes": 14723,
+    "meanDiff": 0,
+    "differingShare": 0,
+    "litShare": 0.016947265625
+  },
+  "results": [
+    {
+      "name": "screenshot is a PNG",
+      "ok": true,
+      "detail": "14723 bytes"
+    },
+    {
+      "name": "PNG size equals the live framebuffer",
+      "ok": true,
+      "detail": "png 1280,800 live 1280,800"
+    },
+    {
+      "name": "PNG pixels match the live framebuffer",
+      "ok": true,
+      "detail": "mean difference 0.000, 0.000% of pixels differ, 1.69% lit"
+    },
+    {
+      "name": "guest input starts on",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "Ctrl+Alt+Del keeps guest input on",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "Ctrl+Alt alone releases guest input",
+      "ok": true,
+      "detail": "Keyboard and mouse released from the guest. Choose Guest input to capture them a"
+    }
+  ]
+}

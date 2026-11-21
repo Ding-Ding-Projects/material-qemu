@@ -9,3 +9,9 @@ On narrow screens the dismissible polite status region participates in layout ab
 Roboto Flex and Material Symbols Rounded are pinned in the package lockfile and served from local installed packages. Their SIL Open Font License texts are retained under `docs/licenses`. No remote font request is part of the runtime.
 
 Build provenance stays visible in the initial authenticated header at narrow widths. It formats the actual build metadata in the browser timezone with seconds and an explicit zone/offset. Missing or invalid metadata remains unavailable; the current clock is never substituted for a build time.
+
+## Screenshots and releasing input
+
+**Screenshot** downloads a PNG taken by QEMU itself (QMP `screendump`), not a copy of the browser canvas. `scripts/verify-console-export.mjs` decodes that PNG and compares it with the live framebuffer the viewer draws: on a 1280 by 800 UEFI screen every pixel matched (evidence/console/console-export.json).
+
+While guest input is on, the keyboard and mouse go to the guest. Pressing **Ctrl and Alt together and letting go**, with no other key, hands them back, the same idea as a hypervisor host key, and a notice says how to capture them again with **Guest input**. Combinations such as Ctrl+Alt+Del or Ctrl+Alt+F2 are sent to the guest as usual.

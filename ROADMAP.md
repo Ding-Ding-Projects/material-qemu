@@ -17,10 +17,10 @@
 ## Preserved incomplete console unit
 
 - [x] Preserve inactive framebuffer/recording/annotation helpers and boundary tests.
-- [ ] Integrate real raw PNG export and prove decoded output against the actual framebuffer.
+- [x] Export the console as a PNG (QMP screendump) and prove it decodes pixel-for-pixel to the live framebuffer (scripts/verify-console-export.mjs, evidence/console).
 - [ ] Integrate bounded recording with actual output, stop/cancel and unsupported-browser proof.
 - [ ] Integrate annotation controls, original/edited separation and unsaved-work handling.
-- [ ] Integrate and verify Ctrl+Alt input release.
+- [x] Release guest input with Ctrl+Alt pressed alone, without catching Ctrl+Alt+Del (tests/input-release.test.mjs, verified with real key events in evidence/console).
 
 ## Remaining supplied-design acceptance
 

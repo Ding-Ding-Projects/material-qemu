@@ -32,6 +32,7 @@ import {
 } from "./machine-form.js";
 import { normalizeStorage, kindOfUpload } from "./storage-model.js";
 import { localizeServerError } from "./server-errors.js";
+import { createReleaseChord } from "./input-release.js";
 const { startRegistration, startAuthentication } = window.SimpleWebAuthnBrowser;
 
 const $ = (selector) => document.querySelector(selector);
@@ -1272,6 +1273,22 @@ document.addEventListener("change", (e) => {
     restoreFocus(focus);
   }
 });
+// Ctrl+Alt on its own hands the keyboard and mouse back from the guest, like a
+// hypervisor's host key. Listening in the capture phase sees the keys before the
+// console viewer forwards them.
+const releaseChord = createReleaseChord(() => {
+  if (page !== "console" || !consoleInput || !rfb) return;
+  consoleInput = false;
+  localStorage.setItem("mq-console-input", "false");
+  rfb.viewOnly = true;
+  rfb.blur?.();
+  document.activeElement?.blur?.();
+  updateConsoleControls();
+  notify(t("Keyboard and mouse released from the guest. Choose Guest input to capture them again.", "已從客體釋放鍵盤和滑鼠，按「客體輸入」可再次控制。"));
+});
+document.addEventListener("keydown", (e) => releaseChord.keydown(e), true);
+document.addEventListener("keyup", (e) => releaseChord.keyup(e), true);
+window.addEventListener("blur", () => releaseChord.reset());
 document.addEventListener("keydown", (e) => {
   if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key.toLowerCase() === "f") {
     e.preventDefault();
