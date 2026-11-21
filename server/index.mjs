@@ -13,6 +13,22 @@ import {
 } from "@simplewebauthn/server";
 import { Store, event } from "./store.mjs";
 import { Qemu, validateMachine, launchPlan, containedFile } from "./qemu.mjs";
+import { mergeMachineUpdate, migrateMachine, diskFileName } from "./machine-config.mjs";
+import { hostSummary } from "./host.mjs";
+import { performLiveAction, SCREENSHOT_FILE } from "./live-actions.mjs";
+import {
+  listSnapshots,
+  createSnapshot,
+  restoreSnapshot,
+  deleteSnapshot,
+} from "./snapshots.mjs";
+import {
+  storageReport,
+  resizeDisk,
+  cloneMachine,
+  deleteIso,
+} from "./storage.mjs";
+import { importDisk } from "./disk-import.mjs";
 import { removeMachine, restoreMachine } from "./machine-records.mjs";
 import { setPasswordAccess } from "./security-settings.mjs";
 import { Sessions, hashPassword, checkPassword } from "./auth.mjs";
@@ -94,7 +110,7 @@ export async function createApplication(options = {}) {
         if (
           req.headers.origin !== origin ||
           req.headers["content-type"]?.split(";")[0] !==
-            (route === "/api/media"
+            (route === "/api/media" || route === "/api/storage/import"
               ? "application/octet-stream"
               : "application/json")
         )
@@ -140,6 +156,32 @@ export async function createApplication(options = {}) {
                 "ISO saved successfully, but activity history could not be recorded. Refresh the media library before retrying.",
             });
           }
+        } finally {
+          clearTimeout(deadline);
+          activeUploads--;
+        }
+      }
+      if (route === "/api/storage/import" && req.method === "POST") {
+        if (!session)
+          return json(res, 401, { error: "Sign in to import a disk image." });
+        if (activeUploads >= 2)
+          return json(res, 429, {
+            error: "Two uploads are already active. Wait for one to finish.",
+          });
+        activeUploads++;
+        const deadline = setTimeout(
+          () => req.destroy(new Error("Upload exceeded the 60-minute limit.")),
+          60 * 60 * 1000,
+        );
+        try {
+          const mode = url.searchParams.get("mode");
+          const target = url.searchParams.get("machineId");
+          const result = await (mode === "disk" && target
+            ? qemu.exclusive(target, () =>
+                importDisk({ request: req, params: url.searchParams, store, qemu }),
+              )
+            : importDisk({ request: req, params: url.searchParams, store, qemu }));
+          return json(res, 201, result);
         } finally {
           clearTimeout(deadline);
           activeUploads--;
@@ -435,8 +477,87 @@ export async function createApplication(options = {}) {
         });
         return json(res, 200, { registered: true });
       }
-      if (route === "/api/machine-preview" && req.method === "POST") {
-        const config = validateMachine(body, qemu.capabilities);
+      if (route === "/api/host" && req.method === "GET")
+        return json(res, 200, hostSummary(qemu.host, qemu.capabilities));
+      if (route === "/api/storage" && req.method === "GET")
+        return json(res, 200, await storageReport(store, qemu));
+      if (route === "/api/storage/disks/resize" && req.method === "POST") {
+        const result = await qemu.exclusive(String(body.machineId), () =>
+          resizeDisk(store, qemu, body),
+        );
+        return json(res, 200, result);
+      }
+      const isoMatch = route.match(/^\/api\/storage\/isos\/([^/]+)$/);
+      if (isoMatch && req.method === "DELETE")
+        return json(
+          res,
+          200,
+          await deleteIso(store, qemu, decodeURIComponent(isoMatch[1])),
+        );
+      const screenshotMatch = route.match(
+        /^\/api\/machines\/([a-f0-9-]{36})\/screenshot$/,
+      );
+      if (screenshotMatch && req.method === "GET") {
+        if (!store.state.machines.some((m) => m.id === screenshotMatch[1]))
+          return json(res, 404, { error: "Machine not found." });
+        try {
+          const image = await readFile(
+            path.join(
+              qemu.runtimeDirectory(screenshotMatch[1]),
+              SCREENSHOT_FILE,
+            ),
+          );
+          res.writeHead(200, {
+            "Content-Type": "image/png",
+            "Cache-Control": "no-store",
+          });
+          return res.end(image);
+        } catch {
+          return json(res, 404, { error: "No screenshot has been taken yet." });
+        }
+      }
+      const snapshotMatch = route.match(
+        /^\/api\/machines\/([a-f0-9-]{36})\/snapshots(?:\/([^/]+?)(\/restore)?)?$/,
+      );
+      if (snapshotMatch) {
+        const machine = store.state.machines.find(
+          (m) => m.id === snapshotMatch[1],
+        );
+        if (!machine) return json(res, 404, { error: "Machine not found." });
+        const view = migrateMachine(machine);
+        const name = snapshotMatch[2] && decodeURIComponent(snapshotMatch[2]);
+        const method = req.method;
+        const work = async (action, message) =>
+          qemu.exclusive(machine.id, async () => {
+            const result = await action();
+            await store.transaction((s) => event(s, `${machine.name}: ${message}`));
+            return result;
+          });
+        if (!name && method === "GET")
+          return json(
+            res,
+            200,
+            await qemu.exclusive(machine.id, () => listSnapshots(qemu, view)),
+          );
+        if (!name && method === "POST") {
+          await work(() => createSnapshot(qemu, view, body.name), `snapshot ${body.name} created.`);
+          return json(res, 201, { created: true, name: body.name });
+        }
+        if (name && snapshotMatch[3] && method === "POST") {
+          await work(() => restoreSnapshot(qemu, view, name), `snapshot ${name} restored.`);
+          return json(res, 200, { restored: true, name });
+        }
+        if (name && !snapshotMatch[3] && method === "DELETE") {
+          await work(() => deleteSnapshot(qemu, view, name), `snapshot ${name} deleted.`);
+          return json(res, 200, { deleted: true, name });
+        }
+        return json(res, 404, { error: "Unknown endpoint." });
+      }
+      if (
+        (route === "/api/machine-preview" || route === "/api/machines/preview") &&
+        req.method === "POST"
+      ) {
+        const config = validateMachine(body, qemu.capabilities, qemu.host);
         return json(res, 200, {
           ...launchPlan(config),
           available: Boolean(qemu.capabilities[config.arch]?.available),
@@ -445,7 +566,7 @@ export async function createApplication(options = {}) {
         });
       }
       if (route === "/api/machines" && req.method === "POST") {
-        const config = validateMachine(body, qemu.capabilities);
+        const config = validateMachine(body, qemu.capabilities, qemu.host);
         if (!qemu.capabilities[config.arch]?.available)
           throw new Error(
             "This architecture is unavailable. Install its QEMU system emulator first.",
@@ -459,15 +580,17 @@ export async function createApplication(options = {}) {
           .transaction(async (s) => {
             if (s.machines.length >= 100)
               throw new Error("Machine limit reached.");
-            await qemu.disk(machine.id, config.diskGiB);
+            for (const disk of machine.disks)
+              await qemu.createDisk(machine.id, disk);
             requireFolder(s, machine.folder);
             s.machines.push(machine);
             event(s, `Created ${machine.name}.`);
           })
           .catch(async (error) => {
-            await unlink(path.join(data, "disks", `${machine.id}.qcow2`)).catch(
-              () => {},
-            );
+            for (const disk of machine.disks)
+              await unlink(
+                path.join(data, "disks", diskFileName(machine.id, disk)),
+              ).catch(() => {});
             throw error;
           });
         if (body.startAfterCreate === true) {
@@ -501,7 +624,7 @@ export async function createApplication(options = {}) {
         return json(res, 200, result);
       }
       const match = route.match(
-        /^\/api\/machines\/([a-f0-9-]{36})(?:\/(action|keys|remove))?$/,
+        /^\/api\/machines\/([a-f0-9-]{36})(?:\/(actions?|keys|remove|clone))?$/,
       );
       if (match && req.method === "POST") {
         if (!store.state.machines.some((m) => m.id === match[1]))
@@ -513,6 +636,30 @@ export async function createApplication(options = {}) {
             return store.transaction((s) =>
               removeMachine(s, machine.id, body, qemu.status(machine.id).state),
             );
+          if (match[2] === "clone") {
+            const clone = await cloneMachine(
+              store,
+              qemu,
+              machine,
+              String(body.name || "").trim(),
+            );
+            return { cloned: true, machine: clone };
+          }
+          if (match[2] === "actions") {
+            // Live actions (QMP) and start; legacy `/action` stays below.
+            let liveResult = {};
+            if (body.action === "start") await qemu.start(machine);
+            else
+              await performLiveAction(qemu, migrateMachine(machine), body).then(
+                (result) => (liveResult = result),
+              );
+            await store.transaction((s) => {
+              s.machines.find((m) => m.id === machine.id).lastUsed =
+                new Date().toISOString();
+              event(s, `${machine.name}: ${body.action} requested.`);
+            });
+            return { ...qemu.status(machine.id), ...liveResult };
+          }
           if (match[2] === "action") {
             if (body.action === "start") await qemu.start(machine);
             else await qemu.action(machine.id, body.action);
@@ -548,11 +695,27 @@ export async function createApplication(options = {}) {
           if (!metadataOnly && qemu.status(machine.id).state !== "stopped")
             throw new Error("Stop the machine before editing hardware.");
           const config = validateMachine(
-            { ...machine, ...body },
+            mergeMachineUpdate(machine, body),
             qemu.capabilities,
+            metadataOnly ? undefined : qemu.host,
           );
-          if (config.diskGiB !== machine.diskGiB)
-            throw new Error("Disk resizing is not supported in this version.");
+          // Disks added by this edit get a new managed file; removed disks
+          // keep their data on storage and are only detached.
+          const known = new Set(migrateMachine(machine).disks.map((d) => d.id));
+          const added = config.disks.filter((d) => !known.has(d.id));
+          const created = [];
+          try {
+            for (const disk of added) {
+              await qemu.createDisk(machine.id, disk);
+              created.push(disk);
+            }
+          } catch (error) {
+            for (const disk of created)
+              await unlink(
+                path.join(data, "disks", diskFileName(machine.id, disk)),
+              ).catch(() => {});
+            throw error;
+          }
           await store.transaction((s) => {
             requireFolder(s, config.folder);
             Object.assign(
@@ -671,12 +834,35 @@ export async function createApplication(options = {}) {
       return json(res, 404, { error: "Not found." });
     }
   }
-  server.requestTimeout = 15 * 60 * 1000 + 1000;
+  server.requestTimeout = 60 * 60 * 1000 + 1000;
   server.headersTimeout = 60000;
+  // Start every machine marked autostart. Failures are recorded per machine
+  // and never stop the server.
+  async function autostart() {
+    const started = [];
+    for (const machine of [...store.state.machines]) {
+      if (!machine.autostart) continue;
+      try {
+        await qemu.exclusive(machine.id, () => qemu.start(machine));
+        started.push(machine.id);
+        await store.transaction((s) =>
+          event(s, `${machine.name}: started automatically.`),
+        );
+      } catch (error) {
+        await store
+          .transaction((s) =>
+            event(s, `${machine.name}: automatic start failed: ${error.message}`),
+          )
+          .catch(() => {});
+      }
+    }
+    return started;
+  }
   return {
     server,
     store,
     qemu,
+    autostart,
     close: async () => {
       metrics.stop();
       wss.clients.forEach((c) => c.close());
@@ -708,8 +894,10 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
   app.server.listen(
     Number(process.env.PORT || 8080),
     process.env.BIND_ADDRESS || "127.0.0.1",
-    () =>
-      console.log("Material QEMU ready. Open the configured PUBLIC_ORIGIN."),
+    () => {
+      console.log("Material QEMU ready. Open the configured PUBLIC_ORIGIN.");
+      app.autostart();
+    },
   );
   for (const signal of ["SIGINT", "SIGTERM"])
     process.on(signal, async () => {

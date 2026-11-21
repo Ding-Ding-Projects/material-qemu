@@ -88,6 +88,11 @@ export class Qemu {
       "disks",
       diskFileName(machineId, disk),
     );
+    // Never overwrite existing data, including a detached disk's file.
+    if (await stat(destination).then(() => true, () => false))
+      throw new Error(
+        "A disk file with this id already exists in managed storage. Use another disk id.",
+      );
     await exec(
       "qemu-img",
       ["create", "-f", disk.format, destination, `${disk.sizeGiB}G`],

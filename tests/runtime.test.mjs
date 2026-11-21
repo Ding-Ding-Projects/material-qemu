@@ -110,7 +110,7 @@ test("HTTP owner claim, sessions, CSRF and persistence boundaries", async () => 
     const anonymous = await (await request("/session")).json();
     assert.equal(anonymous.setupRequired, true);
     assert.equal("bootstrap" in anonymous, false);
-    assert.equal(app.server.requestTimeout, 901000);
+    assert.equal(app.server.requestTimeout, 3601000);
     assert.equal((await request("/state")).status, 401);
     // The first registration claims ownership without any setup code.
     await assert.rejects(readFile(path.join(dir, "setup-code"), "utf8"));
