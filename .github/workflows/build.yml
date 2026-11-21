@@ -130,6 +130,8 @@ jobs:
           name: appliance-boot-logs
           path: |
             logs/serial.log
+            logs/console.png
+            logs/console.txt
             logs/install/install-serial.log
             logs/install/installed-boot/serial.log
           if-no-files-found: warn
