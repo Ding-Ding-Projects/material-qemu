@@ -1,0 +1,47 @@
+{
+  "site": "https://ding-ding-projects.github.io/material-qemu/",
+  "at": "2026-11-21T09:13:52.119Z",
+  "pages": 37,
+  "results": [
+    {
+      "name": "every page, link, anchor and image resolves",
+      "ok": true,
+      "detail": "37 pages; "
+    },
+    {
+      "name": "plain search finds pages",
+      "ok": true,
+      "detail": "8 results for \"snapshot\""
+    },
+    {
+      "name": "the regex builder finds matches",
+      "ok": true,
+      "detail": "Valid · 26 matches in 6 pages"
+    },
+    {
+      "name": "an invalid pattern is reported, not run",
+      "ok": true,
+      "detail": "true Invalid pattern: Invalid regular expression: /(unclosed/gi: Unterminated group"
+    },
+    {
+      "name": "a guide remembers its step after a reload",
+      "ok": true,
+      "detail": "showing step 3"
+    },
+    {
+      "name": "the language switch changes the site's words",
+      "ok": true,
+      "detail": "主頁 指南 文章 維基"
+    },
+    {
+      "name": "the light theme applies",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "no page scrolls sideways at 375 pixels",
+      "ok": true,
+      "detail": "37 pages checked; "
+    }
+  ]
+}

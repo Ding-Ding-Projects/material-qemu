@@ -61,7 +61,7 @@
 - [x] Update an appliance in place from Settings: daily check, pull of the new release image, restart on the same data volume, automatic rollback; verified from build 31 to build 32 with a machine kept (evidence/appliance-update).
 - [ ] Deliver portable hosting/build companions and supported native packaging.
 - [ ] Complete the required-feature inventory and remaining acceptance.
-- [ ] Publish complete interactive documentation and wiki content; pending source staging is not publication.
+- [x] Publish the documentation site on GitHub Pages with every article and wiki page, screenshot guides, search with a regex builder, two languages, light and dark, and phone layouts; checked live (scripts/verify-site.mjs, evidence/docs-site).
 - [x] Clean up: merged helper worktrees and branches removed; only main exists locally and on GitHub (read back with git ls-remote on 2026-11-21).
 
 ## Preservation and evidence
@@ -70,5 +70,5 @@
 - [x] Preserve inspected runtime screenshots and isolated browser reproduction scripts.
 - [x] Prepare complete wiki articles and navigation while its repository is uninitialized.
 - [x] Publish and verify the public nine-image screenshot gallery.
-- [ ] Publish the prepared wiki after its first page is initialized.
+- [ ] Publish the prepared wiki after its first page is initialized (owner action: create any first page on the repository Wiki tab; the pages in docs/wiki/pending are current, regenerate with node scripts/build-wiki.mjs).
 - [ ] Complete the remaining design-control inventory and release/delivery requirements.
