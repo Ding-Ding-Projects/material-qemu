@@ -34,7 +34,8 @@
 - [x] Render the remade interface in Cantonese and bilingual modes without horizontal overflow.
 - [x] Translate every server error message for Cantonese and bilingual modes, with a test that fails on an untranslated message.
 - [x] Verify swtpm TPM start-up, UEFI and Secure Boot discovery and KVM in the built container inside the VirtualBox appliance (evidence/appliance-build-19).
-- [ ] Verify physical authenticators, installed guest operating-system boot and guest ACPI handling.
+- [x] Boot an installed guest operating system (Debian 13 imported from a VMDK) to its login prompt and shut it down through ACPI (evidence/installed-guest).
+- [ ] Verify physical authenticators (passkeys on real hardware keys or phones).
 - [ ] Verify complete latest-source visual (the Material Design 3 Expressive remake is implemented; screenshots use mocked API data), language, keyboard and narrow-screen parity; retain historical evidence with original provenance.
 
 ## Delivery and broader design
