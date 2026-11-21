@@ -1,70 +1,26 @@
 import { spawn, execFile } from "node:child_process";
 import { promisify } from "node:util";
-import { mkdir, readdir, realpath, stat } from "node:fs/promises";
+import {
+  mkdir,
+  readdir,
+  realpath,
+  stat,
+  copyFile,
+  access,
+  constants,
+} from "node:fs/promises";
 import path from "node:path";
 import net from "node:net";
 import { memoryLimit } from "./resources.mjs";
-import { normalizeTags } from "./organization.mjs";
+import { targets, discoverCapabilities } from "./capabilities.mjs";
+import { discoverHost } from "./host.mjs";
+import { validateMachine, diskFileName } from "./machine-config.mjs";
+import { launchPlan } from "./launch-plan.mjs";
 export { hostMetrics } from "./resources.mjs";
+export { validateMachine, launchPlan };
 
 const exec = promisify(execFile);
-import {
-  targets,
-  discoverCapabilities,
-  supportedMachine,
-} from "./capabilities.mjs";
-export function validateMachine(input, capabilities) {
-  const name = String(input.name || "").trim();
-  if (!name || name.length > 80 || /[\x00-\x1f]/.test(name))
-    throw new Error("Use a machine name between 1 and 80 characters.");
-  if (!targets[input.arch]) throw new Error("Unsupported architecture.");
-  const machineType = input.machineType || targets[input.arch].machine;
-  const accelerator = input.accelerator || "tcg";
-  if (
-    !supportedMachine(input.arch, machineType) ||
-    !["tcg", "kvm"].includes(accelerator)
-  )
-    throw new Error("Unsupported machine recipe or accelerator.");
-  if (capabilities) {
-    const cap = capabilities[input.arch];
-    if (!cap?.available)
-      throw new Error(cap?.reason || "Target is unavailable.");
-    if (!cap.selectableRecipes.some((item) => item.machineType === machineType))
-      throw new Error("Machine type was not discovered as a supported recipe.");
-    if (
-      !cap.accelerators.some((item) => item.name === accelerator && item.usable)
-    )
-      throw new Error("Accelerator is not usable on this host.");
-  }
-  const memory = Number(input.memory),
-    cpus = Number(input.cpus),
-    diskGiB = Number(input.diskGiB);
-  if (!Number.isInteger(memory) || memory < 128 || memory > 32768)
-    throw new Error("Memory must be 128–32768 MiB.");
-  if (!Number.isInteger(cpus) || cpus < 1 || cpus > 16)
-    throw new Error("CPU count must be 1–16.");
-  if (!Number.isInteger(diskGiB) || diskGiB < 1 || diskGiB > 256)
-    throw new Error("Disk capacity must be 1–256 GiB.");
-  if (!["user", "none"].includes(input.network))
-    throw new Error("Unsupported network.");
-  if (input.iso && !/^[a-zA-Z0-9][a-zA-Z0-9._ -]{0,150}\.iso$/i.test(input.iso))
-    throw new Error("Select an ISO from the managed media directory.");
-  return {
-    name,
-    arch: input.arch,
-    machineType,
-    accelerator,
-    memory,
-    cpus,
-    diskGiB,
-    network: input.network,
-    iso: input.iso || "",
-    folder: String(input.folder || "").slice(0, 80),
-    favourite: Boolean(input.favourite),
-    notes: String(input.notes || "").slice(0, 2000),
-    tags: normalizeTags(input.tags),
-  };
-}
+
 export async function containedFile(directory, name) {
   const root = await realpath(directory);
   const resolved = await realpath(path.join(directory, name));
@@ -73,71 +29,6 @@ export async function containedFile(directory, name) {
   return resolved;
 }
 
-export function launchPlan(
-  machine,
-  {
-    disk = "<managed disk>",
-    qmp = "<private QMP port>",
-    vnc = "<private VNC display>",
-    iso = "<managed ISO>",
-  } = {},
-) {
-  const target = targets[machine.arch];
-  if (!target) throw new Error("Unsupported architecture.");
-  const args = [
-    "-name",
-    machine.name.replaceAll(",", ",,"),
-    "-machine",
-    machine.machineType || target.machine,
-    "-accel",
-    machine.accelerator || "tcg",
-    "-cpu",
-    machine.accelerator === "kvm" ? "host" : target.cpu,
-    "-m",
-    String(machine.memory),
-    "-smp",
-    String(machine.cpus),
-    "-drive",
-    `file=${disk.replaceAll(",", ",,")},format=qcow2,if=virtio`,
-    "-qmp",
-    `tcp:127.0.0.1:${qmp},server=on,wait=off`,
-    "-vnc",
-    `127.0.0.1:${typeof vnc === "number" ? vnc - 5900 : vnc}`,
-    "-display",
-    "none",
-  ];
-  if (target.firmware)
-    args.push(
-      "-bios",
-      target.firmware,
-      "-device",
-      "virtio-gpu-pci",
-      "-device",
-      "qemu-xhci",
-      "-device",
-      "usb-kbd",
-      "-device",
-      "usb-tablet",
-    );
-  if (machine.network === "user")
-    args.push(
-      "-netdev",
-      "user,id=net0,restrict=on",
-      "-device",
-      "virtio-net-pci,netdev=net0",
-    );
-  else args.push("-nic", "none");
-  if (machine.iso)
-    args.push(
-      "-device",
-      "virtio-scsi-pci,id=media-scsi",
-      "-drive",
-      `file=${iso.replaceAll(",", ",,")},format=raw,if=none,media=cdrom,readonly=on,id=installation-media`,
-      "-device",
-      "scsi-cd,drive=installation-media,bus=media-scsi.0,bootindex=1",
-    );
-  return { executable: target.executable, args };
-}
 export class Qemu {
   constructor(directory) {
     this.directory = directory;
@@ -145,15 +36,28 @@ export class Qemu {
     this.lastErrors = new Map();
     this.locks = new Map();
     this.capabilities = {};
+    this.host = {
+      firmware: {
+        x86_64: { uefi: false, secureBoot: false },
+        i386: { uefi: false, secureBoot: false },
+      },
+      swtpm: null,
+      cpuModels: {},
+    };
   }
   async open() {
-    for (const dir of ["disks", "media", "runtime"])
+    for (const dir of ["disks", "media", "runtime", "imports"])
       await mkdir(path.join(this.directory, dir), {
         recursive: true,
         mode: 0o700,
       });
     this.capabilities = await discoverCapabilities();
+    this.host = await discoverHost(this.capabilities);
     return this;
+  }
+  runtimeDirectory(id) {
+    if (!/^[a-f0-9-]{36}$/.test(id)) throw new Error("Invalid machine id.");
+    return path.join(this.directory, "runtime", id);
   }
   async media() {
     return (await readdir(path.join(this.directory, "media"))).filter((n) =>
@@ -172,10 +76,23 @@ export class Qemu {
     return next;
   }
   async disk(id, size) {
-    const destination = path.join(this.directory, "disks", `${id}.qcow2`);
-    await exec("qemu-img", ["create", "-f", "qcow2", destination, `${size}G`], {
-      timeout: 20000,
+    return this.createDisk(id, {
+      id: "disk0",
+      format: "qcow2",
+      sizeGiB: size,
     });
+  }
+  async createDisk(machineId, disk) {
+    const destination = path.join(
+      this.directory,
+      "disks",
+      diskFileName(machineId, disk),
+    );
+    await exec(
+      "qemu-img",
+      ["create", "-f", disk.format, destination, `${disk.sizeGiB}G`],
+      { timeout: 20000 },
+    );
     return destination;
   }
   status(id) {
@@ -210,17 +127,16 @@ export class Qemu {
     return this.exclusive("all-starts", () => this.startReserved(machine));
   }
   async startReserved(machine) {
-    machine = validateMachineWithIdentity(machine, this.capabilities);
+    machine = {
+      ...machine,
+      ...validateMachine(machine, this.capabilities, this.host),
+    };
     if (this.running.has(machine.id))
       throw new Error("Machine is already active.");
     if (!this.capabilities[machine.arch]?.available)
       throw new Error(
         this.capabilities[machine.arch]?.reason || "QEMU unavailable.",
       );
-    const disk = await containedFile(
-      path.join(this.directory, "disks"),
-      `${machine.id}.qcow2`,
-    );
     const target = targets[machine.arch];
     const memory = await memoryLimit();
     const allocated = [...this.running.values()].reduce(
@@ -237,14 +153,71 @@ export class Qemu {
       vnc = await port();
     if (vnc === qmp || vnc < 5900)
       throw new Error("No valid private console port available.");
-    const iso = machine.iso
-      ? await containedFile(path.join(this.directory, "media"), machine.iso)
-      : "";
-    const { args } = launchPlan(machine, { disk, qmp, vnc, iso });
+    const diskPaths = {};
+    for (const d of machine.disks)
+      diskPaths[d.id] = await containedFile(
+        path.join(this.directory, "disks"),
+        diskFileName(machine.id, d),
+      );
+    const cdPaths = [];
+    for (const name of machine.cdroms)
+      cdPaths.push(
+        await containedFile(path.join(this.directory, "media"), name),
+      );
+    const runtime = this.runtimeDirectory(machine.id);
+    await mkdir(runtime, { recursive: true, mode: 0o700 });
+    const options = { disks: diskPaths, cdroms: cdPaths, qmp, vnc };
+    if (
+      ["x86_64", "i386"].includes(machine.arch) &&
+      machine.firmware === "uefi"
+    ) {
+      const firmware = this.host.firmware[machine.arch];
+      options.firmware = firmware;
+      options.vars = path.join(runtime, "OVMF_VARS.fd");
+      try {
+        await copyFile(firmware.vars, options.vars, constants.COPYFILE_EXCL);
+      } catch (error) {
+        if (error.code !== "EEXIST") throw error;
+      }
+    }
+    if (machine.serial) options.serialLog = path.join(runtime, "serial.log");
+    let tpm = null;
+    if (machine.tpm) {
+      if (!this.host.swtpm)
+        throw new Error("The swtpm emulator was not found on this host.");
+      const state = path.join(runtime, "tpm");
+      await mkdir(state, { recursive: true, mode: 0o700 });
+      options.tpmSocket = path.join(runtime, "swtpm.sock");
+      tpm = spawn(
+        this.host.swtpm,
+        [
+          "socket",
+          "--tpmstate",
+          `dir=${state}`,
+          "--ctrl",
+          `type=unixio,path=${options.tpmSocket}`,
+          "--tpm2",
+          "--terminate",
+        ],
+        { stdio: "ignore", windowsHide: true },
+      );
+      tpm.on("error", () => {});
+      for (let i = 0; i < 30; i++) {
+        try {
+          await access(options.tpmSocket);
+          break;
+        } catch {
+          await new Promise((resolve) => setTimeout(resolve, 100));
+        }
+      }
+    }
+    const { args } = launchPlan(machine, options);
     const child = spawn(target.executable, args, {
       stdio: ["ignore", "ignore", "pipe"],
       windowsHide: true,
     });
+    child.on("close", () => tpm?.kill());
+    child.on("error", () => tpm?.kill());
     const r = {
       process: child,
       qmp,
@@ -293,10 +266,12 @@ export class Qemu {
     child.kill();
     throw new Error(r.error || "QEMU did not become ready within ten seconds.");
   }
-  async command(id, execute, args) {
+  async command(id, execute, args, timeout) {
     const r = this.running.get(id);
     if (!r) throw new Error("Machine is not running.");
-    return this.exclusive(`qmp:${id}`, () => qmpCommand(r.qmp, execute, args));
+    return this.exclusive(`qmp:${id}`, () =>
+      qmpCommand(r.qmp, execute, args, timeout),
+    );
   }
   async action(id, action) {
     const r = this.running.get(id);
@@ -403,8 +378,4 @@ export function qmpCommand(portNumber, execute, args, timeout = 3000) {
       else finish(new Error("QMP connection closed."));
     });
   });
-}
-
-function validateMachineWithIdentity(machine, capabilities) {
-  return { ...machine, ...validateMachine(machine, capabilities) };
 }

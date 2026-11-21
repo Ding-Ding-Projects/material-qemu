@@ -50,7 +50,7 @@ test("configuration rejects shell-like media, unknown architecture and oversized
     { iso: "../outside.iso" },
     { iso: "disk.iso,format=raw" },
     { cpus: 1.5 },
-    { memory: 100000 },
+    { memory: 300000 },
     { network: "bridge" },
     { arch: "untrusted" },
   ])
