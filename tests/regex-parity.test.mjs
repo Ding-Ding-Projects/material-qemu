@@ -1,7 +1,25 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { debugMatch, parseRegex } from "../public/regex-debug.js";
-import { flavourReport, generateCode, searchFiles, LANGUAGES } from "../public/regex-convert.js";
+import { flavourReport, generateCode, searchFiles, replaceFiles, LANGUAGES } from "../public/regex-convert.js";
+
+test("replacing in files matches String.replace, counts hits and lists changed lines", () => {
+  const files = [
+    { name: "a.conf", text: "port=80\r\nhost=a\r\nport=8080\r\n" },
+    { name: "b.conf", text: "nothing" },
+  ];
+  const [a, b] = replaceFiles("^port=(?<n>\\d+)$", "m", files, "port=$<n>0");
+  assert.equal(a.text, "port=800\r\nhost=a\r\nport=80800\r\n");
+  assert.equal(a.count, 2);
+  assert.deepEqual(a.changed, [{ line: 1, before: "port=80", after: "port=800" }, { line: 3, before: "port=8080", after: "port=80800" }]);
+  assert.equal(b.count, 0);
+  assert.equal(b.text, "nothing");
+  // Look-arounds behave exactly as in the real engine.
+  assert.equal(replaceFiles("(?<=a)b", "", [{ name: "x", text: "ab cb ab" }], "B")[0].text, "aB cb aB");
+  const joined = replaceFiles("\\n", "", [{ name: "x", text: "1\n2\n3" }], ",")[0];
+  assert.equal(joined.text, "1,2,3");
+  assert.equal(joined.linesChanged, true);
+});
 
 // The debugger must find the same first match as the real engine.
 const agree = [

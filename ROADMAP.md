@@ -28,7 +28,8 @@
 - [x] Add regex explain, a test bench with groups, replace and split previews, a saved pattern library and a one-second worker time limit to the regex builder (scripts/verify-regex-tools.mjs, evidence/regex-tools).
 - [x] Add a step-by-step regex debugger, a comparison with other flavours, code generation in six languages and local file search to the regex builder (tests/regex-parity.test.mjs, scripts/verify-regex-tools.mjs, evidence/regex-tools).
 - [x] Extend header search to disk images, ISOs and help articles, and give the command palette its own regex search (tests/search-everywhere.test.mjs, scripts/verify-search-everywhere.mjs, evidence/search-everywhere).
-- [ ] Run other regex flavours' own engines and replace text inside searched files.
+- [x] Replace text inside searched local files, with a per-line preview and downloads of the changed copies (tests/regex-parity.test.mjs, scripts/verify-regex-tools.mjs, evidence/regex-tools).
+- ~~Run other regex flavours' own engines.~~ Not planned: it needs those runtimes shipped to the browser, or the server running interpreters on browser-supplied patterns, which the server-owned process rule forbids. The flavour tab reports known differences instead.
 - [x] Add the server model for advanced hardware, firmware (UEFI, Secure Boot, TPM), multiple disks, networking, display and devices (see docs/features/qemu-hardware.md).
 - [x] Run the remade interface against the v2 server with a real UEFI machine (virtio and NVMe disks): dashboard thumbnail, console, power actions, snapshots and storage inventory (evidence/lang-gui-remake/real).
 - [x] Click through the create form against the v2 server: every section, UEFI, a second disk, CPU topology and a port forward saved as a v2 machine (evidence/lang-gui-remake/workflows, scripts/verify-browser-workflows.mjs).

@@ -3,7 +3,7 @@
 // stop for a catastrophic pattern, and the saved library across a reload.
 // Usage: node scripts/verify-regex-tools.mjs <origin> <password> <out-dir>
 import { spawn } from "node:child_process";
-import { writeFileSync, mkdirSync } from "node:fs";
+import { writeFileSync, mkdirSync, readFileSync } from "node:fs";
 import path from "node:path";
 import os from "node:os";
 import { createRequire } from "node:module";
@@ -130,6 +130,22 @@ check("Search files lists matching lines from the chosen files", /2 matching lin
 const uploadsAfter = await ev(`return performance.getEntriesByType('resource').filter((e) => /upload|import/i.test(e.name)).length`);
 check("Chosen files are not sent to the server", uploadsAfter === uploadsBefore);
 await shot("files");
+
+// Replace inside the chosen files: preview, then download the changed copy.
+const downloads = path.join(outDir, "downloads");
+mkdirSync(downloads, { recursive: true });
+await send("Browser.setDownloadBehavior", { behavior: "allow", downloadPath: downloads });
+await ev(`const c=document.querySelector('#regex-file-replace'); c.checked=true; c.dispatchEvent(new Event('change',{bubbles:true})); return 1;`); await sleep(400);
+await setValue("#regex-file-replacement", "WARN"); await sleep(1800);
+out = await output();
+check("Replace in files counts the replacements per file", /2 replacements in 1 of 2 files/.test(out), out.split("\n")[0]);
+const diff = await ev(`return [...document.querySelectorAll('.file-lines.diff li')].map((li) => li.innerText.replace(/\\s+/g, ' ')).join(' / ')`);
+check("Replace in files shows each changed line before and after", diff.includes("ERROR disk not found WARN disk not found") && diff.includes("error again WARN again"), diff);
+await shot("files-replace");
+await ev(`document.querySelector('[data-action="regex-file-download:0"]').click(); return 1;`);
+let saved = "";
+for (let i = 0; i < 30 && !saved; i++) { await sleep(200); try { saved = readFileSync(path.join(downloads, "qemu-a.log"), "utf8"); } catch {} }
+check("The changed copy downloads with the replacements, and the original file is unchanged", saved === "boot ok\nWARN disk not found\nwarning: slow\nWARN again\n" && readFileSync(path.join(filesDir, "qemu-a.log"), "utf8").includes("ERROR disk not found"), JSON.stringify(saved));
 
 // Cantonese and phone width: every new tab renders its own labels with no sideways scrolling.
 const setLang = (lang) => ev(`const s=await (await fetch('/api/session')).json(); await fetch('/api/preferences',{method:'POST',headers:{'content-type':'application/json','x-csrf-token':s.csrf},body:JSON.stringify({settings:{language:'${lang}'}})}); return 1;`);

@@ -140,3 +140,25 @@ export function searchFiles(src, flags, files, limit = 500) {
   }
   return { files: out, total, truncated };
 }
+
+// Replaces every match in local files. Returns each file's new text, the
+// number of replacements, and the changed lines (line number, before, after)
+// when the replacement keeps the same number of lines.
+export function replaceFiles(src, flags, files, replacement, previewLimit = 200) {
+  const clean = [...new Set(String(flags).replace(/[^imsu]/g, ""))].join("") + "g";
+  const re = new RegExp(src, clean);
+  return files.map((file) => {
+    const before = String(file.text);
+    let count = 0;
+    re.lastIndex = 0;
+    for (let m; (m = re.exec(before)); ) { count++; if (m[0] === "") re.lastIndex++; }
+    re.lastIndex = 0;
+    const after = count ? before.replace(re, replacement) : before;
+    const a = before.split(/\r?\n/), b = after.split(/\r?\n/);
+    const changed = [];
+    if (a.length === b.length) {
+      for (let i = 0; i < a.length && changed.length < previewLimit; i++) if (a[i] !== b[i]) changed.push({ line: i + 1, before: a[i].slice(0, 400), after: b[i].slice(0, 400) });
+    }
+    return { name: file.name, count, text: after, changed, linesChanged: a.length !== b.length };
+  });
+}

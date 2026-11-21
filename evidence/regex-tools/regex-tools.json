@@ -1,6 +1,6 @@
 {
   "origin": "http://localhost:8097/",
-  "at": "2026-11-21T12:10:16.881Z",
+  "at": "2026-11-21T12:18:19.661Z",
   "results": [
     {
       "name": "Explain describes each part, including the named group",
@@ -91,6 +91,21 @@
       "name": "Chosen files are not sent to the server",
       "ok": true,
       "detail": ""
+    },
+    {
+      "name": "Replace in files counts the replacements per file",
+      "ok": true,
+      "detail": "2 replacements in 1 of 2 files 0 ms"
+    },
+    {
+      "name": "Replace in files shows each changed line before and after",
+      "ok": true,
+      "detail": "2 ERROR disk not found WARN disk not found / 4 error again WARN again"
+    },
+    {
+      "name": "The changed copy downloads with the replacements, and the original file is unchanged",
+      "ok": true,
+      "detail": "\"boot ok\\nWARN disk not found\\nwarning: slow\\nWARN again\\n\""
     },
     {
       "name": "New tabs are in Cantonese and fit 375 pixels without sideways scrolling",

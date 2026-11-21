@@ -2733,3 +2733,22 @@ article.flash {
 .palette-builder .explain:empty {
   display: none;
 }
+
+.file-lines.diff .pair {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.file-lines.diff .before {
+  text-decoration: line-through;
+  opacity: 0.75;
+  color: var(--error);
+}
+.file-lines.diff .after {
+  color: var(--tertiary);
+}
+.regex-row .field.grow {
+  flex: 1 1 240px;
+  margin: 0;
+}

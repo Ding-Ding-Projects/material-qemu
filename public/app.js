@@ -75,6 +75,18 @@ function drawSearchElsewhere() {
 const regexLibrary = createLibrary();
 let regexTab = "explain", regexSample = null, regexReplacement = "", regexRun = 0, regexLast = { key: "", html: "" };
 let regexDebug = null, regexDebugStep = 0, regexCodeLang = "JavaScript", regexFiles = [];
+let regexFileReplace = false, regexFileReplacement = "", regexFileResults = [];
+// Gives the browser a changed file to save. Nothing on disk is changed in place.
+function downloadText(name, text) {
+  const url = URL.createObjectURL(new Blob([text], { type: "text/plain;charset=utf-8" }));
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = name;
+  document.body.append(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
 const REGEX_FILE_LIMIT = 20, REGEX_FILE_BYTES = 2 * 1024 * 1024;
 const regexFilesKey = () => regexFiles.map((x) => `${x.name}:${x.text.length}:${x.modified}`).join("|");
 function regexStepLabel(e) {
@@ -131,9 +143,9 @@ function regexTabBody() {
     const s = currentSearch();
     body = `<div class="chips" role="radiogroup" aria-label="${t("Language", "程式語言")}">${LANGUAGES.map((l) => button(`regex-lang:${l}`, escape(l), regexCodeLang === l ? "selected" : "", `role="radio" aria-checked="${regexCodeLang === l}"`)).join("")}</div>${!query || !s.ok ? `<p class="muted-line">${t("Type a valid pattern to generate code.", "輸入有效樣式，即可產生程式碼。")}</p>` : `<pre class="regex-preview" id="regex-code">${escape(generateCode(query, regexFlagString(), regexCodeLang))}</pre>${button("regex-copy", `<span class="icon" aria-hidden="true">content_copy</span>${t("Copy code", "複製程式碼")}`)}`}`;
   } else if (regexTab === "files") {
-    body = `<p class="muted-line">${t(`Pick up to ${REGEX_FILE_LIMIT} text files of at most 2 MiB each. They are read in this browser only and never uploaded.`, `最多選擇 ${REGEX_FILE_LIMIT} 個文字檔，每個最多 2 MiB。檔案只在此瀏覽器讀取，不會上載。`)}</p><div class="regex-row"><label class="pick-files"><span class="icon" aria-hidden="true">folder_open</span>${t("Choose files", "選擇檔案")}<input type="file" id="regex-files" multiple accept=".txt,.log,.md,.csv,.json,.xml,.yaml,.yml,.ini,.conf,.cfg,.sh,.ps1,.js,.py,text/*" class="sr-only"></label>${regexFiles.length ? button("regex-files-clear", t("Clear files", "清除檔案"), "ghost") : ""}<span class="muted">${regexFiles.map((x) => escape(x.name)).join(", ")}</span></div><div id="regex-output" class="regex-output" aria-live="polite"></div>`;
+    body = `<p class="muted-line">${t(`Pick up to ${REGEX_FILE_LIMIT} text files of at most 2 MiB each. They are read in this browser only and never uploaded.`, `最多選擇 ${REGEX_FILE_LIMIT} 個文字檔，每個最多 2 MiB。檔案只在此瀏覽器讀取，不會上載。`)}</p><div class="regex-row"><label class="pick-files"><span class="icon" aria-hidden="true">folder_open</span>${t("Choose files", "選擇檔案")}<input type="file" id="regex-files" multiple accept=".txt,.log,.md,.csv,.json,.xml,.yaml,.yml,.ini,.conf,.cfg,.sh,.ps1,.js,.py,text/*" class="sr-only"></label>${regexFiles.length ? button("regex-files-clear", t("Clear files", "清除檔案"), "ghost") : ""}<span class="muted">${regexFiles.map((x) => escape(x.name)).join(", ")}</span></div><div class="regex-row"><label class="chip-check"><input type="checkbox" id="regex-file-replace" ${regexFileReplace ? "checked" : ""}> ${t("Replace in files", "在檔案中取代")}</label>${regexFileReplace ? `<label class="field grow"><span>${t("Replace with ($1, $&lt;name&gt;, $&amp; are allowed)", "取代為（可用 $1、$&lt;name&gt;、$&amp;）")}</span><input id="regex-file-replacement" class="mono" value="${escape(regexFileReplacement)}" spellcheck="false"></label>` : ""}</div>${regexFileReplace ? `<p class="muted-line">${t("Your files are not changed. Review the changes, then download the changed copies.", "不會更改你的檔案。檢查變更後，下載已更改的副本。")}</p>` : ""}<div id="regex-output" class="regex-output" aria-live="polite"></div>`;
   } else if (regexTab === "test" || regexTab === "replace" || regexTab === "split" || regexTab === "debug") {
-    body = `<label class="field"><span>${t("Sample text (starts as your machines, one per line)", "範例文字（預設為你的機器，每行一部）")}</span><textarea id="regex-sample" rows="4" spellcheck="false" class="mono">${escape(regexSampleText())}</textarea></label>${regexTab === "replace" ? `<label class="field"><span>${t("Replace with ($1, $<name>, $& are allowed)", "取代為（可用 $1、$<name>、$&）")}</span><input id="regex-replacement" class="mono" value="${escape(regexReplacement)}" spellcheck="false"></label>` : ""}<div id="regex-output" class="regex-output" aria-live="polite"></div>`;
+    body = `<label class="field"><span>${t("Sample text (starts as your machines, one per line)", "範例文字（預設為你的機器，每行一部）")}</span><textarea id="regex-sample" rows="4" spellcheck="false" class="mono">${escape(regexSampleText())}</textarea></label>${regexTab === "replace" ? `<label class="field"><span>${t("Replace with ($1, $&lt;name&gt;, $&amp; are allowed)", "取代為（可用 $1、$&lt;name&gt;、$&amp;）")}</span><input id="regex-replacement" class="mono" value="${escape(regexReplacement)}" spellcheck="false"></label>` : ""}<div id="regex-output" class="regex-output" aria-live="polite"></div>`;
   } else if (regexTab === "library") {
     const items = regexLibrary.list();
     body = `<div class="regex-row"><input id="regex-lib-name" maxlength="60" placeholder="${t("Name this pattern", "為此樣式命名")}" aria-label="${t("Pattern name", "樣式名稱")}">${button("regex-save", t("Save current pattern", "儲存目前樣式"), "", query ? "" : "disabled")}</div>${items.length ? `<ul class="regex-library">${items.map((p, i) => `<li><span><strong>${escape(p.name)}</strong><code>/${escape(p.pattern)}/${escape(p.flags)}</code></span>${button(`regex-use:${i}`, t("Use", "使用"))}${button(`regex-delete:${i}`, '<span class="icon" aria-hidden="true">delete</span>', "icon-btn", `aria-label="${escape(t("Delete ", "刪除 ") + p.name)}"`)}</li>`).join("")}</ul>` : `<p class="muted-line">${t("No saved patterns yet.", "暫時沒有已儲存的樣式。")}</p>`}`;
@@ -149,7 +161,7 @@ async function refreshRegexOutput() {
   const sample = regexSampleText();
   const flags = regexFlagString();
   if (regexTab === "files" && !regexFiles.length) { out.innerHTML = `<p class="muted-line">${t("No files chosen yet.", "尚未選擇檔案。")}</p>`; return; }
-  const key = JSON.stringify([regexTab, query, flags, regexTab === "files" ? regexFilesKey() : sample, regexReplacement]);
+  const key = JSON.stringify([regexTab, query, flags, regexTab === "files" ? regexFilesKey() : sample, regexTab === "files" ? [regexFileReplace, regexFileReplacement] : regexReplacement]);
   if (key === regexLast.key) { out.innerHTML = regexLast.html; return; }
   const run = ++regexRun;
   if (regexTab === "debug") {
@@ -159,6 +171,23 @@ async function refreshRegexOutput() {
     regexDebug = { key, sample: sample.slice(0, 2000), result: r.ok ? r.result : { ok: false, error: r.timedOut ? "The debugger ran out of time." : r.error } };
     regexDebugStep = 0;
     drawDebug();
+    return;
+  }
+  if (regexTab === "files" && regexFileReplace) {
+    out.innerHTML = `<p class="muted-line">${t("Replacing…", "取代中…")}</p>`;
+    const r = await runBounded("replaceFiles", [query, flags, regexFiles.map(({ name, text }) => ({ name, text })), regexFileReplacement], { limit: 3000 });
+    if (run !== regexRun) return;
+    let html;
+    if (!r.ok) { regexFileResults = []; html = `<p class="error-text" role="alert">${escape(r.timedOut ? t("Stopped after three seconds: this pattern backtracks too much on these files.", "三秒後已停止：此樣式在這些檔案上回溯太多。") : localizeServerError(r.error, t))}</p>`; }
+    else {
+      regexFileResults = r.result;
+      const changedFiles = regexFileResults.filter((x) => x.count);
+      const total = changedFiles.reduce((n, x) => n + x.count, 0);
+      html = `<p class="muted-line">${t(`${total.toLocaleString()} replacements in ${changedFiles.length} of ${regexFileResults.length} files`, `${regexFileResults.length} 個檔案中有 ${changedFiles.length} 個會更改，共 ${total.toLocaleString()} 處取代`)} <span class="muted">${r.ms} ms</span></p>${changedFiles.length > 1 ? button("regex-file-download:all", `<span class="icon" aria-hidden="true">download</span>${t("Download all changed files", "下載所有已更改檔案")}`) : ""}${regexFileResults.map((x, i) => x.count ? `<details open class="file-hits"><summary><span class="mono">${escape(x.name)}</span> <span class="muted">${t(`${x.count} replacements`, `${x.count} 處取代`)}</span></summary>${button(`regex-file-download:${i}`, `<span class="icon" aria-hidden="true">download</span>${t("Download changed copy", "下載已更改副本")}`, "ghost", `aria-label="${escape(t("Download changed copy of ", "下載已更改副本：") + x.name)}"`)}${x.linesChanged ? `<p class="muted-line">${t("The number of lines changes, so lines are not compared one by one.", "行數有變，因此不逐行比較。")}</p>` : `<ol class="file-lines diff">${x.changed.map((l) => `<li><span class="num">${l.line}</span><span class="pair"><code class="before">${escape(l.before)}</code><code class="after">${escape(l.after)}</code></span></li>`).join("")}</ol>`}</details>` : "").join("")}`;
+    }
+    regexLast = { key, html };
+    const el = document.querySelector("#regex-output");
+    if (el) el.innerHTML = html;
     return;
   }
   if (regexTab === "files") {
@@ -196,7 +225,7 @@ function updateRegexTools() {
   const holder = document.querySelector("#regex-tools");
   if (!holder) return;
   const focusId = document.activeElement?.id;
-  if (!["regex-sample", "regex-replacement", "regex-lib-name", "regex-step-range"].includes(focusId)) holder.innerHTML = regexTabBody();
+  if (!["regex-sample", "regex-replacement", "regex-lib-name", "regex-step-range", "regex-file-replacement"].includes(focusId)) holder.innerHTML = regexTabBody();
   refreshRegexOutput();
 }
 
@@ -1595,6 +1624,7 @@ const releaseChord = createReleaseChord(() => {
 let regexInputTimer = null;
 document.addEventListener("input", (e) => {
   if (e.target.id === "regex-step-range") { regexDebugStep = Number(e.target.value) - 1; drawDebug(); document.querySelector("#regex-step-range")?.focus(); return; }
+  if (e.target.id === "regex-file-replacement") { regexFileReplacement = e.target.value; clearTimeout(regexInputTimer); regexInputTimer = setTimeout(refreshRegexOutput, 250); return; }
   if (e.target.id === "regex-sample") regexSample = e.target.value;
   else if (e.target.id === "regex-replacement") regexReplacement = e.target.value;
   else return;
@@ -1602,6 +1632,12 @@ document.addEventListener("input", (e) => {
   regexInputTimer = setTimeout(refreshRegexOutput, 250);
 });
 document.addEventListener("change", async (e) => {
+  if (e.target.id === "regex-file-replace") {
+    regexFileReplace = e.target.checked;
+    updateRegexTools();
+    document.querySelector("#regex-file-replace")?.focus();
+    return;
+  }
   if (e.target.id === "regex-files") {
     const picked = [...e.target.files].slice(0, REGEX_FILE_LIMIT);
     const skipped = [...e.target.files].length - picked.length + picked.filter((x) => x.size > REGEX_FILE_BYTES).length;
@@ -2286,8 +2322,16 @@ async function handleExtra(action, b) {
     catch { notify(t("The browser did not allow copying. Select the code and copy it instead.", "瀏覽器不允許複製，請選取程式碼後自行複製。")); }
     return true;
   }
+  if (action.startsWith("regex-file-download:")) {
+    const which = action.slice(20);
+    const list = which === "all" ? regexFileResults.filter((x) => x.count) : [regexFileResults[Number(which)]].filter(Boolean);
+    list.forEach((x, i) => setTimeout(() => downloadText(x.name, x.text), i * 250));
+    if (list.length) notify(t(`Downloading ${list.length} changed files.`, `正在下載 ${list.length} 個已更改檔案。`));
+    return true;
+  }
   if (action === "regex-files-clear") {
     regexFiles = [];
+    regexFileResults = [];
     updateRegexTools();
     return true;
   }
