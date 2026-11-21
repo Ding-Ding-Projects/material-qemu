@@ -2389,3 +2389,76 @@ dialog:has(.annotation-canvas) {
     min-width: 100%;
   }
 }
+
+/* Notifications center: bell in the header and its panel. */
+.bell {
+  position: relative;
+}
+.bell .badge {
+  position: absolute;
+  top: 4px;
+  right: 2px;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 5px;
+  border-radius: 10px;
+  background: var(--error);
+  color: var(--on-error);
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 20px;
+  text-align: center;
+}
+.notification-panel {
+  position: fixed;
+  top: 76px;
+  right: 24px;
+  z-index: 40;
+  width: min(420px, calc(100vw - 32px));
+  max-height: min(70vh, 640px);
+  overflow: auto;
+  padding: 16px 18px;
+  border-radius: var(--shape-xl);
+  background: var(--surface-container-high);
+  color: var(--on-surface);
+  box-shadow: 0 12px 36px #0007;
+  animation: pop var(--dur-m) var(--ease-spring);
+}
+.notification-head {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.notification-head h2 {
+  flex: 1;
+  margin: 0;
+  font-size: 20px;
+  outline: none;
+}
+.notification-list {
+  list-style: none;
+  margin: 12px 0 0;
+  padding: 0;
+  display: grid;
+  gap: 6px;
+}
+.notification-list li {
+  display: grid;
+  gap: 2px;
+  padding: 10px 14px;
+  border-radius: var(--shape-m);
+  background: var(--surface-container);
+}
+.notification-list li.unread {
+  border-left: 4px solid var(--primary);
+}
+.notification-list time {
+  font-size: 12px;
+  color: var(--on-surface-variant);
+}
+@media (max-width: 760px) {
+  .notification-panel {
+    top: 64px;
+    right: 16px;
+  }
+}

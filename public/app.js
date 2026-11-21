@@ -35,6 +35,56 @@ import { localizeServerError } from "./server-errors.js";
 import { createReleaseChord } from "./input-release.js";
 import { createConsoleTools } from "./console-tools.js";
 import { compileSearch, SEARCH_FIELDS, MAX_PATTERN } from "./search-pattern.js";
+import { createNotificationLog } from "./notifications.js";
+
+// Every notice is also kept in the notifications center (this browser only).
+const notificationLog = createNotificationLog();
+function notificationBadge() {
+  const n = notificationLog.unread();
+  const b = document.querySelector('[data-action="notifications"]');
+  if (!b) return;
+  b.setAttribute("aria-label", n ? t(`Notifications, ${n} unread`, `通知，${n} 則未讀`) : t("Notifications", "通知"));
+  const badge = b.querySelector(".badge");
+  if (badge) {
+    badge.textContent = n > 99 ? "99+" : String(n);
+    badge.hidden = !n;
+  }
+}
+function notificationPanel() {
+  let panel = document.querySelector("#notification-panel");
+  if (!panel) {
+    panel = document.createElement("section");
+    panel.id = "notification-panel";
+    panel.className = "notification-panel";
+    panel.hidden = true;
+    panel.setAttribute("aria-labelledby", "notification-title");
+    document.body.append(panel);
+  }
+  return panel;
+}
+function drawNotifications() {
+  const panel = notificationPanel();
+  const items = notificationLog.list();
+  const time = (at) => new Date(at).toLocaleString(undefined, { hour: "2-digit", minute: "2-digit", hour12: false, month: "short", day: "numeric" });
+  panel.innerHTML = `<div class="notification-head"><h2 id="notification-title" tabindex="-1">${t("Notifications", "通知")}</h2>${button("notifications-read", t("Mark all read", "全部標為已讀"), "ghost", items.some((n) => !n.read) ? "" : "disabled")}${button("notifications-clear", t("Clear", "清除"), "ghost", items.length ? "" : "disabled")}${button("notifications-close", '<span class="icon" aria-hidden="true">close</span>', "icon-btn", `aria-label="${escape(t("Close notifications", "關閉通知"))}"`)}</div>${items.length ? `<ul class="notification-list">${items.map((n) => `<li class="${n.read ? "" : "unread"}"><span>${escape(n.message)}</span><time datetime="${escape(n.at)}">${escape(time(n.at))}</time></li>`).join("")}</ul>` : `<p class="muted-line">${t("No notifications yet. Messages about your actions appear here.", "暫時沒有通知，操作訊息會在這裡顯示。")}</p>`}`;
+}
+function toggleNotifications(open) {
+  const panel = notificationPanel();
+  const show = open ?? panel.hidden;
+  const trigger = document.querySelector('[data-action="notifications"]');
+  if (show) {
+    drawNotifications();
+    panel.hidden = false;
+    trigger?.setAttribute("aria-expanded", "true");
+    panel.querySelector("#notification-title")?.focus();
+  } else {
+    if (!panel.hidden) notificationLog.markAllRead();
+    panel.hidden = true;
+    trigger?.setAttribute("aria-expanded", "false");
+    notificationBadge();
+    if (panel.contains(document.activeElement) || document.activeElement === document.body) trigger?.focus();
+  }
+}
 const { startRegistration, startAuthentication } = window.SimpleWebAuthnBrowser;
 
 const $ = (selector) => document.querySelector(selector);
@@ -157,6 +207,9 @@ function enumLabel(value) {
   return labels[value] ? t(...labels[value]) : value;
 }
 function notify(message) {
+  notificationLog.add(message);
+  notificationBadge();
+  if (!notificationPanel().hidden) drawNotifications();
   const text = document.createElement("span");
   text.textContent = message;
   const dismiss = document.createElement("button");
@@ -339,7 +392,7 @@ function render() {
   const paint = () => {
     document.documentElement.toggleAttribute("data-silent", silentRender);
     $("#app").innerHTML =
-      `<div class="shell">${railHtml()}<div class="content"><header class="appbar"><div class="brand"><span class="mark" aria-hidden="true"><span class="icon">memory</span></span>Material QEMU</div>${buildMetadata()}<label class="searchbar"><span class="icon" aria-hidden="true">search</span><input id="global-search" type="search" maxlength="${MAX_PATTERN}" spellcheck="false" aria-label="${searchOpts.regex ? t("Search machines with a regular expression", "用正規表達式搜尋機器") : t("Search machines", "搜尋機器")}" placeholder="${searchOpts.regex ? t("Regular expression, for example ^(debian|win)", "正規表達式，例如 ^(debian|win)") : t("Search machines, folders and notes", "搜尋機器、資料夾和備註")}" value="${escape(query)}"${searchOpts.regex ? ' class="mono"' : ""}${currentSearch().ok ? "" : " aria-invalid"}><kbd>Ctrl+Shift+F</kbd></label>${button("regex-toggle", '<span class="mono" aria-hidden="true">.*</span>', "regex-toggle", `aria-pressed="${searchOpts.regex}" aria-controls="regex-panel" aria-label="${escape(t("Regular expression search", "正規表達式搜尋"))}" title="${escape(t("Regular expression search", "正規表達式搜尋"))}"`)}<span class="spacer"></span><span class="pill healthy health">${t("Host connected", "主機已連線")}</span>${button("commands", `<span class="icon" aria-hidden="true">terminal</span>${t("Commands", "指令")}`, "ghost")}${button("logout", t("Sign out", "登出"), "ghost")}</header>${regexPanel()}${tabs}<main class="main" id="main" tabindex="-1" role="tabpanel" aria-labelledby="workspace-tab-${encodeURIComponent(currentTabId())}">${pageHtml()}</main></div></div>`;
+      `<div class="shell">${railHtml()}<div class="content"><header class="appbar"><div class="brand"><span class="mark" aria-hidden="true"><span class="icon">memory</span></span>Material QEMU</div>${buildMetadata()}<label class="searchbar"><span class="icon" aria-hidden="true">search</span><input id="global-search" type="search" maxlength="${MAX_PATTERN}" spellcheck="false" aria-label="${searchOpts.regex ? t("Search machines with a regular expression", "用正規表達式搜尋機器") : t("Search machines", "搜尋機器")}" placeholder="${searchOpts.regex ? t("Regular expression, for example ^(debian|win)", "正規表達式，例如 ^(debian|win)") : t("Search machines, folders and notes", "搜尋機器、資料夾和備註")}" value="${escape(query)}"${searchOpts.regex ? ' class="mono"' : ""}${currentSearch().ok ? "" : " aria-invalid"}><kbd>Ctrl+Shift+F</kbd></label>${button("regex-toggle", '<span class="mono" aria-hidden="true">.*</span>', "regex-toggle", `aria-pressed="${searchOpts.regex}" aria-controls="regex-panel" aria-label="${escape(t("Regular expression search", "正規表達式搜尋"))}" title="${escape(t("Regular expression search", "正規表達式搜尋"))}"`)}<span class="spacer"></span><span class="pill healthy health">${t("Host connected", "主機已連線")}</span>${button("notifications", `<span class="icon" aria-hidden="true">notifications</span><span class="badge"${notificationLog.unread() ? "" : " hidden"}>${Math.min(notificationLog.unread(), 99)}</span>`, "icon-btn bell", `aria-expanded="false" aria-controls="notification-panel" aria-label="${escape(t("Notifications", "通知"))}" title="${escape(t("Notifications", "通知"))}"`)}${button("commands", `<span class="icon" aria-hidden="true">terminal</span>${t("Commands", "指令")}`, "ghost")}${button("logout", t("Sign out", "登出"), "ghost")}</header>${regexPanel()}${tabs}<main class="main" id="main" tabindex="-1" role="tabpanel" aria-labelledby="workspace-tab-${encodeURIComponent(currentTabId())}">${pageHtml()}</main></div></div>`;
     if (page === "console") {
       updateConsoleControls();
       connectConsole();
@@ -1362,6 +1415,13 @@ document.addEventListener("change", (e) => {
   updateRegexStatus();
   if (page === "machines" && $("#machine-results")) $("#machine-results").innerHTML = views().machineResults();
 });
+document.addEventListener("keydown", (e) => {
+  if (e.key === "Escape" && !notificationPanel().hidden) { e.preventDefault(); toggleNotifications(false); }
+});
+document.addEventListener("click", (e) => {
+  const panel = document.querySelector("#notification-panel");
+  if (panel && !panel.hidden && !panel.contains(e.target) && !e.target.closest('[data-action="notifications"]')) toggleNotifications(false);
+});
 window.addEventListener("beforeunload", (e) => {
   if (consoleTools.instance?.hasUnsaved()) e.preventDefault();
 });
@@ -1867,6 +1927,10 @@ function sectionName(id) {
   return t(...names[id] || [id, id]);
 }
 async function handleExtra(action, b) {
+  if (action === "notifications") { toggleNotifications(); return true; }
+  if (action === "notifications-close") { toggleNotifications(false); return true; }
+  if (action === "notifications-read") { notificationLog.markAllRead(); drawNotifications(); notificationBadge(); return true; }
+  if (action === "notifications-clear") { notificationLog.clear(); drawNotifications(); notificationBadge(); return true; }
   if (action === "regex-toggle") {
     searchOpts.regex = !searchOpts.regex;
     saveSearchOpts();

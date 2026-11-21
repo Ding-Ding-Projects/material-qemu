@@ -1,5 +1,5 @@
 {
-  "sourceCommit": "c1721243117a82fd8a07ae184782949776d29f8b",
+  "sourceCommit": "08e6502c930fcb013d10dc5315a3ae8e8ebfefcb",
   "wikiRemote": "https://github.com/Ding-Ding-Projects/material-qemu.wiki.git",
   "publicationState": "pending-first-page",
   "pages": [
@@ -89,9 +89,9 @@
     },
     {
       "source": "docs/features/workspace.md",
-      "sourceSha256": "c890bc0d6c351a064b106018dd3cb3ae5de5e872510550e4b8cd86f95ae4741c",
+      "sourceSha256": "95a51d99d7738659d89141cfa957c53b39bd229d3fbee884bdd1017919f88614",
       "page": "workspace.md",
-      "pageSha256": "c890bc0d6c351a064b106018dd3cb3ae5de5e872510550e4b8cd86f95ae4741c"
+      "pageSha256": "95a51d99d7738659d89141cfa957c53b39bd229d3fbee884bdd1017919f88614"
     }
   ]
 }

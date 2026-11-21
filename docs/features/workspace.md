@@ -9,3 +9,7 @@ Tabs support arrow keys, Home/End, accessible selection state, close/pin control
 ## Search and the regular expression builder
 
 The search box in the header filters machines by name, notes, folder, tags and architecture. The **.\*** button beside it switches to regular expression search and opens a builder under the header: flags (ignore case, multiline, dot matches newline), which fields are searched, insert buttons for common tokens (digit, word, space, any, repeats, alternatives, anchors, groups and sets) and a status line that says how many machines match or why a pattern is not valid. Patterns are limited to 200 characters, an invalid pattern filters nothing out silently, and the choice is remembered in this browser. `scripts/verify-search.mjs` checks this in headless Edge (evidence/search).
+
+## Notifications center
+
+Every notice that appears at the bottom of the screen is also kept in the notifications center, the bell in the header. Its badge shows how many are unread. The panel lists the last 50, newest first, with the time; closing it (Escape, the close button or a click elsewhere) marks them read and returns focus to the bell, **Mark all read** and **Clear** do what they say. The list is kept in this browser only. `scripts/verify-notifications.mjs` checks it in headless Edge (evidence/notifications).

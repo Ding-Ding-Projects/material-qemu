@@ -1,0 +1,46 @@
+{
+  "origin": "http://localhost:8097/",
+  "at": "2026-11-21T09:25:19.213Z",
+  "results": [
+    {
+      "name": "an unread notification shows a badge on the bell",
+      "ok": true,
+      "detail": "badge \"1\""
+    },
+    {
+      "name": "the panel lists the notification",
+      "ok": true,
+      "detail": "Snapshot first-boot saved."
+    },
+    {
+      "name": "the panel's heading has focus",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "the bell reports it is expanded",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "Escape closes the panel and returns focus to the bell",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "closing marks it read",
+      "ok": true,
+      "detail": "badge \"\""
+    },
+    {
+      "name": "the notification is still listed after a reload",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "Clear empties the list",
+      "ok": true,
+      "detail": ""
+    }
+  ]
+}
