@@ -1,0 +1,91 @@
+{
+  "origin": "http://localhost:8097/",
+  "at": "2026-11-21T07:59:26.781Z",
+  "results": [
+    {
+      "name": "overview: Tab reaches every control",
+      "ok": true,
+      "detail": "43/43 in 43 presses"
+    },
+    {
+      "name": "overview: every focused control shows a focus ring",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "machines: Tab reaches every control",
+      "ok": true,
+      "detail": "52/52 in 52 presses"
+    },
+    {
+      "name": "machines: every focused control shows a focus ring",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "new: Tab reaches every control",
+      "ok": true,
+      "detail": "47/47 in 47 presses"
+    },
+    {
+      "name": "new: every focused control shows a focus ring",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "storage: Tab reaches every control",
+      "ok": true,
+      "detail": "34/34 in 35 presses"
+    },
+    {
+      "name": "storage: every focused control shows a focus ring",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "settings: Tab reaches every control",
+      "ok": true,
+      "detail": "42/42 in 42 presses"
+    },
+    {
+      "name": "settings: every focused control shows a focus ring",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "history: Tab reaches every control",
+      "ok": true,
+      "detail": "28/28 in 28 presses"
+    },
+    {
+      "name": "history: every focused control shows a focus ring",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "docs: Tab reaches every control",
+      "ok": true,
+      "detail": "29/29 in 29 presses"
+    },
+    {
+      "name": "docs: every focused control shows a focus ring",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "console: Tab reaches every control",
+      "ok": true,
+      "detail": "34/34 in 34 presses"
+    },
+    {
+      "name": "console: every focused control shows a focus ring",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "Enter on a focused rail item opens its page",
+      "ok": true,
+      "detail": ""
+    }
+  ]
+}

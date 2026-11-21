@@ -390,6 +390,15 @@ input[type="radio"] {
   box-shadow: none;
   flex: none;
 }
+/* Text fields show focus as an underline; these controls have none, so they
+   keep the standard ring when reached from the keyboard. */
+input[type="checkbox"]:focus-visible,
+input[type="radio"]:focus-visible,
+input[type="range"]:focus-visible,
+input[type="color"]:focus-visible {
+  outline: 3px solid var(--primary);
+  outline-offset: 2px;
+}
 input[type="range"] {
   min-height: 32px;
   padding: 0;

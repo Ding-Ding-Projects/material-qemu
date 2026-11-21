@@ -38,7 +38,7 @@
 - [x] Register a passkey in Settings, sign out and sign in with it in headless Edge using the browser's virtual authenticator (scripts/verify-passkeys.mjs).
 - ~~Verify passkeys with a physical security key or phone.~~ Skipped at the owner's request on 2026-11-21; registration and sign-in pass with the browser's virtual authenticator.
 - [x] Capture the remade interface from a real server: a 22-step first-run walkthrough (evidence/walkthrough), dark and light pages, Cantonese and bilingual modes, and phone width without horizontal scrolling.
-- [ ] Verify full keyboard-only operation of every page.
+- [x] Verify keyboard-only operation: Tab reaches every visible control on all eight pages with a visible focus ring, and Enter opens a focused rail item (scripts/verify-keyboard.mjs, evidence/keyboard).
 
 ## Delivery and broader design
 

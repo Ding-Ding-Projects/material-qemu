@@ -28,3 +28,7 @@ Powering off, removing machines, restoring or deleting a snapshot and deleting a
 ## Server messages in Cantonese
 
 The server answers in English. `public/server-errors.js` holds a Cantonese translation of every fixed server message and a pattern for each message with a variable part, so Cantonese and bilingual modes show translated errors. Raw QEMU and qemu-img output stays exactly as printed. `tests/server-errors.test.mjs` scans the server source and fails when a message has no translation.
+
+## Keyboard
+
+Every page can be used from the keyboard. Tab moves through every visible control in reading order, each with a 3-pixel focus ring (text fields show a bold underline instead, and the search bar rings as a whole), and Enter or Space activates buttons. `scripts/verify-keyboard.mjs` presses Tab through all eight pages in headless Edge and checks both (evidence/keyboard/keyboard.json).
