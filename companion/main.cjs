@@ -139,7 +139,7 @@ ipcMain.handle('flash:disks', async () => flashLib.listRemovableDisks());
 ipcMain.handle('flash:start', async (_e, { kind, diskNumber, gate }) => {
   if (flashing) return { ok: false, message: 'A flash is already running.' };
   if (!gate || gate.keys !== 2 || gate.slider !== 100) return { ok: false, message: 'Flashing needs both keys and the full slider.' };
-  if (kind !== 'usb') return { ok: false, message: 'Unknown image.' };
+  if (kind !== 'usb' && kind !== 'installer') return { ok: false, message: 'Unknown image.' };
   flashing = true;
   const startedAt = Date.now();
   const progress = (p) => win?.webContents.send('flash:event', p);

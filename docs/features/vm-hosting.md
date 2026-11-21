@@ -8,6 +8,7 @@ The deploy assistant (`material-qemu-deploy-<version>-portable.exe`, one portabl
 | VMware Workstation | the same OVA | A VM with its own LAN address |
 | Docker on this computer | `ghcr.io/ding-ding-projects/material-qemu:<version>` | A container on a port of this computer's LAN address |
 | USB drive | `material-qemu-usb-x86_64-<version>.img.gz` | A spare Intel or AMD PC that boots straight into Material QEMU |
+| Internal disk of a PC | `material-qemu-installer-x86_64-<version>.iso` | A PC that runs Material QEMU from its own disk after a one-time install |
 
 The interface is available in English, Cantonese, or both side by side (Language selector in the side bar). Animations can be turned off there too, and they also follow the system's reduced-motion setting.
 
@@ -39,6 +40,18 @@ VMware Workstation bridges every VM through its `VMnet0` network, which by defau
 Pick **Docker on this computer**, choose which of this computer's LAN addresses to use and a port (default 8080). The assistant pulls the release's container image, creates a container named `material-qemu-<name>` with a data volume `material-qemu-<name>-data`, sets `PUBLIC_ORIGIN` to `http://<address>:<port>`, starts it, waits for `/health`. Ports already used by this computer or by another instance are refused before anything is created.
 
 Docker Desktop's engine must be running. If it is installed but stopped, the Docker card says so and stays disabled.
+
+## Installing on a PC's internal disk
+
+`material-qemu-installer-x86_64-<version>.iso` installs the appliance onto a computer's own disk, so the USB drive is only needed once.
+
+1. Write the ISO to a USB drive with Rufus (DD or ISO mode), balenaEtcher, `dd`, or the deploy assistant's Flash page (**Installer for an internal disk**). It can also be used as a DVD, or attached as a virtual CD in VirtualBox or VMware.
+2. Boot the PC from it (BIOS or UEFI). The menu's first entry, **Install Material QEMU on this computer**, is chosen after 15 seconds.
+3. The installer lists every internal disk large enough for the 8 GiB image, with its size and model and whether it is blank. The installer drive itself is never listed. Type the disk name; a disk that already has partitions also needs `ERASE` typed.
+4. It writes the image, reads it back and compares the SHA-256 with the value recorded when the release was built.
+5. Remove the USB drive and press Enter. The PC restarts into Material QEMU, grows the system to fill the disk and shows its address on screen.
+
+The second menu entry, **Install automatically to the only blank disk**, writes without asking only when exactly one listed disk has no partitions at all; otherwise it falls back to asking. The release build runs this automatic install under QEMU onto a blank disk and then boots the installed disk until the web service answers (`appliance/install-check.sh`).
 
 ## Updating an appliance
 

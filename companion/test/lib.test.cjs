@@ -130,3 +130,14 @@ test('VMware import skips the manifest check only for a release-verified OVA', a
   assert.ok(!calls[1].includes('--skipManifestCheck'));
   fs.rmSync(dir, { recursive: true, force: true });
 });
+
+test('the latest release lookup finds the installer ISO and its own record', async () => {
+  const appliance = require('../lib/appliance.cjs');
+  const names = ['material-qemu-appliance-1.ova', 'material-qemu-appliance-1.ova.sha256', 'material-qemu-usb-x86_64-1.img.gz', 'material-qemu-usb-x86_64-1.img.gz.sha256', 'material-qemu-usb-x86_64-1.img.json', 'material-qemu-installer-x86_64-1.iso', 'material-qemu-installer-x86_64-1.iso.sha256', 'material-qemu-installer-x86_64-1.iso.json'];
+  const fetchImpl = async () => ({ ok: true, status: 200, json: async () => ({ tag_name: 'v1', assets: names.map((name) => ({ name, size: 10, browser_download_url: `https://example.invalid/${name}` })) }) });
+  const rel = await appliance.latestRelease(fetchImpl);
+  assert.equal(rel.installer.name, 'material-qemu-installer-x86_64-1.iso');
+  assert.equal(rel.installer.metaUrl, 'https://example.invalid/material-qemu-installer-x86_64-1.iso.json');
+  assert.equal(rel.usb.metaUrl, 'https://example.invalid/material-qemu-usb-x86_64-1.img.json');
+  assert.equal(rel.ova.metaUrl, null);
+});

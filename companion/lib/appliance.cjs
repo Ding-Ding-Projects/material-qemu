@@ -78,12 +78,14 @@ async function latestRelease(fetchImpl = fetch) {
     const f = rel.assets.find((x) => re.test(x.name));
     const sum = f && rel.assets.find((x) => x.name === `${f.name}.sha256`);
     if (!f || !sum) return null;
-    const meta = rel.assets.find((x) => x.name === f.name.replace(/\.img\.gz$/, '.img.json'));
+    const metaName = /\.img\.gz$/.test(f.name) ? f.name.replace(/\.img\.gz$/, '.img.json') : /\.iso$/.test(f.name) ? `${f.name}.json` : null;
+    const meta = metaName && rel.assets.find((x) => x.name === metaName);
     return { name: f.name, size: f.size, url: f.browser_download_url, sumUrl: sum.browser_download_url, metaUrl: meta ? meta.browser_download_url : null };
   };
   const ova = asset(/^material-qemu-appliance-.*\.ova$/);
   const usb = asset(/^material-qemu-usb-x86_64-.*\.img\.gz$/);
-  return { tag: rel.tag_name, ova, usb, sumUrl: ova ? ova.sumUrl : null, reason: ova ? null : 'The latest release has no appliance OVA with a checksum.' };
+  const installer = asset(/^material-qemu-installer-x86_64-.*\.iso$/);
+  return { tag: rel.tag_name, ova, usb, installer, sumUrl: ova ? ova.sumUrl : null, reason: ova ? null : 'The latest release has no appliance OVA with a checksum.' };
 }
 
 async function sha256File(file) {

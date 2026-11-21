@@ -1,0 +1,134 @@
+#!/bin/sh
+# Material QEMU installer. Runs from the installer ISO's initramfs when the
+# kernel command line has mq.install=ask or mq.install=auto. It writes the
+# appliance disk image from the installer medium onto an internal disk, reads it
+# back to check the SHA-256 recorded at build time, and restarts.
+#
+# Safety rules: the installer medium itself and disks smaller than the image are
+# never offered. "ask" mode needs the disk name typed in, plus ERASE when the
+# disk already has partitions. "auto" mode only writes when exactly one offered
+# disk is completely blank (no partitions), and otherwise stops and asks.
+
+mode=$(sed -n 's/.*mq\.install=\([a-z]*\).*/\1/p' /proc/cmdline)
+[ -n "$mode" ] || exit 0
+
+say() {
+  printf '%s\n' "$*" > /dev/console
+  [ -c /dev/ttyS0 ] && printf 'MQ-INSTALL %s\r\n' "$*" > /dev/ttyS0 2>/dev/null
+  return 0
+}
+ask() { # prompt -> REPLY
+  printf '%s ' "$1" > /dev/console
+  read -r REPLY < /dev/console
+}
+fail() {
+  say ""
+  say "Installation stopped: $*"
+  say "Nothing else was changed. Press Enter to restart."
+  read -r _ < /dev/console
+  reboot -f
+}
+
+clear > /dev/console 2>/dev/null
+say "Material QEMU installer"
+say "======================="
+say ""
+for m in isofs sr_mod cdrom usb_storage uas sd_mod ahci nvme virtio_blk virtio_scsi virtio_pci xhci_pci ehci_pci; do
+  modprobe -q "$m" 2>/dev/null
+done
+udevadm settle --timeout=30 2>/dev/null
+
+say "Looking for the installer medium..."
+medium=""
+i=0
+while [ "$i" -lt 30 ]; do
+  [ -e /dev/disk/by-label/MQ_INSTALLER ] && medium=$(readlink -f /dev/disk/by-label/MQ_INSTALLER) && break
+  i=$((i + 1))
+  sleep 1
+  udevadm settle --timeout=5 2>/dev/null
+done
+[ -n "$medium" ] || fail "the installer medium (label MQ_INSTALLER) was not found."
+mkdir -p /media/installer
+mount -t iso9660 -o ro "$medium" /media/installer 2>/dev/null || mount -o ro "$medium" /media/installer || fail "the installer medium could not be read."
+image=/media/installer/material-qemu.img.gz
+[ -f "$image" ] || fail "the disk image is missing from the installer medium."
+raw_sha=$(sed -n 's/.*"rawSha256":"\([0-9a-f]*\)".*/\1/p' /media/installer/material-qemu.img.json)
+raw_bytes=$(sed -n 's/.*"rawBytes":\([0-9]*\).*/\1/p' /media/installer/material-qemu.img.json)
+[ -n "$raw_sha" ] && [ -n "$raw_bytes" ] || fail "the image record is missing."
+version=$(cat /media/installer/version 2>/dev/null || echo unknown)
+
+# The whole disk that holds the installer medium is never offered.
+medium_disk=$(basename "$medium")
+[ -e "/sys/class/block/$medium_disk/partition" ] && medium_disk=$(basename "$(readlink -f "/sys/class/block/$medium_disk/..")")
+
+candidates=""
+for dev in /sys/block/*; do
+  name=$(basename "$dev")
+  case "$name" in sd*|nvme*n*|vd*|hd*|xvd*|mmcblk*) ;; *) continue ;; esac
+  [ "$name" = "$medium_disk" ] && continue
+  [ "$(cat "$dev/ro" 2>/dev/null)" = 1 ] && continue
+  bytes=$(( $(cat "$dev/size") * 512 ))
+  [ "$bytes" -ge "$raw_bytes" ] || continue
+  candidates="$candidates $name"
+done
+candidates=$(echo $candidates)
+[ -n "$candidates" ] || fail "no internal disk of at least $((raw_bytes / 1073741824)) GiB was found."
+
+blank() { # disk has no partitions
+  for p in /sys/block/"$1"/"$1"*; do [ -e "$p/partition" ] && return 1; done
+  return 0
+}
+describe() {
+  d=/sys/block/$1
+  gib=$(( $(cat "$d/size") * 512 / 1073741824 ))
+  model=$(cat "$d/device/model" 2>/dev/null | tr -s ' ')
+  if blank "$1"; then state="blank"; else state="HAS PARTITIONS (will be erased)"; fi
+  echo "  $1  ${gib} GiB  ${model:-unknown model}  $state"
+}
+
+say "Release $version. Disks that can hold it:"
+for c in $candidates; do say "$(describe "$c")"; done
+say ""
+
+target=""
+if [ "$mode" = auto ]; then
+  set -- $candidates
+  if [ "$#" -eq 1 ] && blank "$1"; then
+    target=$1
+    say "Automatic mode: $target is the only disk and it is blank."
+  else
+    say "Automatic mode needs exactly one blank disk, so it is asking instead."
+  fi
+fi
+while [ -z "$target" ]; do
+  ask "Type the disk to install to (for example ${candidates%% *}), or 'reboot':"
+  [ "$REPLY" = reboot ] && reboot -f
+  for c in $candidates; do [ "$REPLY" = "$c" ] && target=$c; done
+  [ -n "$target" ] || say "That is not one of the disks listed."
+done
+if ! blank "$target"; then
+  ask "$target has partitions. Everything on it will be erased. Type ERASE to continue:"
+  [ "$REPLY" = ERASE ] || fail "ERASE was not typed."
+fi
+
+say ""
+say "Writing Material QEMU to /dev/$target. This takes a few minutes..."
+start=$(date +%s)
+gzip -dc "$image" | dd of="/dev/$target" bs=4M 2>/dev/null || fail "writing /dev/$target failed."
+sync
+say "Written in $(( $(date +%s) - start )) seconds. Checking what was written..."
+got=$(head -c "$raw_bytes" "/dev/$target" | sha256sum | cut -d' ' -f1)
+[ "$got" = "$raw_sha" ] || fail "the written disk does not match the release (SHA-256 $got)."
+say "Check passed: SHA-256 $raw_sha"
+umount /media/installer 2>/dev/null
+say ""
+say "Material QEMU is installed on /dev/$target."
+say "Remove the installer medium. The computer restarts into Material QEMU;"
+say "its address appears on the screen after a few minutes."
+say "MQ-INSTALLED target=$target"
+if [ "$mode" = auto ]; then
+  sleep 15
+else
+  ask "Press Enter to restart."
+fi
+reboot -f

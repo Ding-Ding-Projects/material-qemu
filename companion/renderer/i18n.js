@@ -126,6 +126,8 @@ window.I18N = (() => {
     '1. Device': '1. 裝置',
     '2. Disk': '2. 磁碟',
     'PC from a USB drive': '用 USB 手指開機嘅電腦',
+    'Installer for an internal disk': '安裝到內置磁碟嘅安裝程式',
+    'Boot a PC from this drive to install Material QEMU onto its internal disk. It asks before writing anything.': '用呢隻手指開機，將 Material QEMU 裝落電腦內置磁碟。寫入之前一定會問你。',
     'Boots a spare x86_64 PC (BIOS or UEFI) straight into Material QEMU.': '後備 x86_64 電腦（BIOS 或 UEFI）開機直接入 Material QEMU。',
     '{tag}, {size} GB download': '{tag}，下載 {size} GB',
     'Not in the latest release': '最新版本冇呢個映像',

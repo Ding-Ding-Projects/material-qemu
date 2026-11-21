@@ -1,5 +1,5 @@
 <#
-  Writes a gzip-compressed raw disk image to one removable disk, then reads the
+  Writes a release disk image (gzip-compressed raw image, or the installer ISO as is) to one removable disk, then reads the
   disk back and compares its SHA-256 with the expected image hash.
 
   Run elevated for a real disk. -TargetFile writes to an ordinary file instead
@@ -51,7 +51,8 @@ try {
 
   $sha = [System.Security.Cryptography.SHA256]::Create()
   $in = [System.IO.File]::OpenRead($ImagePath)
-  $gz = New-Object System.IO.Compression.GZipStream($in, [System.IO.Compression.CompressionMode]::Decompress)
+  # Release disk images are gzip-compressed; the installer ISO is written as is.
+  $gz = if ($ImagePath -like '*.gz') { New-Object System.IO.Compression.GZipStream($in, [System.IO.Compression.CompressionMode]::Decompress) } else { $in }
   $mode = if ($TargetFile) { [System.IO.FileMode]::Create } else { [System.IO.FileMode]::Open }
   $out = New-Object System.IO.FileStream($targetPath, $mode, [System.IO.FileAccess]::Write, [System.IO.FileShare]::ReadWrite, $chunk, [System.IO.FileOptions]::WriteThrough)
   $buf = New-Object byte[] $chunk

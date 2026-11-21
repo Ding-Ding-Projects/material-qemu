@@ -80,7 +80,7 @@ jobs:
       - name: Install image tools
         run: |
           sudo apt-get update
-          sudo apt-get install -y --no-install-recommends qemu-utils qemu-system-x86 cloud-guest-utils gdisk
+          sudo apt-get install -y --no-install-recommends qemu-utils qemu-system-x86 cloud-guest-utils gdisk grub-common grub-pc-bin grub-efi-amd64-bin mtools xorriso
           if [ -e /dev/kvm ]; then
             echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm.rules
             sudo udevadm control --reload-rules && sudo udevadm trigger --name-match=kvm
@@ -104,13 +104,18 @@ jobs:
           gzip -1 -c work/usb.img > "out/material-qemu-usb-x86_64-${VERSION}.img.gz"
           rm work/usb.img
           printf '{"rawSha256":"%s","rawBytes":%s}\n' "$raw_sha" "$raw_size" > "out/material-qemu-usb-x86_64-${VERSION}.img.json"
+          # Bare-metal installer ISO: boots, writes the same image to an internal disk and checks it.
+          iso="out/material-qemu-installer-x86_64-${VERSION}.iso"
+          bash appliance/build-installer-iso.sh work/material-qemu-appliance.qcow2 "out/material-qemu-usb-x86_64-${VERSION}.img.gz" "out/material-qemu-usb-x86_64-${VERSION}.img.json" "v${VERSION}" "$iso"
+          printf '{"rawSha256":"%s","rawBytes":%s}\n' "$(sha256sum "$iso" | cut -d' ' -f1)" "$(stat -c %s "$iso")" > "${iso%.iso}.iso.json"
+          bash appliance/install-check.sh "$iso" logs/install
           # VM disk: the same disk with a 64 GiB capacity.
           qemu-img resize work/material-qemu-appliance.qcow2 64G
           qemu-img convert -O vmdk -o subformat=streamOptimized,adapter_type=lsilogic work/material-qemu-appliance.qcow2 work/disk.vmdk
           rm work/material-qemu-appliance.qcow2
           node appliance/make-ova.mjs work/disk.vmdk 64 "v${VERSION}" "out/material-qemu-appliance-${VERSION}.ova"
           cd out
-          for f in *.ova *.img.gz; do sha256sum "$f" > "$f.sha256"; done
+          for f in *.ova *.img.gz *.iso; do sha256sum "$f" > "$f.sha256"; done
           ls -l; cat *.sha256 *.json
       - uses: actions/upload-artifact@v4
         with:
@@ -123,7 +128,10 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: appliance-boot-logs
-          path: logs/serial.log
+          path: |
+            logs/serial.log
+            logs/install/install-serial.log
+            logs/install/installed-boot/serial.log
           if-no-files-found: warn
           retention-days: 14
 
@@ -186,6 +194,7 @@ jobs:
           - **material-qemu-deploy-${VERSION}-portable.exe**: one-click deploy assistant for Windows. It imports the appliance into VirtualBox or VMware Workstation, bridges it onto your network, waits for the service to report its address and checks its health. Single portable file, unsigned, so Windows may show an unknown-publisher warning.
           - **material-qemu-appliance-${VERSION}.ova**: the appliance virtual machine (Debian 13, Docker, Material QEMU preloaded). Import it into VirtualBox or VMware with a bridged network adapter; the console shows the address to open.
           - **material-qemu-usb-x86_64-${VERSION}.img.gz**: the same appliance as a raw disk image for a USB drive (8 GiB or larger). The deploy assistant's Flash page writes and verifies it; it grows to fill the drive on first boot.
+          - **material-qemu-installer-x86_64-${VERSION}.iso**: bare-metal installer for an Intel or AMD PC. Write it to a USB drive with Rufus or the deploy assistant (or use it as a DVD), boot from it and it installs Material QEMU onto an internal disk, asking before it writes and checking the result against the release hash.
           - Container image: \`${IMAGE_REF}\` (digest \`${IMAGE_DIGEST}\`).
 
           ## Checks

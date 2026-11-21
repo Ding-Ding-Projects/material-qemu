@@ -22,6 +22,7 @@ window.Flash = (() => {
     const asset = s.release?.[s.kind];
     const kinds = [
       { id: 'usb', title: t('PC from a USB drive'), detail: t('Boots a spare x86_64 PC (BIOS or UEFI) straight into Material QEMU.') },
+      { id: 'installer', title: t('Installer for an internal disk'), detail: t('Boot a PC from this drive to install Material QEMU onto its internal disk. It asks before writing anything.') },
     ];
     const armed = s.keys[0] && s.keys[1];
     const diskList = s.disks === null

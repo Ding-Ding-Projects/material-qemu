@@ -55,6 +55,7 @@
 - [x] Launch a UEFI, Secure Boot, TPM and KVM machine with QEMU inside the appliance on both VirtualBox and VMware (evidence/appliance-build-23).
 - ~~Verify the Docker target against a running Docker engine.~~ Skipped at the owner's request on 2026-11-21: the development host has the Windows hypervisor off, so Docker Desktop cannot run there.
 - [ ] Verify a real USB flash and boot on a physical PC.
+- [ ] Install onto an internal disk from the installer ISO (implemented with a release-build install check; VirtualBox walkthrough pending).
 - ~~Raspberry Pi image and flashing~~: deliberately not doing. The owner decided on 2026-11-21 that this runs on Intel and AMD CPUs only, so the Raspberry Pi job, scripts and Flash option were removed.
 - [x] Deliver appliance operating-system images and USB installer: every release carries the OVA and the x86_64 USB image with SHA-256 files (for example v0.1.0-build.23).
 - [ ] Update an appliance in place from Settings (implemented: daily check, pull of the new release image, restart on the same data volume, automatic rollback; the end-to-end check on a deployed appliance waits for the next release).
