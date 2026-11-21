@@ -40,7 +40,7 @@
 - [x] Build the portable deploy assistant and confirm it detects real VirtualBox and VMware installs on Windows.
 - [x] Add a one-click Windows test host (go-host.bat): installs QEMU, builds, starts on the LAN address, health-checked, with status and stop modes.
 - [x] Verify a real deployment on VirtualBox: import, bridge, boot, LAN address report and health in under a minute; reachable from this computer on its LAN address.
-- [ ] Verify the same on VMware after its VMnet0 bridge is pinned to the real adapter (import and boot already work; the automatic bridge picked a network without DHCP).
+- [x] Verify the same on VMware: with VMnet0 pinned to the real Ethernet adapter, the appliance got its LAN address at boot and answered healthy (VMware's automatic bridge had picked a network without DHCP).
 - [ ] Verify LAN reachability from a second device (only this computer has been checked).
 - [x] Add the Docker host target, USB flashing, and English/Cantonese/bilingual modes to the deploy assistant.
 - [ ] Verify the Docker target against a running Docker engine (Docker Desktop on the development host fails at startup).
