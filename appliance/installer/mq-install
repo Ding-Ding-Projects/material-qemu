@@ -24,8 +24,13 @@ ask() { # prompt -> REPLY
 fail() {
   say ""
   say "Installation stopped: $*"
-  say "Nothing else was changed. Press Enter to restart."
-  read -r _ < /dev/console
+  if [ "$mode" = auto ]; then
+    say "Nothing else was changed. Restarting in 30 seconds."
+    sleep 30
+  else
+    say "Nothing else was changed. Press Enter to restart."
+    read -r _ < /dev/console
+  fi
   reboot -f
 }
 
@@ -39,17 +44,28 @@ done
 udevadm settle --timeout=30 2>/dev/null
 
 say "Looking for the installer medium..."
+# The minimal initramfs has no udev label links, so every CD drive and disk
+# partition is mounted read-only in turn until one holds the installer files.
+mkdir -p /media/installer
 medium=""
 i=0
-while [ "$i" -lt 30 ]; do
-  [ -e /dev/disk/by-label/MQ_INSTALLER ] && medium=$(readlink -f /dev/disk/by-label/MQ_INSTALLER) && break
+while [ -z "$medium" ] && [ "$i" -lt 30 ]; do
+  for dev in /dev/sr* /dev/sd* /dev/vd* /dev/nvme*n* /dev/mmcblk* /dev/hd*; do
+    [ -b "$dev" ] || continue
+    # Only ISO 9660 is tried: other filesystems are never mounted, even read-only.
+    if mount -t iso9660 -o ro "$dev" /media/installer 2>/dev/null; then
+      if [ -f /media/installer/material-qemu.img.json ] && [ -f /media/installer/material-qemu.img.gz ]; then
+        medium=$dev
+        break
+      fi
+      umount /media/installer 2>/dev/null
+    fi
+  done
+  [ -n "$medium" ] && break
   i=$((i + 1))
   sleep 1
-  udevadm settle --timeout=5 2>/dev/null
 done
-[ -n "$medium" ] || fail "the installer medium (label MQ_INSTALLER) was not found."
-mkdir -p /media/installer
-mount -t iso9660 -o ro "$medium" /media/installer 2>/dev/null || mount -o ro "$medium" /media/installer || fail "the installer medium could not be read."
+[ -n "$medium" ] || fail "the installer medium was not found."
 image=/media/installer/material-qemu.img.gz
 [ -f "$image" ] || fail "the disk image is missing from the installer medium."
 raw_sha=$(sed -n 's/.*"rawSha256":"\([0-9a-f]*\)".*/\1/p' /media/installer/material-qemu.img.json)

@@ -14,7 +14,7 @@ xorriso -osirrox on -indev "$iso" -extract /boot/vmlinuz "$logs/vmlinuz" -extrac
 accel=tcg
 if [ -w /dev/kvm ]; then accel=kvm; fi
 echo "Installing with accel=$accel"
-timeout 1500 qemu-system-x86_64 -machine q35,accel=$accel -m 2048 -smp 2 \
+timeout 1200 qemu-system-x86_64 -machine q35,accel=$accel -m 2048 -smp 2 \
   -kernel "$logs/vmlinuz" -initrd "$logs/initrd.img" \
   -append "mq.install=auto console=ttyS0,115200 console=tty0" \
   -cdrom "$iso" -drive file="$target",if=virtio \
