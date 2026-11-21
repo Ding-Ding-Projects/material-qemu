@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Machine console and snapshots</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto+Flex:opsz,wdth,wght@8..144,25..151,300..900&amp;family=Roboto+Mono:wght@400;500&amp;display=swap">
+<style>
+body{margin:0}
+a{color:inherit}
+button{font:inherit}
+@keyframes pop{0%{transform:scale(.8);opacity:0}60%{transform:scale(1.06);opacity:1}100%{transform:none}}
+@keyframes blink{50%{opacity:0}}
+</style>
+</helmet>
+<div style="{{root}}">
+<main style="flex: 1; min-width: 0; padding: 28px 40px 40px; display: flex; flex-direction: column; gap: 20px; max-width: 1400px; margin: 0 auto;">
+<header style="display: flex; align-items: center; gap: 16px; flex-wrap: wrap;">
+<a href="Machines.dc.html" aria-label="Back to machines" style="width: 48px; height: 48px; border-radius: 24px; display: flex; align-items: center; justify-content: center; background: {{c.surfaceHigh}}; text-decoration: none;"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M15 6l-6 6 6 6"></path></svg></a>
+<div style="flex: 1 1 280px;"><h1 style="margin: 0; font-size: 36px; font-weight: 700; letter-spacing: -.02em;">debian-13-dev</h1><span style="font-size: 14px; color: {{c.onSurfaceVariant}};">x86_64 · q35 · KVM · UEFI + Secure Boot · TPM 2.0 · 4 vCPU · 8 GiB</span></div>
+<span style="{{stateChip}}"><span style="{{led}}"></span>{{stateLabel}}</span>
+<div role="group" aria-label="Power" style="display: flex; gap: 8px; flex-wrap: wrap;">
+<sc-for list="{{power}}" as="p" hint-placeholder-count="5"><button type="button" onClick="{{p.act}}" disabled="{{p.off}}" style="{{p.style}}">{{p.label}}</button></sc-for>
+</div>
+</header>
+<div style="display: flex; gap: 20px; flex-wrap: wrap; align-items: flex-start;">
+<section aria-label="Console" style="flex: 999 1 640px; min-width: 0; display: flex; flex-direction: column; gap: 10px;">
+<div style="display: flex; gap: 8px; flex-wrap: wrap;"><sc-for list="{{tools}}" as="t" hint-placeholder-count="6"><button type="button" style="{{chipBtn}}">{{t}}</button></sc-for></div>
+<div style="{{screen}}">
+<sc-if value="{{running}}" hint-placeholder-val="{{ true }}"><pre style="margin: 0; font: 14px/1.6 'Roboto Mono', monospace; color: #d7f5df;">Debian GNU/Linux 13 debian-13-dev tty1
+
+debian-13-dev login: dev
+Password:
+Linux debian-13-dev 6.12.48-amd64 #1 SMP x86_64
+dev@debian-13-dev:~$ <span style="{{cursor}}">▌</span></pre></sc-if>
+<sc-if value="{{paused}}" hint-placeholder-val="{{ false }}"><div style="display: flex; align-items: center; justify-content: center; height: 100%; color: #fff; font-size: 22px; font-weight: 700;">Paused · state kept in memory</div></sc-if>
+<sc-if value="{{stopped}}" hint-placeholder-val="{{ false }}"><div style="display: flex; align-items: center; justify-content: center; height: 100%; color: #bbb; font-size: 22px; font-weight: 700;">Powered off</div></sc-if>
+</div>
+<div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px;">
+<sc-for list="{{stats}}" as="s" hint-placeholder-count="3"><div style="padding: 16px 18px; border-radius: 20px; background: {{c.surfaceContainer}};"><span style="font-size: 13px; color: {{c.onSurfaceVariant}}; font-weight: 600;">{{s.label}}</span><strong style="display: block; font-size: 26px;">{{s.value}}</strong><div style="display: flex; align-items: flex-end; gap: 3px; height: 32px; margin-top: 6px;"><sc-for list="{{s.bars}}" as="b" hint-placeholder-count="16"><span style="{{b}}"></span></sc-for></div></div></sc-for>
+</div>
+</section>
+<aside aria-labelledby="snap" style="flex: 1 1 320px; display: flex; flex-direction: column; gap: 12px; padding: 20px; border-radius: 28px; background: {{c.surfaceContainer}};">
+<div style="display: flex; align-items: center; gap: 8px;"><h2 id="snap" style="margin: 0; font-size: 20px; flex: 1;">Snapshots</h2><button type="button" onClick="{{takeSnap}}" style="height: 40px; padding: 0 18px; border: 0; border-radius: 20px; cursor: pointer; font-weight: 700; background: {{c.primary}}; color: {{c.onPrimary}};">Take snapshot</button></div>
+<ol style="margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 0;">
+<sc-for list="{{snaps}}" as="n" hint-placeholder-count="3">
+<li style="{{n.style}}"><span aria-hidden="true" style="{{n.dot}}"></span><div style="flex: 1; min-width: 0;"><strong style="display: block;">{{n.name}}</strong><span style="font-size: 13px; color: {{c.onSurfaceVariant}};">{{n.meta}}</span></div><button type="button" style="height: 36px; padding: 0 14px; border-radius: 18px; border: 1px solid {{c.outline}}; background: transparent; color: {{c.primary}}; font-weight: 700; cursor: pointer;">Restore</button></li>
+</sc-for>
+</ol>
+<h3 style="margin: 8px 0 0; font-size: 16px;">QEMU log</h3>
+<pre style="margin: 0; padding: 12px; border-radius: 16px; background: {{c.surface}}; font: 12px/1.5 'Roboto Mono', monospace; color: {{c.onSurfaceVariant}}; white-space: pre-wrap;">QMP: capabilities negotiated
+VNC: client connected
+virtio-net: link up
+QMP: savevm "before-update" 1.9 s</pre>
+</aside>
+</div>
+</main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"seed":{"editor":"enum","default":"ember","options":["ember","ocean","violet"]},"mode":{"editor":"enum","default":"dark","options":["dark","light"]},"motion":{"editor":"boolean","default":true},"$preview":{"width":1440,"height":1000}}'>
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = { st: 'running', snaps: 3 }; }
+  palette() {
+    const seeds = { ember: { dark: ['#ffb68e', '#532200', '#753400', '#ffdbca', '#5d4037', '#ffdbd0'], light: ['#9a4600', '#ffffff', '#ffdbca', '#321200', '#ffdbd0', '#2c160f'] },
+      ocean: { dark: ['#82d3e0', '#00363e', '#004f59', '#9feffd', '#334b4f', '#cde7ec'], light: ['#00687a', '#ffffff', '#9feffd', '#001f26', '#cde7ec', '#061f23'] },
+      violet: { dark: ['#d0bcff', '#381e72', '#4f378b', '#eaddff', '#4a4458', '#e8def8'], light: ['#6750a4', '#ffffff', '#eaddff', '#21005d', '#e8def8', '#1d192b'] } };
+    const mode = this.props.mode ?? 'dark'; const p = seeds[this.props.seed ?? 'ember'][mode]; const d = mode === 'dark';
+    return { primary: p[0], onPrimary: p[1], primaryContainer: p[2], onPrimaryContainer: p[3], secondaryContainer: p[4], onSecondaryContainer: p[5],
+      surface: d ? '#141218' : '#fef7ff', surfaceContainer: d ? '#211f26' : '#f3edf7', surfaceHigh: d ? '#2b2930' : '#ece6f0', onSurface: d ? '#e6e0e9' : '#1d1b20', onSurfaceVariant: d ? '#cac4d0' : '#49454f', outline: d ? '#938f99' : '#79747e', ok: d ? '#80d99e' : '#1b6d3a', warn: d ? '#ffb4ab' : '#ba1a1a' };
+  }
+  renderVals() {
+    const c = this.palette(); const motion = this.props.motion ?? true; const st = this.state.st;
+    const btn = (label, act, off, primary) => ({ label, off, act, style: 'height:44px;padding:0 18px;border-radius:22px;cursor:' + (off ? 'not-allowed' : 'pointer') + ';font-weight:700;opacity:' + (off ? .4 : 1) + ';border:' + (primary ? '0' : '1px solid ' + c.outline) + ';background:' + (primary ? c.primary : 'transparent') + ';color:' + (primary ? c.onPrimary : c.onSurface) + ';' });
+    const power = [btn('Start', () => this.setState({ st: 'running' }), st === 'running', st !== 'running'), btn(st === 'paused' ? 'Resume' : 'Pause', () => this.setState({ st: st === 'paused' ? 'running' : 'paused' }), st === 'stopped'), btn('Reset', () => this.setState({ st: 'running' }), st === 'stopped'), btn('Shut down', () => this.setState({ st: 'stopped' }), st === 'stopped'), btn('Power off', () => this.setState({ st: 'stopped' }), st === 'stopped')];
+    const stateColor = st === 'running' ? c.ok : st === 'paused' ? '#d3c78c' : c.outline;
+    const bars = (seed) => Array.from({ length: 16 }, (_, i) => 'flex:1;border-radius:3px;background:' + c.primary + ';opacity:.85;height:' + (st === 'stopped' ? 6 : 8 + ((seed * (i + 3) * 7) % 24)) + 'px;' + (motion ? 'transition:height 400ms;' : ''));
+    const snapList = [['before-update', 'Today 22:41 · running state · 1.2 GB'], ['clean-install', 'Yesterday · disk only · 640 MB'], ['base', '18 Nov · disk only · 410 MB'], ['after-snapshot', 'Just now · running state · 1.3 GB']].slice(0, this.state.snaps);
+    const snaps = snapList.map(([name, meta], i) => ({ name, meta,
+      dot: 'width:14px;height:14px;border-radius:7px;flex:none;border:3px solid ' + c.primary + ';background:' + (i === 0 ? c.primary : 'transparent') + ';',
+      style: 'display:flex;align-items:center;gap:14px;padding:12px 4px;border-bottom:1px solid ' + c.surfaceHigh + ';' + (motion && i === 3 ? 'animation:pop 480ms cubic-bezier(.2,.9,.25,1.2);' : '') }));
+    return { c, power, snaps, running: st === 'running', paused: st === 'paused', stopped: st === 'stopped',
+      stateLabel: st === 'running' ? 'Running · 2 h 14 min' : st === 'paused' ? 'Paused' : 'Powered off',
+      led: 'width:10px;height:10px;border-radius:5px;background:' + stateColor + ';' + (st === 'running' && motion ? 'box-shadow:0 0 10px ' + stateColor + ';' : ''),
+      stateChip: 'display:flex;align-items:center;gap:8px;height:36px;padding:0 14px;border-radius:18px;font-weight:700;background:' + c.surfaceHigh + ';',
+      tools: ['Ctrl+Alt+Del', 'Send keys', 'Screenshot', 'Change CD', 'Clipboard', 'Fullscreen'],
+      chipBtn: 'height:36px;padding:0 14px;border-radius:10px;border:1px solid ' + c.outline + ';background:transparent;color:' + c.onSurface + ';font-weight:600;cursor:pointer;',
+      screen: 'height:420px;padding:20px 24px;border-radius:24px;overflow:hidden;background:' + (st === 'stopped' ? '#101010' : '#08140d') + ';box-shadow:inset 0 0 0 1px ' + c.surfaceHigh + ';' + (motion ? 'transition:background 400ms;' : ''),
+      cursor: motion ? 'animation:blink 1s steps(1) infinite;' : '',
+      stats: [{ label: 'Guest CPU', value: st === 'stopped' ? '0%' : '23%', bars: bars(3) }, { label: 'Memory', value: st === 'stopped' ? '0 GB' : '3.1 GB', bars: bars(5) }, { label: 'Disk I/O', value: st === 'stopped' ? '0 MB/s' : '12 MB/s', bars: bars(7) }],
+      takeSnap: () => this.setState({ snaps: Math.min(4, this.state.snaps + 1) }),
+      root: 'min-height:1000px;display:flex;background:' + c.surface + ';color:' + c.onSurface + ';font-family:"Roboto Flex",system-ui,sans-serif;' };
+  }
+}
+</script>
+</body>
+</html>

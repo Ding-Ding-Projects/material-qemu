@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Storage and media</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto+Flex:opsz,wdth,wght@8..144,25..151,300..900&amp;family=Roboto+Mono:wght@400;500&amp;display=swap">
+<style>
+body{margin:0}
+a{color:inherit}
+button{font:inherit}
+@keyframes fill{from{width:0}}
+@keyframes shimmer{from{background-position:-200% 0}to{background-position:200% 0}}
+</style>
+</helmet>
+<div style="{{root}}">
+<main style="flex: 1; min-width: 0; padding: 28px 40px 40px; display: flex; flex-direction: column; gap: 20px; max-width: 1400px; margin: 0 auto;">
+<header style="display: flex; align-items: flex-end; gap: 16px; flex-wrap: wrap;">
+<div style="flex: 1 1 300px;"><a href="Main.dc.html" style="font-size: 14px; color: {{c.primary}}; font-weight: 700; text-decoration: none;">Home</a><h1 style="margin: 0; font-size: 45px; font-weight: 700; letter-spacing: -.02em;">Storage</h1></div>
+<div role="tablist" style="display: flex; gap: 4px; padding: 4px; border-radius: 24px; background: {{c.surfaceHigh}};"><sc-for list="{{tabs}}" as="t" hint-placeholder-count="2"><button type="button" role="tab" aria-selected="{{t.on}}" onClick="{{t.pick}}" style="{{t.style}}">{{t.label}}</button></sc-for></div>
+</header>
+<div style="display: flex; flex-direction: column; gap: 10px; padding: 20px; border-radius: 28px; border: 2px dashed {{c.outline}};">
+<strong style="font-size: 18px;">Drop an ISO or disk image here</strong>
+<span style="font-size: 14px; color: {{c.onSurfaceVariant}};">ISO, qcow2, raw, VMDK, VDI and VHDX are accepted. Non-qcow2 disks are converted on import.</span>
+<div style="display: flex; align-items: center; gap: 12px;"><span style="flex: 1; font: 13px 'Roboto Mono', monospace;">ubuntu-26.04-desktop-amd64.iso · 2.1 of 5.8 GB</span><span style="font-weight: 700;">36%</span></div>
+<div style="height: 8px; border-radius: 4px; background: {{c.surfaceHigh}}; overflow: hidden;"><div style="{{progress}}"></div></div>
+</div>
+<div style="display: flex; flex-direction: column; gap: 8px;">
+<sc-for list="{{rows}}" as="r" hint-placeholder-count="5">
+<div style="display: grid; grid-template-columns: minmax(0, 3fr) 1fr 1fr minmax(0, 2fr) auto; gap: 16px; align-items: center; padding: 14px 20px; border-radius: 20px; background: {{c.surfaceContainer}};">
+<div style="min-width: 0;"><strong style="display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{r.name}}</strong><span style="font-size: 13px; color: {{c.onSurfaceVariant}};">{{r.kind}}</span></div>
+<span style="font-family: 'Roboto Mono', monospace;">{{r.size}}</span><span>{{r.fmt}}</span><span style="font-size: 13px; color: {{c.onSurfaceVariant}};">{{r.used}}</span>
+<div style="display: flex; gap: 6px;"><sc-for list="{{r.actions}}" as="a" hint-placeholder-count="3"><button type="button" style="{{a.style}}">{{a.label}}</button></sc-for></div>
+</div>
+</sc-for>
+</div>
+</main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"seed":{"editor":"enum","default":"ember","options":["ember","ocean","violet"]},"mode":{"editor":"enum","default":"dark","options":["dark","light"]},"motion":{"editor":"boolean","default":true},"$preview":{"width":1440,"height":960}}'>
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = { tab: 'Disks' }; }
+  palette() {
+    const seeds = { ember: { dark: ['#ffb68e', '#532200', '#5d4037', '#ffdbd0'], light: ['#9a4600', '#ffffff', '#ffdbd0', '#2c160f'] }, ocean: { dark: ['#82d3e0', '#00363e', '#334b4f', '#cde7ec'], light: ['#00687a', '#ffffff', '#cde7ec', '#061f23'] }, violet: { dark: ['#d0bcff', '#381e72', '#4a4458', '#e8def8'], light: ['#6750a4', '#ffffff', '#e8def8', '#1d192b'] } };
+    const mode = this.props.mode ?? 'dark'; const p = seeds[this.props.seed ?? 'ember'][mode]; const d = mode === 'dark';
+    return { primary: p[0], onPrimary: p[1], secondaryContainer: p[2], onSecondaryContainer: p[3], surface: d ? '#141218' : '#fef7ff', surfaceContainer: d ? '#211f26' : '#f3edf7', surfaceHigh: d ? '#2b2930' : '#ece6f0', onSurface: d ? '#e6e0e9' : '#1d1b20', onSurfaceVariant: d ? '#cac4d0' : '#49454f', outline: d ? '#938f99' : '#79747e', danger: d ? '#ffb4ab' : '#ba1a1a' };
+  }
+  renderVals() {
+    const c = this.palette(); const motion = this.props.motion ?? true; const tab = this.state.tab;
+    const act = (label, danger) => ({ label, style: 'height:36px;padding:0 12px;border-radius:18px;cursor:pointer;font-weight:700;font-size:13px;background:transparent;border:1px solid ' + (danger ? c.danger : c.outline) + ';color:' + (danger ? c.danger : c.primary) + ';' });
+    const disks = [['system.qcow2 · debian-13-dev', 'Disk · 3 snapshots', '64 GiB', 'qcow2', '11.2 GiB used'], ['data1.qcow2 · debian-13-dev', 'Disk', '200 GiB', 'qcow2', '41 GiB used'], ['win11.qcow2 · win11-test', 'Disk · TPM state kept', '128 GiB', 'qcow2', '38 GiB used'], ['legacy.vmdk', 'Imported, not attached', '40 GiB', 'vmdk', 'convert to qcow2']]
+      .map(([name, kind, size, fmt, used]) => ({ name, kind, size, fmt, used, actions: [act('Resize'), act('Clone'), act(fmt === 'vmdk' ? 'Convert' : 'Delete', fmt !== 'vmdk')] }));
+    const isos = [['debian-13.1-amd64-netinst.iso', 'Installation media', '784 MB', 'ISO', 'attached to debian-13-dev'], ['Win11_25H2_English_x64.iso', 'Installation media', '7.1 GB', 'ISO', 'not attached'], ['virtio-win-0.1.285.iso', 'Driver media', '693 MB', 'ISO', 'attached to win11-test']]
+      .map(([name, kind, size, fmt, used]) => ({ name, kind, size, fmt, used, actions: [act('Attach'), act('Delete', true)] }));
+    const tabs = ['Disks', 'ISO library'].map((label) => ({ label, on: String(tab === label), pick: () => this.setState({ tab: label }),
+      style: 'height:40px;padding:0 20px;border:0;border-radius:20px;cursor:pointer;font-weight:700;background:' + (tab === label ? c.secondaryContainer : 'transparent') + ';color:' + (tab === label ? c.onSecondaryContainer : c.onSurface) + ';' + (motion ? 'transition:background 200ms;' : '') }));
+    return { c, tabs, rows: tab === 'Disks' ? disks : isos,
+      progress: 'height:8px;width:36%;border-radius:4px;background:linear-gradient(90deg,' + c.primary + ',' + c.secondaryContainer + ',' + c.primary + ');background-size:200% 100%;' + (motion ? 'animation:fill 900ms cubic-bezier(.2,.9,.25,1) both,shimmer 2s linear infinite;' : ''),
+      root: 'min-height:960px;display:flex;background:' + c.surface + ';color:' + c.onSurface + ';font-family:"Roboto Flex",system-ui,sans-serif;' };
+  }
+}
+</script>
+</body>
+</html>

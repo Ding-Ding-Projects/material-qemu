@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>First account and sign in</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto+Flex:opsz,wdth,wght@8..144,25..151,300..900&amp;display=swap">
+<style>
+body{margin:0}
+a{color:inherit}
+button,input{font:inherit}
+@keyframes float{0%,100%{transform:translateY(0) rotate(-6deg)}50%{transform:translateY(-14px) rotate(-2deg)}}
+@keyframes rise{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:none}}
+</style>
+</helmet>
+<div style="{{root}}">
+<section aria-hidden="true" style="flex: 1 1 520px; display: flex; align-items: center; justify-content: center; padding: 48px; background: {{c.primaryContainer}}; color: {{c.onPrimaryContainer}}; position: relative; overflow: hidden;">
+<div style="{{blob}}"></div>
+<div style="position: relative; display: flex; flex-direction: column; gap: 16px; max-width: 460px;"><span style="font-size: 16px; font-weight: 700;">Material QEMU</span><strong style="font-size: 56px; line-height: 1.02; font-weight: 800; letter-spacing: -.03em;">Every virtual machine, one calm place.</strong><span style="font-size: 18px; line-height: 1.5;">Runs on your own hardware. No cloud account.</span></div>
+</section>
+<section style="flex: 1 1 480px; display: flex; align-items: center; justify-content: center; padding: 48px;">
+<form style="{{form}}">
+<sc-if value="{{setup}}" hint-placeholder-val="{{ true }}"><h1 style="margin: 0; font-size: 36px; font-weight: 700;">Create the owner account</h1><p style="margin: 0; color: {{c.onSurfaceVariant}};">The first account created becomes the owner. Anyone after you signs in.</p></sc-if>
+<sc-if value="{{signin}}" hint-placeholder-val="{{ false }}"><h1 style="margin: 0; font-size: 36px; font-weight: 700;">Welcome back</h1><button type="button" style="height: 56px; border: 0; border-radius: 28px; font-weight: 700; background: {{c.primary}}; color: {{c.onPrimary}};">Sign in with a passkey</button><span style="text-align: center; color: {{c.onSurfaceVariant}};">or use your password</span></sc-if>
+<label style="display: flex; flex-direction: column; gap: 6px;"><span style="font-size: 13px; font-weight: 600; color: {{c.onSurfaceVariant}};">Username</span><input value="owner" style="{{input}}"></label>
+<label style="display: flex; flex-direction: column; gap: 6px;"><span style="font-size: 13px; font-weight: 600; color: {{c.onSurfaceVariant}};">Password (12 or more characters)</span><input type="password" value="correct horse battery" style="{{input}}"></label>
+<button type="button" style="height: 56px; border: 0; border-radius: 28px; font-weight: 700; font-size: 16px; background: {{c.primary}}; color: {{c.onPrimary}};">{{cta}}</button>
+<button type="button" onClick="{{swap}}" style="height: 40px; border: 0; background: transparent; color: {{c.primary}}; font-weight: 700; cursor: pointer;">{{swapLabel}}</button>
+</form>
+</section>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"seed":{"editor":"enum","default":"ember","options":["ember","ocean","violet"]},"mode":{"editor":"enum","default":"dark","options":["dark","light"]},"motion":{"editor":"boolean","default":true},"$preview":{"width":1440,"height":900}}'>
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = { setup: true }; }
+  renderVals() {
+    const seeds = { ember: ['#ffb68e', '#532200', '#753400', '#ffdbca', '#9a4600', '#ffffff', '#ffdbca', '#321200'], ocean: ['#82d3e0', '#00363e', '#004f59', '#9feffd', '#00687a', '#ffffff', '#9feffd', '#001f26'], violet: ['#d0bcff', '#381e72', '#4f378b', '#eaddff', '#6750a4', '#ffffff', '#eaddff', '#21005d'] };
+    const d = (this.props.mode ?? 'dark') === 'dark'; const p = seeds[this.props.seed ?? 'ember']; const motion = this.props.motion ?? true; const o = d ? 0 : 4;
+    const c = { primary: p[o], onPrimary: p[o + 1], primaryContainer: p[o + 2], onPrimaryContainer: p[o + 3], surface: d ? '#141218' : '#fef7ff', onSurface: d ? '#e6e0e9' : '#1d1b20', onSurfaceVariant: d ? '#cac4d0' : '#49454f', outline: d ? '#938f99' : '#79747e' };
+    const setup = this.state.setup;
+    return { c, setup, signin: !setup, cta: setup ? 'Create owner account' : 'Sign in', swapLabel: setup ? 'Show the sign-in screen' : 'Show the first-account screen',
+      swap: () => this.setState({ setup: !setup }),
+      input: 'height:56px;padding:0 16px;border-radius:12px;border:1px solid ' + c.outline + ';background:transparent;color:' + c.onSurface + ';font-size:16px;',
+      form: 'width:100%;max-width:420px;display:flex;flex-direction:column;gap:16px;' + (motion ? 'animation:rise 600ms cubic-bezier(.2,.9,.25,1.1) both;' : ''),
+      blob: 'position:absolute;width:520px;height:520px;border-radius:42% 58% 63% 37% / 45% 40% 60% 55%;background:' + c.primary + ';opacity:.35;right:-120px;bottom:-140px;' + (motion ? 'animation:float 7s ease-in-out infinite;' : ''),
+      root: 'min-height:900px;display:flex;flex-wrap:wrap;background:' + c.surface + ';color:' + c.onSurface + ';font-family:"Roboto Flex",system-ui,sans-serif;' };
+  }
+}
+</script>
+</body>
+</html>

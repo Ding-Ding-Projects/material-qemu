@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Settings</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto+Flex:opsz,wdth,wght@8..144,25..151,300..900&amp;display=swap">
+<style>
+body{margin:0}
+a{color:inherit}
+button{font:inherit}
+</style>
+</helmet>
+<div style="{{root}}">
+<main style="flex: 1; min-width: 0; padding: 28px 40px 40px; display: flex; flex-direction: column; gap: 20px; max-width: 1100px; margin: 0 auto;">
+<div><a href="Main.dc.html" style="font-size: 14px; color: {{c.primary}}; font-weight: 700; text-decoration: none;">Home</a><h1 style="margin: 0; font-size: 45px; font-weight: 700; letter-spacing: -.02em;">Settings</h1></div>
+<section aria-labelledby="look" style="{{card}}">
+<h2 id="look" style="margin: 0; font-size: 22px;">Appearance</h2>
+<div style="display: flex; flex-wrap: wrap; gap: 14px; align-items: center;"><span style="flex: 1 1 200px;">Colour seed</span><sc-for list="{{seeds}}" as="s" hint-placeholder-count="5"><button type="button" onClick="{{s.pick}}" aria-label="{{s.label}}" aria-pressed="{{s.on}}" style="{{s.style}}"></button></sc-for></div>
+<div style="display: flex; flex-wrap: wrap; gap: 14px; align-items: center;"><span style="flex: 1 1 200px;">Theme</span><div style="display: flex; border-radius: 20px; overflow: hidden; border: 1px solid {{c.outline}};"><sc-for list="{{themes}}" as="t" hint-placeholder-count="3"><button type="button" style="{{t.style}}">{{t.label}}</button></sc-for></div></div>
+<sc-for list="{{switches}}" as="w" hint-placeholder-count="3">
+<label style="display: flex; align-items: center; gap: 14px; min-height: 48px;"><span style="flex: 1;"><strong style="display: block;">{{w.label}}</strong><span style="font-size: 14px; color: {{c.onSurfaceVariant}};">{{w.help}}</span></span><button type="button" role="switch" aria-checked="{{w.on}}" onClick="{{w.toggle}}" style="{{w.track}}"><span style="{{w.thumb}}"></span></button></label>
+</sc-for>
+</section>
+<section aria-labelledby="sec" style="{{card}}">
+<h2 id="sec" style="margin: 0; font-size: 22px;">Sign-in and security</h2>
+<div style="display: flex; align-items: center; gap: 14px;"><span style="flex: 1;"><strong style="display: block;">Passkeys</strong><span style="font-size: 14px; color: {{c.onSurfaceVariant}};">2 registered · Windows Hello, phone</span></span><button type="button" style="{{tonal}}">Add passkey</button></div>
+<div style="display: flex; align-items: center; gap: 14px;"><span style="flex: 1;"><strong style="display: block;">Password sign-in</strong><span style="font-size: 14px; color: {{c.onSurfaceVariant}};">Turning it off needs a fresh passkey check.</span></span><button type="button" style="{{outlined}}">Turn off</button></div>
+</section>
+<section aria-labelledby="host" style="{{card}}">
+<h2 id="host" style="margin: 0; font-size: 22px;">Host</h2>
+<div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px;"><sc-for list="{{facts}}" as="f" hint-placeholder-count="6"><div style="padding: 14px 16px; border-radius: 16px; background: {{c.surfaceHigh}};"><span style="font-size: 13px; color: {{c.onSurfaceVariant}};">{{f.k}}</span><strong style="display: block;">{{f.v}}</strong></div></sc-for></div>
+</section>
+</main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"mode":{"editor":"enum","default":"dark","options":["dark","light"]},"motion":{"editor":"boolean","default":true},"$preview":{"width":1440,"height":960}}'>
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = { seed: '#ffb68e', on: { motion: true, reduced: false, sounds: true } }; }
+  renderVals() {
+    const d = (this.props.mode ?? 'dark') === 'dark'; const motion = this.props.motion ?? true; const s = this.state;
+    const c = { primary: s.seed, surface: d ? '#141218' : '#fef7ff', surfaceContainer: d ? '#211f26' : '#f3edf7', surfaceHigh: d ? '#2b2930' : '#ece6f0', onSurface: d ? '#e6e0e9' : '#1d1b20', onSurfaceVariant: d ? '#cac4d0' : '#49454f', outline: d ? '#938f99' : '#79747e', secondaryContainer: d ? '#4a4458' : '#e8def8' };
+    const seeds = [['Ember', '#ffb68e'], ['Ocean', '#82d3e0'], ['Violet', '#d0bcff'], ['Moss', '#a6d38a'], ['Rose', '#ffb1c8']].map(([label, hex]) => ({ label, on: String(s.seed === hex), pick: () => this.setState({ seed: hex }),
+      style: 'width:44px;height:44px;border-radius:22px;cursor:pointer;background:' + hex + ';border:3px solid ' + (s.seed === hex ? c.onSurface : 'transparent') + ';' + (motion ? 'transition:transform 200ms;transform:scale(' + (s.seed === hex ? 1.12 : 1) + ');' : '') }));
+    const themes = ['Light', 'Dark', 'System'].map((label) => ({ label, style: 'height:40px;padding:0 18px;border:0;font-weight:600;background:' + ((d && label === 'Dark') || (!d && label === 'Light') ? c.secondaryContainer : 'transparent') + ';color:' + c.onSurface + ';' }));
+    const sw = (key, label, help) => { const on = !!s.on[key]; return { label, help, on: String(on), toggle: () => this.setState({ on: { ...s.on, [key]: !on } }),
+      track: 'width:52px;height:32px;border-radius:16px;flex:none;position:relative;cursor:pointer;border:2px solid ' + (on ? s.seed : c.outline) + ';background:' + (on ? s.seed : 'transparent') + ';' + (motion ? 'transition:background 200ms;' : ''),
+      thumb: 'position:absolute;top:50%;width:' + (on ? 24 : 16) + 'px;height:' + (on ? 24 : 16) + 'px;border-radius:12px;background:' + (on ? '#1d1b20' : c.outline) + ';left:' + (on ? 22 : 6) + 'px;transform:translateY(-50%);' + (motion ? 'transition:left 240ms cubic-bezier(.2,.9,.25,1.3),width 240ms,height 240ms;' : '') }; };
+    return { c, seeds, themes,
+      switches: [sw('motion', 'Animations', 'Springy transitions, live gauges and entrance motion.'), sw('reduced', 'Follow reduced motion', 'Stop animations when the system asks for less motion.'), sw('sounds', 'Action sounds', 'Short sounds when a machine starts, stops or a snapshot is saved.')],
+      facts: [{ k: 'QEMU', v: '10.1.2' }, { k: 'Accelerators', v: 'KVM, TCG' }, { k: 'Targets', v: 'x86_64, aarch64, riscv64' }, { k: 'CPU', v: '16 threads' }, { k: 'Memory', v: '32 GB' }, { k: 'Storage', v: '412 GB free' }],
+      tonal: 'height:44px;padding:0 20px;border:0;border-radius:22px;font-weight:700;background:' + c.secondaryContainer + ';color:' + c.onSurface + ';',
+      outlined: 'height:44px;padding:0 20px;border-radius:22px;font-weight:700;background:transparent;border:1px solid ' + c.outline + ';color:' + s.seed + ';',
+      card: 'display:flex;flex-direction:column;gap:14px;padding:24px;border-radius:28px;background:' + c.surfaceContainer + ';',
+      root: 'min-height:960px;display:flex;background:' + c.surface + ';color:' + c.onSurface + ';font-family:"Roboto Flex",system-ui,sans-serif;' };
+  }
+}
+</script>
+</body>
+</html>

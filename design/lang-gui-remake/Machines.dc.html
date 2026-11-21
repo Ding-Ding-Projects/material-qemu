@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Machines</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto+Flex:opsz,wdth,wght@8..144,25..151,300..900&amp;family=Roboto+Mono:wght@400;500&amp;display=swap">
+<style>
+body{margin:0}
+a{color:inherit}
+button{font:inherit}
+@keyframes rise{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+</style>
+</helmet>
+<div style="{{root}}">
+<main style="flex: 1; min-width: 0; padding: 28px 40px 40px; display: flex; flex-direction: column; gap: 20px; max-width: 1400px; margin: 0 auto;">
+<header style="display: flex; align-items: flex-end; gap: 16px; flex-wrap: wrap;">
+<div style="flex: 1 1 300px;"><a href="Main.dc.html" style="font-size: 14px; color: {{c.primary}}; font-weight: 700; text-decoration: none;">Home</a><h1 style="margin: 0; font-size: 45px; font-weight: 700; letter-spacing: -.02em;">Machines</h1></div>
+<button type="button" style="height: 48px; padding: 0 20px; border-radius: 24px; border: 1px solid {{c.outline}}; background: transparent; color: {{c.primary}}; font-weight: 700;">Import disk image</button>
+<a href="Create.dc.html" style="display: inline-flex; align-items: center; gap: 8px; height: 56px; padding: 0 24px; border-radius: 16px; background: {{c.primaryContainer}}; color: {{c.onPrimaryContainer}}; font-weight: 700; text-decoration: none; box-shadow: 0 6px 18px rgba(0,0,0,.3);">New machine</a>
+</header>
+<div style="display: flex; gap: 10px; flex-wrap: wrap;"><sc-for list="{{filters}}" as="f" hint-placeholder-count="5"><button type="button" onClick="{{f.pick}}" aria-pressed="{{f.on}}" style="{{f.style}}">{{f.label}}</button></sc-for></div>
+<div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px;">
+<sc-for list="{{machines}}" as="m" hint-placeholder-count="6">
+<article style="{{m.card}}">
+<div style="display: flex; align-items: center; gap: 12px;"><span style="{{m.badge}}">{{m.os}}</span><div style="flex: 1; min-width: 0;"><a href="Machine.dc.html" style="display: block; font-size: 18px; font-weight: 700; text-decoration: none;">{{m.name}}</a><span style="font-size: 13px; color: {{c.onSurfaceVariant}};">{{m.meta}}</span></div>
+<button type="button" onClick="{{m.toggle}}" aria-label="{{m.powerLabel}}" style="{{m.power}}"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><path d="M12 3v9M6.3 6.3a8 8 0 1 0 11.4 0"></path></svg></button></div>
+<div style="display: flex; gap: 8px; flex-wrap: wrap;"><span style="{{m.state}}">{{m.stateLabel}}</span><sc-for list="{{m.tags}}" as="t" hint-placeholder-count="2"><span style="padding: 4px 10px; border-radius: 8px; border: 1px solid {{c.outline}}; font-size: 12px; font-weight: 600;">{{t}}</span></sc-for></div>
+</article>
+</sc-for>
+</div>
+</main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"seed":{"editor":"enum","default":"ember","options":["ember","ocean","violet"]},"mode":{"editor":"enum","default":"dark","options":["dark","light"]},"motion":{"editor":"boolean","default":true},"$preview":{"width":1440,"height":960}}'>
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = { filter: 'All', on: { 'debian-13-dev': true, 'win11-test': true, 'arm-builder': true } }; }
+  palette() {
+    const seeds = { ember: { dark: ['#ffb68e', '#532200', '#753400', '#ffdbca', '#5d4037', '#ffdbd0'], light: ['#9a4600', '#ffffff', '#ffdbca', '#321200', '#ffdbd0', '#2c160f'] },
+      ocean: { dark: ['#82d3e0', '#00363e', '#004f59', '#9feffd', '#334b4f', '#cde7ec'], light: ['#00687a', '#ffffff', '#9feffd', '#001f26', '#cde7ec', '#061f23'] },
+      violet: { dark: ['#d0bcff', '#381e72', '#4f378b', '#eaddff', '#4a4458', '#e8def8'], light: ['#6750a4', '#ffffff', '#eaddff', '#21005d', '#e8def8', '#1d192b'] } };
+    const mode = this.props.mode ?? 'dark'; const p = seeds[this.props.seed ?? 'ember'][mode]; const d = mode === 'dark';
+    return { primary: p[0], onPrimary: p[1], primaryContainer: p[2], onPrimaryContainer: p[3], secondaryContainer: p[4], onSecondaryContainer: p[5],
+      surface: d ? '#141218' : '#fef7ff', surfaceContainer: d ? '#211f26' : '#f3edf7', surfaceHigh: d ? '#2b2930' : '#ece6f0', onSurface: d ? '#e6e0e9' : '#1d1b20', onSurfaceVariant: d ? '#cac4d0' : '#49454f', outline: d ? '#938f99' : '#79747e', ok: d ? '#80d99e' : '#1b6d3a', okContainer: d ? '#1f3a29' : '#c8f0d4' };
+  }
+  renderVals() {
+    const c = this.palette(); const motion = this.props.motion ?? true; const s = this.state;
+    const list = [['debian-13-dev', 'DEB', 'x86_64 · 4 vCPU · 8 GiB · 64 GiB', ['dev', 'uefi']], ['win11-test', 'WIN', 'x86_64 · 8 vCPU · 16 GiB · TPM', ['windows']], ['arm-builder', 'ARM', 'aarch64 · 4 vCPU · 4 GiB', ['ci']], ['ubuntu-server', 'UBU', 'x86_64 · 2 vCPU · 2 GiB', ['lab']], ['freebsd-14', 'BSD', 'x86_64 · 2 vCPU · 2 GiB', []], ['fedora-kde', 'FED', 'x86_64 · 4 vCPU · 8 GiB', ['desktop']]];
+    const filters = ['All', 'Running', 'Stopped', 'x86_64', 'aarch64'].map((label) => ({ label, on: String(s.filter === label), pick: () => this.setState({ filter: label }),
+      style: 'height:36px;padding:0 16px;border-radius:10px;cursor:pointer;font-weight:600;border:1px solid ' + (s.filter === label ? 'transparent' : c.outline) + ';background:' + (s.filter === label ? c.secondaryContainer : 'transparent') + ';color:' + (s.filter === label ? c.onSecondaryContainer : c.onSurface) + ';' }));
+    const keep = ([name, , meta]) => s.filter === 'All' || (s.filter === 'Running' && s.on[name]) || (s.filter === 'Stopped' && !s.on[name]) || meta.startsWith(s.filter);
+    const machines = list.filter(keep).map(([name, os, meta, tags], i) => {
+      const on = !!s.on[name];
+      return { name, os, meta, tags, stateLabel: on ? 'Running' : 'Stopped', powerLabel: on ? 'Shut down ' + name : 'Start ' + name,
+        toggle: () => this.setState({ on: { ...s.on, [name]: !on } }),
+        badge: 'width:48px;height:48px;border-radius:16px;flex:none;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px;background:' + c.secondaryContainer + ';color:' + c.onSecondaryContainer + ';',
+        power: 'width:48px;height:48px;border-radius:24px;border:0;cursor:pointer;display:flex;align-items:center;justify-content:center;background:' + (on ? c.primary : c.surfaceHigh) + ';color:' + (on ? c.onPrimary : c.onSurface) + ';' + (motion ? 'transition:background 260ms cubic-bezier(.2,.9,.25,1.2),transform 260ms;transform:rotate(' + (on ? 0 : -90) + 'deg);' : ''),
+        state: 'padding:4px 10px;border-radius:8px;font-size:12px;font-weight:700;background:' + (on ? c.okContainer : c.surfaceHigh) + ';color:' + (on ? c.ok : c.onSurfaceVariant) + ';',
+        card: 'display:flex;flex-direction:column;gap:14px;padding:20px;border-radius:28px;background:' + c.surfaceContainer + ';' + (motion ? 'animation:rise 480ms cubic-bezier(.2,.9,.25,1.1) both;animation-delay:' + (i * 60) + 'ms;' : '') };
+    });
+    return { c, filters, machines, root: 'min-height:960px;display:flex;background:' + c.surface + ';color:' + c.onSurface + ';font-family:"Roboto Flex",system-ui,sans-serif;' };
+  }
+}
+</script>
+</body>
+</html>

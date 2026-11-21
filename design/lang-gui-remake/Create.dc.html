@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>New machine</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto+Flex:opsz,wdth,wght@8..144,25..151,300..900&amp;family=Roboto+Mono:wght@400;500&amp;display=swap">
+<style>
+body{margin:0}
+a{color:inherit}
+button,input,select{font:inherit}
+@keyframes slidein{from{opacity:0;transform:translateX(24px)}to{opacity:1;transform:none}}
+</style>
+</helmet>
+<div style="{{root}}">
+<main style="flex: 1; min-width: 0; padding: 28px 40px 40px; display: flex; flex-direction: column; gap: 20px; max-width: 1400px; margin: 0 auto;">
+<header style="display: flex; align-items: center; gap: 16px; flex-wrap: wrap;">
+<a href="Main.dc.html" aria-label="Back" style="width: 48px; height: 48px; border-radius: 24px; display: flex; align-items: center; justify-content: center; background: {{c.surfaceHigh}}; text-decoration: none;"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M15 6l-6 6 6 6"></path></svg></a>
+<div style="flex: 1 1 300px;"><span style="font-size: 14px; color: {{c.primary}}; font-weight: 700;">New machine</span><h1 style="margin: 0; font-size: 40px; font-weight: 700; letter-spacing: -.02em;">debian-13-dev</h1></div>
+<div role="group" aria-label="Preset" style="display: flex; border-radius: 20px; overflow: hidden; border: 1px solid {{c.outline}};">
+<sc-for list="{{presets}}" as="p" hint-placeholder-count="4"><button type="button" onClick="{{p.pick}}" aria-pressed="{{p.on}}" style="{{p.style}}">{{p.label}}</button></sc-for>
+</div>
+</header>
+<div style="display: flex; gap: 20px; flex-wrap: wrap; align-items: flex-start;">
+<nav aria-label="Sections" style="flex: 0 0 220px; display: flex; flex-direction: column; gap: 4px;">
+<sc-for list="{{sections}}" as="s" hint-placeholder-count="10">
+<button type="button" onClick="{{s.pick}}" aria-current="{{s.current}}" style="{{s.style}}"><span style="flex: 1; text-align: left;">{{s.label}}</span><span style="font-size: 12px; opacity: .8;">{{s.hint}}</span></button>
+</sc-for>
+</nav>
+<section aria-live="polite" style="{{panel}}">
+<sc-if value="{{is.system}}" hint-placeholder-val="{{ true }}">
+<h2 style="margin: 0; font-size: 24px;">System and firmware</h2>
+<div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px;">
+<label style="{{field}}"><span style="{{flabel}}">Architecture</span><select style="{{input}}"><option>x86_64</option><option>i386</option><option>aarch64</option><option>arm</option><option>riscv64</option></select></label>
+<label style="{{field}}"><span style="{{flabel}}">Machine type</span><select style="{{input}}"><option>q35 (PCIe, recommended)</option><option>pc (i440FX, legacy)</option><option>microvm</option></select></label>
+<label style="{{field}}"><span style="{{flabel}}">Accelerator</span><select style="{{input}}"><option>KVM (hardware)</option><option>TCG (software)</option><option>WHPX</option></select></label>
+<label style="{{field}}"><span style="{{flabel}}">Firmware</span><select style="{{input}}"><option>UEFI (OVMF)</option><option>BIOS (SeaBIOS)</option></select></label>
+</div>
+<div style="display: flex; flex-wrap: wrap; gap: 10px;">
+<sc-for list="{{sysChips}}" as="k" hint-placeholder-count="4"><button type="button" onClick="{{k.toggle}}" aria-pressed="{{k.on}}" style="{{k.style}}">{{k.label}}</button></sc-for>
+</div>
+</sc-if>
+<sc-if value="{{is.cpu}}" hint-placeholder-val="{{ false }}">
+<h2 style="margin: 0; font-size: 24px;">CPU and memory</h2>
+<div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px;">
+<label style="{{field}}"><span style="{{flabel}}">CPU model</span><select style="{{input}}"><option>host (pass through)</option><option>max</option><option>qemu64</option><option>Skylake-Client</option><option>EPYC</option></select></label>
+<label style="{{field}}"><span style="{{flabel}}">Sockets · cores · threads</span><input value="1 · 4 · 2" style="{{input}}"></label>
+<label style="{{field}}"><span style="{{flabel}}">Memory</span><input value="8 GiB" style="{{input}}"></label>
+</div>
+<label style="{{field}}"><span style="{{flabel}}">vCPUs: {{vcpu}}</span><input type="range" min="1" max="32" value="{{vcpu}}" onInput="{{setVcpu}}" style="accent-color: {{c.primary}};"></label>
+<div style="display: flex; flex-wrap: wrap; gap: 10px;"><sc-for list="{{memChips}}" as="k" hint-placeholder-count="3"><button type="button" onClick="{{k.toggle}}" aria-pressed="{{k.on}}" style="{{k.style}}">{{k.label}}</button></sc-for></div>
+</sc-if>
+<sc-if value="{{is.disks}}" hint-placeholder-val="{{ false }}">
+<h2 style="margin: 0; font-size: 24px;">Disks</h2>
+<sc-for list="{{disks}}" as="d" hint-placeholder-count="2">
+<div style="display: grid; grid-template-columns: 2fr 1fr 1fr 1fr auto; gap: 12px; align-items: center; padding: 14px 16px; border-radius: 20px; background: {{c.surfaceHigh}};">
+<strong>{{d.name}}</strong><span>{{d.size}}</span><span>{{d.bus}}</span><span>{{d.fmt}}</span><button type="button" aria-label="Remove disk" style="width: 40px; height: 40px; border-radius: 20px; border: 0; background: transparent; color: {{c.onSurfaceVariant}};">×</button>
+</div>
+</sc-for>
+<div style="display: flex; gap: 10px; flex-wrap: wrap;"><button type="button" onClick="{{addDisk}}" style="{{tonal}}">Add disk</button><button type="button" style="{{outlined}}">Attach existing image</button><button type="button" style="{{outlined}}">Add CD / ISO</button></div>
+<p style="margin: 0; font-size: 14px; color: {{c.onSurfaceVariant}};">Bus: VirtIO, SATA, NVMe, SCSI or IDE. Format: qcow2 (snapshots, thin) or raw. Cache and discard options per disk.</p>
+</sc-if>
+<sc-if value="{{is.network}}" hint-placeholder-val="{{ false }}">
+<h2 style="margin: 0; font-size: 24px;">Network</h2>
+<div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px;">
+<label style="{{field}}"><span style="{{flabel}}">Mode</span><select style="{{input}}"><option>User (NAT, port forwards)</option><option>Bridge to host network</option><option>Isolated</option><option>None</option></select></label>
+<label style="{{field}}"><span style="{{flabel}}">NIC model</span><select style="{{input}}"><option>virtio-net</option><option>e1000e</option><option>e1000</option><option>rtl8139</option></select></label>
+<label style="{{field}}"><span style="{{flabel}}">MAC address</span><input value="52:54:00:4a:1c:07" style="{{input}}"></label>
+</div>
+<h3 style="margin: 0; font-size: 16px;">Port forwards</h3>
+<sc-for list="{{forwards}}" as="f" hint-placeholder-count="2"><div style="display: flex; gap: 12px; align-items: center; padding: 12px 16px; border-radius: 16px; background: {{c.surfaceHigh}}; font-family: 'Roboto Mono', monospace;"><span style="flex: 1;">{{f.label}}</span><span style="color: {{c.onSurfaceVariant}};">{{f.proto}}</span></div></sc-for>
+<button type="button" onClick="{{addForward}}" style="{{tonal}}">Add port forward</button>
+</sc-if>
+<sc-if value="{{is.display}}" hint-placeholder-val="{{ false }}">
+<h2 style="margin: 0; font-size: 24px;">Display, sound and input</h2>
+<div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px;">
+<label style="{{field}}"><span style="{{flabel}}">Graphics</span><select style="{{input}}"><option>virtio-gpu</option><option>std VGA</option><option>QXL</option><option>ramfb</option><option>none (headless)</option></select></label>
+<label style="{{field}}"><span style="{{flabel}}">Remote display</span><select style="{{input}}"><option>Browser console (VNC)</option><option>SPICE</option></select></label>
+<label style="{{field}}"><span style="{{flabel}}">Sound</span><select style="{{input}}"><option>None</option><option>Intel HDA</option><option>AC97</option></select></label>
+</div>
+<div style="display: flex; flex-wrap: wrap; gap: 10px;"><sc-for list="{{devChips}}" as="k" hint-placeholder-count="5"><button type="button" onClick="{{k.toggle}}" aria-pressed="{{k.on}}" style="{{k.style}}">{{k.label}}</button></sc-for></div>
+</sc-if>
+<sc-if value="{{is.boot}}" hint-placeholder-val="{{ false }}">
+<h2 style="margin: 0; font-size: 24px;">Boot and automation</h2>
+<sc-for list="{{boot}}" as="b" hint-placeholder-count="3"><div style="display: flex; gap: 12px; align-items: center; padding: 12px 16px; border-radius: 16px; background: {{c.surfaceHigh}};"><span style="width: 28px; height: 28px; border-radius: 14px; display: flex; align-items: center; justify-content: center; background: {{c.primaryContainer}}; color: {{c.onPrimaryContainer}}; font-weight: 800;">{{b.n}}</span><span style="flex: 1;">{{b.label}}</span><span style="color: {{c.onSurfaceVariant}};">drag to reorder</span></div></sc-for>
+<div style="display: flex; flex-wrap: wrap; gap: 10px;"><sc-for list="{{bootChips}}" as="k" hint-placeholder-count="3"><button type="button" onClick="{{k.toggle}}" aria-pressed="{{k.on}}" style="{{k.style}}">{{k.label}}</button></sc-for></div>
+</sc-if>
+</section>
+<aside aria-label="Launch preview" style="flex: 1 1 320px; display: flex; flex-direction: column; gap: 12px; padding: 20px; border-radius: 28px; background: {{c.surfaceLow}};">
+<h2 style="margin: 0; font-size: 18px;">Launch preview</h2>
+<p style="margin: 0; font-size: 13px; color: {{c.onSurfaceVariant}};">Generated by the server from these settings. Nothing runs until you create the machine.</p>
+<pre style="margin: 0; padding: 14px; border-radius: 16px; background: {{c.surface}}; font: 12px/1.6 'Roboto Mono', monospace; white-space: pre-wrap; color: {{c.onSurfaceVariant}};">{{preview}}</pre>
+<a href="Machine.dc.html" style="display: flex; align-items: center; justify-content: center; height: 56px; border-radius: 28px; background: {{c.primary}}; color: {{c.onPrimary}}; font-weight: 700; font-size: 16px; text-decoration: none;">Create and start</a>
+<button type="button" style="{{outlined}}">Create without starting</button>
+</aside>
+</div>
+</main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"seed":{"editor":"enum","default":"ember","options":["ember","ocean","violet"]},"mode":{"editor":"enum","default":"dark","options":["dark","light"]},"motion":{"editor":"boolean","default":true},"$preview":{"width":1440,"height":1180}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { section: 'system', preset: 'Linux', vcpu: 8, disks: 2, forwards: 2,
+      on: { 'Secure Boot': true, 'TPM 2.0': true, 'Hugepages': false, 'Memory balloon': true, 'USB tablet': true, 'USB keyboard': false, 'Serial console': true, 'virtio-rng': true, 'Clipboard sharing': false, 'Start at host boot': false, 'Boot menu': true, 'Cloud-init seed': false, 'Shared folder (virtiofs)': false } };
+  }
+  palette() {
+    const seeds = {
+      ember: { dark: ['#ffb68e', '#532200', '#753400', '#ffdbca', '#e7bdb1', '#5d4037', '#ffdbd0'], light: ['#9a4600', '#ffffff', '#ffdbca', '#321200', '#77574b', '#ffdbd0', '#2c160f'] },
+      ocean: { dark: ['#82d3e0', '#00363e', '#004f59', '#9feffd', '#b1cbd0', '#334b4f', '#cde7ec'], light: ['#00687a', '#ffffff', '#9feffd', '#001f26', '#4b6267', '#cde7ec', '#061f23'] },
+      violet: { dark: ['#d0bcff', '#381e72', '#4f378b', '#eaddff', '#ccc2dc', '#4a4458', '#e8def8'], light: ['#6750a4', '#ffffff', '#eaddff', '#21005d', '#625b71', '#e8def8', '#1d192b'] },
+    };
+    const mode = this.props.mode ?? 'dark';
+    const p = seeds[this.props.seed ?? 'ember'][mode];
+    const d = mode === 'dark';
+    return { primary: p[0], onPrimary: p[1], primaryContainer: p[2], onPrimaryContainer: p[3], secondaryContainer: p[5], onSecondaryContainer: p[6],
+      surface: d ? '#141218' : '#fef7ff', surfaceLow: d ? '#1d1b20' : '#f7f2fa', surfaceContainer: d ? '#211f26' : '#f3edf7', surfaceHigh: d ? '#2b2930' : '#ece6f0',
+      onSurface: d ? '#e6e0e9' : '#1d1b20', onSurfaceVariant: d ? '#cac4d0' : '#49454f', outline: d ? '#938f99' : '#79747e' };
+  }
+  renderVals() {
+    const c = this.palette();
+    const motion = this.props.motion ?? true;
+    const s = this.state;
+    const chip = (label) => ({ label, on: String(!!s.on[label]), toggle: () => this.setState({ on: { ...s.on, [label]: !s.on[label] } }),
+      style: 'height:40px;padding:0 16px;border-radius:12px;cursor:pointer;font-weight:600;border:1px solid ' + (s.on[label] ? 'transparent' : c.outline) + ';background:' + (s.on[label] ? c.secondaryContainer : 'transparent') + ';color:' + (s.on[label] ? c.onSecondaryContainer : c.onSurface) + ';' + (motion ? 'transition:all 180ms;' : '') });
+    const secs = [['system', 'System and firmware', 'UEFI'], ['cpu', 'CPU and memory', s.vcpu + ' vCPU'], ['disks', 'Disks', s.disks + ''], ['network', 'Network', 'NAT'], ['display', 'Display and devices', 'virtio'], ['boot', 'Boot and automation', '']];
+    const sections = secs.map(([id, label, hint]) => ({ label, hint, current: s.section === id ? 'step' : 'false', pick: () => this.setState({ section: id }),
+      style: 'display:flex;align-items:center;gap:8px;height:56px;padding:0 20px;border:0;border-radius:28px;cursor:pointer;font-weight:600;font-size:15px;background:' + (s.section === id ? c.secondaryContainer : 'transparent') + ';color:' + (s.section === id ? c.onSecondaryContainer : c.onSurface) + ';' + (motion ? 'transition:background 220ms;' : '') }));
+    const presets = ['Linux', 'Windows 11', 'Arm', 'Custom'].map((label) => ({ label, on: String(s.preset === label), pick: () => this.setState({ preset: label }),
+      style: 'height:40px;padding:0 18px;border:0;cursor:pointer;font-weight:600;background:' + (s.preset === label ? c.secondaryContainer : 'transparent') + ';color:' + (s.preset === label ? c.onSecondaryContainer : c.onSurface) + ';' }));
+    const is = Object.fromEntries(secs.map(([id]) => [id, s.section === id]));
+    const disks = Array.from({ length: s.disks }, (_, i) => i === 0 ? { name: 'system.qcow2', size: '64 GiB', bus: 'VirtIO', fmt: 'qcow2' } : { name: 'data' + i + '.qcow2', size: '200 GiB', bus: 'NVMe', fmt: 'qcow2' });
+    const forwards = Array.from({ length: s.forwards }, (_, i) => [{ label: 'host 2222 → guest 22', proto: 'TCP' }, { label: 'host 8443 → guest 443', proto: 'TCP' }, { label: 'host 5353 → guest 53', proto: 'UDP' }][i % 3]);
+    const field = 'display:flex;flex-direction:column;gap:6px;';
+    const preview = 'qemu-system-x86_64 -name debian-13-dev\n  -machine q35 -accel kvm -cpu host\n  -smp ' + s.vcpu + ',sockets=1,cores=' + Math.max(1, s.vcpu / 2) + ',threads=2 -m 8G\n' +
+      (s.on['Secure Boot'] ? '  -drive if=pflash,format=raw,readonly=on,file=OVMF_CODE.secboot.fd\n' : '  -drive if=pflash,format=raw,readonly=on,file=OVMF_CODE.fd\n') +
+      (s.on['TPM 2.0'] ? '  -chardev socket,id=tpm,path=<swtpm> -tpmdev emulator,id=tpm0,chardev=tpm\n  -device tpm-tis,tpmdev=tpm0\n' : '') +
+      disks.map((d, i) => '  -drive file=<' + d.name + '>,if=none,id=disk' + i + ' -device ' + (d.bus === 'NVMe' ? 'nvme,serial=d' + i : 'virtio-blk-pci') + ',drive=disk' + i + '\n').join('') +
+      '  -netdev user,id=n0' + forwards.map((f) => ',hostfwd=' + f.proto.toLowerCase() + '::' + f.label.split(' ')[1] + '-:' + f.label.split(' ').pop()).join('') + '\n  -device virtio-net-pci,netdev=n0\n  -device virtio-gpu-pci -vnc 127.0.0.1:<private>' +
+      (s.on['USB tablet'] ? '\n  -device qemu-xhci -device usb-tablet' : '') + (s.on['virtio-rng'] ? '\n  -device virtio-rng-pci' : '') + (s.on['Memory balloon'] ? '\n  -device virtio-balloon' : '');
+    return { c, sections, presets, is, disks, forwards, preview, vcpu: s.vcpu, field,
+      sysChips: ['Secure Boot', 'TPM 2.0', 'Hugepages'].map(chip),
+      memChips: ['Memory balloon', 'Hugepages'].map(chip),
+      devChips: ['USB tablet', 'USB keyboard', 'Serial console', 'virtio-rng', 'Clipboard sharing'].map(chip),
+      bootChips: ['Boot menu', 'Start at host boot', 'Cloud-init seed', 'Shared folder (virtiofs)'].map(chip),
+      boot: [{ n: 1, label: 'CD: debian-13-netinst.iso' }, { n: 2, label: 'Disk: system.qcow2' }, { n: 3, label: 'Network (PXE)' }],
+      setVcpu: (e) => this.setState({ vcpu: Number(e.target.value) }),
+      addDisk: () => this.setState({ disks: Math.min(4, s.disks + 1) }),
+      addForward: () => this.setState({ forwards: Math.min(3, s.forwards + 1) }),
+      flabel: 'font-size:13px;font-weight:600;color:' + c.onSurfaceVariant + ';',
+      input: 'height:56px;padding:0 16px;border-radius:12px;border:1px solid ' + c.outline + ';background:transparent;color:' + c.onSurface + ';font-size:16px;',
+      tonal: 'height:44px;padding:0 20px;border:0;border-radius:22px;cursor:pointer;font-weight:700;background:' + c.secondaryContainer + ';color:' + c.onSecondaryContainer + ';',
+      outlined: 'height:44px;padding:0 20px;border-radius:22px;cursor:pointer;font-weight:700;background:transparent;border:1px solid ' + c.outline + ';color:' + c.primary + ';',
+      panel: 'flex:999 1 520px;min-width:0;display:flex;flex-direction:column;gap:18px;padding:28px;border-radius:28px;background:' + c.surfaceContainer + ';' + (motion ? 'animation:slidein 420ms cubic-bezier(.2,.9,.25,1.1) both;' : ''),
+      root: 'min-height:1180px;display:flex;background:' + c.surface + ';color:' + c.onSurface + ';font-family:"Roboto Flex",system-ui,sans-serif;' };
+  }
+}
+</script>
+</body>
+</html>
