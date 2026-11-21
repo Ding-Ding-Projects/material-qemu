@@ -77,6 +77,7 @@ ipcMain.handle('deploy:start', async (_e, req) => {
       return { ok: true, ...result };
     }
     let ovaFile = req.localOva;
+    let verified = false;
     let version = 'local file';
     if (!ovaFile) {
       send({ type: 'step', id: 'appliance', state: 'active', detail: 'reading the latest release' });
@@ -85,9 +86,10 @@ ipcMain.handle('deploy:start', async (_e, req) => {
       version = rel.tag;
       const got = await appliance.downloadVerified(rel, cacheDir(), { signal: deployAbort.signal, onProgress: (p) => send({ type: 'progress', ...p }) });
       ovaFile = got.file;
+      verified = true;
     } else if (!fs.existsSync(ovaFile)) throw new Error('The chosen appliance file no longer exists.');
     const adapter = h.id === 'virtualbox' ? req.adapter : null;
-    const result = await deploy({ registry, hypervisor: h, ovaFile, version, name: req.name, cpus: req.cpus, memoryMb: req.memoryMb, adapter, nested: req.nested, vmRoot: vmRoot(), emit: send, signal: deployAbort.signal });
+    const result = await deploy({ registry, hypervisor: h, ovaFile, verified, version, name: req.name, cpus: req.cpus, memoryMb: req.memoryMb, adapter, nested: req.nested, vmRoot: vmRoot(), emit: send, signal: deployAbort.signal });
     return { ok: true, ...result };
   } catch (err) {
     return { ok: false, message: err.message, command: err.command || null, exitCode: err.exitCode ?? null, output: err.output || '', seconds: Math.round((Date.now() - startedAt) / 1000), failedAt: new Date().toISOString() };

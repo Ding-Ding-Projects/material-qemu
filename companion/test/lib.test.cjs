@@ -112,3 +112,21 @@ test('serial reports survive the carriage returns a real guest terminal adds', (
   assert.equal(r.version, 'v0.1.0-build.8');
   assert.equal(parseSerial('MQ-BOOT version=v1 ip=10.0.0.5\r').ip, '10.0.0.5');
 });
+
+test('VMware import skips the manifest check only for a release-verified OVA', async () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'mqv-'));
+  const calls = [];
+  const run = async (file, args) => {
+    calls.push(args);
+    const target = path.join(args[args.length - 1], 'vm1');
+    fs.mkdirSync(target, { recursive: true });
+    fs.writeFileSync(path.join(target, 'vm1.vmx'), '');
+    return { code: 0, stdout: '', stderr: '' };
+  };
+  const h = { id: 'vmware', ovftool: 'ovftool.exe', vmrun: 'vmrun.exe', hostType: 'ws' };
+  await hv.drivers.vmware.import(h, { ova: 'a.ova', name: 'vm1', folder: dir, cpus: 2, memoryMb: 4096, verified: true }, run);
+  await hv.drivers.vmware.import(h, { ova: 'a.ova', name: 'vm1', folder: dir, cpus: 2, memoryMb: 4096 }, run);
+  assert.ok(calls[0].includes('--skipManifestCheck'));
+  assert.ok(!calls[1].includes('--skipManifestCheck'));
+  fs.rmSync(dir, { recursive: true, force: true });
+});

@@ -155,11 +155,15 @@ function setVmxKeys(text, values) {
 }
 
 const vmware = {
-  async import(hv, { ova, name, folder, cpus, memoryMb }, run = defaultRun, onOutput) {
+  async import(hv, { ova, name, folder, cpus, memoryMb, verified = false }, run = defaultRun, onOutput) {
     validateName(name); validateResources({ cpus, memoryMb });
     if (!hv.ovftool) throw new Error('OVF Tool is required to import the appliance into VMware.');
     await fsp.mkdir(folder, { recursive: true });
-    await must(run, hv.ovftool, ['--acceptAllEulas', '--allowExtraConfig', '--noSSLVerify', `--name=${name}`, ova, folder], { onOutput });
+    // OVF Tool miscomputes the digest of a stream-optimized disk listed in an
+    // older appliance manifest. When this app has already checked the whole OVA
+    // against the release SHA-256, that manifest check adds nothing.
+    const args = ['--acceptAllEulas', '--allowExtraConfig', '--noSSLVerify', ...(verified ? ['--skipManifestCheck'] : []), `--name=${name}`, ova, folder];
+    await must(run, hv.ovftool, args, { onOutput });
     const vmx = path.join(folder, name, `${name}.vmx`);
     if (!fs.existsSync(vmx)) throw new Error(`OVF Tool finished but ${vmx} was not created.`);
     return { vmRef: vmx };

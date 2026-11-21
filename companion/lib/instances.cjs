@@ -43,7 +43,7 @@ class Registry {
 
 const STEPS = ['appliance', 'import', 'configure', 'start', 'report', 'health'];
 
-async function deploy({ registry, hypervisor, ovaFile, version, name, cpus, memoryMb, adapter, nested, vmRoot, emit = () => {}, run = defaultRun, signal }) {
+async function deploy({ registry, hypervisor, ovaFile, verified = false, version, name, cpus, memoryMb, adapter, nested, vmRoot, emit = () => {}, run = defaultRun, signal }) {
   validateName(name); validateResources({ cpus, memoryMb });
   if (registry.byName(name)) throw new Error(`An instance named ${name} already exists. Pick another name.`);
   const driver = drivers[hypervisor.id];
@@ -56,7 +56,7 @@ async function deploy({ registry, hypervisor, ovaFile, version, name, cpus, memo
   step('appliance', 'done', path.basename(ovaFile));
 
   step('import', 'active');
-  const { vmRef } = await driver.import(hypervisor, { ova: ovaFile, name, folder, cpus, memoryMb }, run, (text) => emit({ type: 'output', text }));
+  const { vmRef } = await driver.import(hypervisor, { ova: ovaFile, name, folder, cpus, memoryMb, verified }, run, (text) => emit({ type: 'output', text }));
   const record = await registry.add({ id: crypto.randomUUID(), name, hypervisor: hypervisor.id, vmRef, folder, serialPath, version, cpus, memoryMb, adapter: adapter || null, createdAt: new Date().toISOString(), lastUrl: null, setupCode: null });
   step('import', 'done');
 

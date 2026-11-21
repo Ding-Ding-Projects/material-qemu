@@ -113,8 +113,10 @@ export async function makeOva(vmdk, capacityGiB, version, out) {
     const ovf = ovfDescriptor({ diskFile, diskBytes, capacityGiB, version });
     await writeFile(path.join(work, `${base}.ovf`), ovf);
     const ovfSha = createHash('sha256').update(ovf).digest('hex');
-    const diskSha = await sha256File(path.join(work, diskFile));
-    await writeFile(path.join(work, `${base}.mf`), `SHA256(${base}.ovf)= ${ovfSha}\nSHA256(${diskFile})= ${diskSha}\n`);
+    // Only the descriptor is listed: VMware OVF Tool computes a different digest
+    // for a stream-optimized disk than the file's real SHA-256 and refuses the
+    // import. The release publishes the SHA-256 of the whole OVA instead.
+    await writeFile(path.join(work, `${base}.mf`), `SHA256(${base}.ovf)= ${ovfSha}\n`);
     execFileSync('tar', ['--format=ustar', '-cf', path.resolve(out), '-C', work, `${base}.ovf`, `${base}.mf`, diskFile], { stdio: 'inherit' });
   } finally {
     await rm(work, { recursive: true, force: true });
