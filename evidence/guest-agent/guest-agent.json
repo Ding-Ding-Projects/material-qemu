@@ -1,0 +1,26 @@
+{
+  "origin": "http://localhost:8097/",
+  "at": "2026-11-21T13:44:45.811Z",
+  "results": [
+    {
+      "name": "QEMU starts with the guest agent channel",
+      "ok": true,
+      "detail": "socket,id=qga0,host=127.0.0.1,port=61666,server=on,wait=off"
+    },
+    {
+      "name": "With no agent running in the guest, the tab says so instead of waiting forever",
+      "ok": true,
+      "detail": "No guest agent answered. Start the agent inside the guest (qemu-guest-agent)."
+    },
+    {
+      "name": "Questions outside the list are refused",
+      "ok": true,
+      "detail": "Choose a listed guest agent question."
+    },
+    {
+      "name": "A machine without the channel explains how to turn it on",
+      "ok": true,
+      "detail": "Guest agent This machine has no guest agent channel. Turn on \"QEMU guest agent channel\" in Edit hardware, then install q"
+    }
+  ]
+}

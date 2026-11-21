@@ -6,6 +6,7 @@ export const MACHINE_TABS = [
   ["overview", "Overview", "概覽", "dashboard"],
   ["hardware", "Hardware", "硬件", "memory"],
   ["monitor", "Monitor", "監察", "monitor_heart"],
+  ["agent", "Guest agent", "客體代理", "support_agent"],
   ["log", "Log", "記錄", "receipt_long"],
 ];
 
@@ -78,6 +79,7 @@ ${section(t("Devices", "裝置"), "devices", [
     [t("USB tablet", "USB 數位板"), yesNo(t, m.usb ? m.usb.tablet !== false : true)],
     [t("USB keyboard", "USB 鍵盤"), yesNo(t, m.usb?.keyboard)],
     [t("Serial console log", "序列主控台記錄"), yesNo(t, m.serial)],
+    [t("QEMU guest agent channel", "QEMU 客體代理通道"), yesNo(t, m.guestAgent)],
     [t("Random number generator", "亂數產生器"), yesNo(t, m.rng)],
   ])}
 </div><button type="button" data-action="edit:${escape(m.id)}"><span class="icon" aria-hidden="true">edit</span>${t("Edit hardware", "編輯硬件")}</button>`;
@@ -107,6 +109,34 @@ export function monitorView({ t, escape, button }, m, view) {
     : !r.ok ? `<p class="error-text" role="alert">${escape(r.error)}</p>`
     : `<div class="mon-result">${formatMonitorValue(r.result, escape)}</div><details class="mon-raw"><summary>${t("Raw reply", "原始回覆")}</summary><pre>${escape(JSON.stringify(r.result, null, 2))}</pre></details>`;
   return `<div class="monitor-layout"><nav class="card mon-nav" aria-label="${t("Monitor queries", "監察查詢")}"><p class="muted-line">${t("Read-only questions to QEMU. None of them change the machine.", "向 QEMU 查詢，唯讀，不會更改機器。")}</p><ul>${queries.map((q) => `<li>${button(`monitor-query:${q}`, `${t(...QUERY_LABELS[q])}<small class="mono">query-${q === "cpus" ? "cpus-fast" : q === "memory" ? "memory-size-summary" : q}</small>`, chosen === q ? "selected" : "", `aria-pressed="${chosen === q}"${running ? "" : " disabled"}`)}</li>`).join("")}</ul></nav><section class="card mon-out" aria-live="polite"><div class="toolbar"><h2>${t(...QUERY_LABELS[chosen])}</h2>${button(`monitor-query:${chosen}`, `<span class="icon" aria-hidden="true">refresh</span>${t("Ask again", "再次查詢")}`, "ghost", running ? "" : "disabled")}</div>${body}${r?.at ? `<p class="muted-line">${t("Answered at", "回覆時間")} <time>${escape(new Date(r.at).toLocaleTimeString())}</time></p>` : ""}</section></div>`;
+}
+
+export const AGENT_LABELS = {
+  ping: ["Is the agent answering", "代理是否回應"],
+  info: ["Agent version and commands", "代理版本及指令"],
+  os: ["Operating system", "作業系統"],
+  hostname: ["Host name", "主機名稱"],
+  network: ["Network addresses", "網絡位址"],
+  filesystems: ["File systems", "檔案系統"],
+  users: ["Signed-in users", "已登入使用者"],
+  time: ["Guest clock", "客體時鐘"],
+  timezone: ["Time zone", "時區"],
+  vcpus: ["Processors seen by the guest", "客體看到的處理器"],
+};
+
+// Guest agent tab: read-only questions answered by qemu-guest-agent inside the guest.
+export function agentView({ t, escape, button }, m, view) {
+  const running = ["running", "paused", "prelaunch", "starting"].includes(m.state);
+  if (!m.guestAgent)
+    return `<section class="card"><h2>${t("Guest agent", "客體代理")}</h2><p class="muted-line">${t("This machine has no guest agent channel. Turn on \"QEMU guest agent channel\" in Edit hardware, then install qemu-guest-agent inside the guest (it is in most Linux distributions; Windows guests use the VirtIO drivers' agent).", "這部機器沒有客體代理通道。請在「編輯硬件」開啟「QEMU 客體代理通道」，再在客體內安裝 qemu-guest-agent（大部分 Linux 發行版都有；Windows 客體使用 VirtIO 驅動程式的代理）。")}</p><button type="button" data-action="edit:${escape(m.id)}"><span class="icon" aria-hidden="true">edit</span>${t("Edit hardware", "編輯硬件")}</button></section>`;
+  const chosen = view.agentQuery || "os";
+  const r = view.agentResults?.[chosen];
+  const body = !running
+    ? `<p class="muted-line">${t("Start the machine to ask its guest agent.", "啟動機器後即可詢問客體代理。")}</p>`
+    : !r ? `<p class="muted-line">${t("Asking the guest…", "正在詢問客體…")}</p>`
+    : !r.ok ? `<p class="error-text" role="alert">${escape(r.error)}</p>`
+    : `<div class="mon-result">${formatMonitorValue(r.result, escape)}</div><details class="mon-raw"><summary>${t("Raw reply", "原始回覆")}</summary><pre>${escape(JSON.stringify(r.result, null, 2))}</pre></details>`;
+  return `<div class="monitor-layout"><nav class="card mon-nav" aria-label="${t("Guest agent questions", "客體代理查詢")}"><p class="muted-line">${t("Read-only questions answered by the agent inside the guest. None of them change the guest.", "由客體內的代理回答的唯讀查詢，不會更改客體。")}</p><ul>${Object.keys(AGENT_LABELS).map((q) => `<li>${button(`agent-query:${q}`, `${t(...AGENT_LABELS[q])}<small class="mono">guest-${{ ping: "ping", info: "info", os: "get-osinfo", hostname: "get-host-name", network: "network-get-interfaces", filesystems: "get-fsinfo", users: "get-users", time: "get-time", timezone: "get-timezone", vcpus: "get-vcpus" }[q]}</small>`, chosen === q ? "selected" : "", `aria-pressed="${chosen === q}"${running ? "" : " disabled"}`)}</li>`).join("")}</ul></nav><section class="card mon-out" aria-live="polite"><div class="toolbar"><h2>${t(...AGENT_LABELS[chosen])}</h2>${button(`agent-query:${chosen}`, `<span class="icon" aria-hidden="true">refresh</span>${t("Ask again", "再次查詢")}`, "ghost", running ? "" : "disabled")}</div>${body}${r?.at ? `<p class="muted-line">${t("Answered at", "回覆時間")} <time>${escape(new Date(r.at).toLocaleTimeString())}</time></p>` : ""}</section></div>`;
 }
 
 export function logView({ t, escape, button, bytes }, m, log) {

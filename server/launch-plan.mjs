@@ -36,6 +36,7 @@ export function launchPlan(machineRecord, options = {}) {
     serialLog = "<serial log>",
     biosImage = null,
     seedIso = "<cloud-init seed>",
+    qga = "<private guest agent port>",
   } = options;
   const arch = machine.arch,
     target = targets[arch];
@@ -203,6 +204,17 @@ export function launchPlan(machineRecord, options = {}) {
       "scsi-cd,drive=cloud-init-seed,bus=media-scsi.0,id=cd-cloud-init",
     );
   }
+  // Guest agent channel: a virtio serial port the agent inside the guest
+  // opens, reached from the host through a local socket.
+  if (machine.guestAgent)
+    args.push(
+      "-chardev",
+      `socket,id=qga0,host=127.0.0.1,port=${qga},server=on,wait=off`,
+      "-device",
+      "virtio-serial-pci,id=qga-serial",
+      "-device",
+      "virtserialport,chardev=qga0,name=org.qemu.guest_agent.0",
+    );
   // Network.
   const net = machine.network;
   if (net.mode === "user") {

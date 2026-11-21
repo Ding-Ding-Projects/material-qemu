@@ -299,6 +299,7 @@ export function validateMachine(rawInput, capabilities, host) {
     cpuFlags: validateCpuFlags(input.cpuFlags, { arch, host }),
     firmwareImage: input.firmwareImage ? checkFirmwareName(input.firmwareImage) : "",
     cloudInit: validateCloudInit(input.cloudInit),
+    guestAgent: bool(input.guestAgent),
     numa: validateNuma(input.numa, { memory, cpus }),
     memory,
     balloon: bool(input.balloon),

@@ -86,7 +86,7 @@ async function loadFirmware() {
 }
 let machineTab = "overview", machineView = { id: null, query: "status", results: {}, log: null };
 function machineViewFor(id) {
-  if (machineView.id !== id) machineView = { id, query: "status", results: {}, log: null };
+  if (machineView.id !== id) machineView = { id, query: "status", results: {}, log: null, agentQuery: "os", agentResults: {} };
   return machineView;
 }
 async function loadMonitorQuery(name) {
@@ -99,6 +99,17 @@ async function loadMonitorQuery(name) {
   if (machineView.id !== id) return;
   view.results[name] = r.ok ? { ...r.data, error: r.data.ok ? null : localizeServerError(r.data.error, t), at: Date.now() } : { ok: false, error: localizeServerError(r.error?.message || String(r.error), t), at: Date.now() };
   if (page === "console" && machineTab === "monitor") rerenderQuiet();
+}
+async function loadGuestQuery(name) {
+  const id = selected;
+  const view = machineViewFor(id);
+  view.agentQuery = name;
+  delete view.agentResults[name];
+  if (page === "console" && machineTab === "agent") rerenderQuiet();
+  const r = await tryApi(`/machines/${id}/agent/${name}`);
+  if (machineView.id !== id) return;
+  view.agentResults[name] = r.ok ? { ...r.data, error: r.data.ok ? null : localizeServerError(r.data.error, t), at: Date.now() } : { ok: false, error: localizeServerError(r.error?.message || String(r.error), t), at: Date.now() };
+  if (page === "console" && machineTab === "agent") rerenderQuiet();
 }
 async function loadMachineLog() {
   const id = selected;
@@ -2328,11 +2339,17 @@ async function handleExtra(action, b) {
     render();
     if (machineTab === "monitor") loadMonitorQuery(machineViewFor(selected).query || "status");
     if (machineTab === "log") loadMachineLog();
+    if (machineTab === "agent" && state.machines.find((m) => m.id === selected)?.guestAgent) loadGuestQuery(machineViewFor(selected).agentQuery || "os");
     document.querySelector(`[data-action="${action}"]`)?.focus();
     return true;
   }
   if (action.startsWith("monitor-query:")) {
     await loadMonitorQuery(action.slice(14));
+    document.querySelector(`[data-action="${action}"]`)?.focus();
+    return true;
+  }
+  if (action.startsWith("agent-query:")) {
+    await loadGuestQuery(action.slice(12));
     document.querySelector(`[data-action="${action}"]`)?.focus();
     return true;
   }

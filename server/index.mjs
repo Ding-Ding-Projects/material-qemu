@@ -24,6 +24,7 @@ import {
   deleteSnapshot,
 } from "./snapshots.mjs";
 import { MONITOR_QUERIES, runMonitorQuery, machineLog } from "./machine-monitor.mjs";
+import { GUEST_QUERIES, runGuestQuery } from "./guest-agent.mjs";
 import { createJobs, countedRequest } from "./jobs.mjs";
 import { listFirmware, receiveFirmware, deleteFirmware } from "./firmware-images.mjs";
 import {
@@ -592,6 +593,17 @@ export async function createApplication(options = {}) {
         const result = await deleteFirmware(data, store.state.machines, decodeURIComponent(firmwareMatch[1]));
         await store.transaction((s) => event(s, `Deleted firmware image ${result.name}.`));
         return json(res, 200, result);
+      }
+      const agentMatch = route.match(/^\/api\/machines\/([a-f0-9-]{36})\/agent(?:\/([a-z]+))?$/);
+      if (agentMatch && req.method === "GET") {
+        const machine = store.state.machines.find((m) => m.id === agentMatch[1]);
+        if (!machine) return json(res, 404, { error: "Machine not found." });
+        if (!agentMatch[2]) return json(res, 200, { queries: Object.keys(GUEST_QUERIES), enabled: Boolean(machine.guestAgent), running: qemu.running.has(machine.id) });
+        try {
+          return json(res, 200, { query: agentMatch[2], ok: true, result: await runGuestQuery(qemu, machine, agentMatch[2]) });
+        } catch (error) {
+          return json(res, 200, { query: agentMatch[2], ok: false, error: error.message });
+        }
       }
       const viewMatch = route.match(/^\/api\/machines\/([a-f0-9-]{36})\/(monitor|log)(?:\/([a-z]+))?$/);
       if (viewMatch && req.method === "GET") {

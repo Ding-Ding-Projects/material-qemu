@@ -155,6 +155,7 @@ export class Qemu {
         "Requested memory exceeds the safe host/container allocation limit.",
       );
     const qmp = await port();
+    const qga = machine.guestAgent ? await port() : null;
     let vnc = await port();
     for (let i = 0; (vnc === qmp || vnc < 5900) && i < 20; i++)
       vnc = await port();
@@ -173,7 +174,7 @@ export class Qemu {
       );
     const runtime = this.runtimeDirectory(machine.id);
     await mkdir(runtime, { recursive: true, mode: 0o700 });
-    const options = { disks: diskPaths, cdroms: cdPaths, qmp, vnc };
+    const options = { disks: diskPaths, cdroms: cdPaths, qmp, vnc, ...(qga ? { qga } : {}) };
     const customFirmware = await firmwareImagePath(this.directory, machine.firmwareImage);
     if (
       ["x86_64", "i386"].includes(machine.arch) &&
@@ -244,6 +245,7 @@ export class Qemu {
     const r = {
       process: child,
       qmp,
+      qga,
       vnc,
       memory: machine.memory,
       state: "starting",
