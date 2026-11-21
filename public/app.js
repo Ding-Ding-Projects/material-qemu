@@ -31,6 +31,7 @@ import {
   totalCpus,
 } from "./machine-form.js";
 import { normalizeStorage, kindOfUpload } from "./storage-model.js";
+import { localizeServerError } from "./server-errors.js";
 const { startRegistration, startAuthentication } = window.SimpleWebAuthnBrowser;
 
 const $ = (selector) => document.querySelector(selector);
@@ -173,7 +174,7 @@ async function api(route, body, options = {}) {
     data = {};
   }
   if (!response.ok) {
-    const error = new Error(data.error || "Request failed.");
+    const error = new Error(data.error ? localizeServerError(data.error, t) : t("Request failed.", "請求失敗。"));
     error.status = response.status;
     throw error;
   }
@@ -201,7 +202,7 @@ async function apiDelete(route) {
     data = {};
   }
   if (!response.ok) {
-    const error = new Error(data.error || "Request failed.");
+    const error = new Error(data.error ? localizeServerError(data.error, t) : t("Request failed.", "請求失敗。"));
     error.status = response.status;
     throw error;
   }
@@ -1708,7 +1709,7 @@ async function startUpload(file) {
       message:
         error.status === 404 || error.status === 501
           ? unavailableMessage()
-          : error.message,
+          : localizeServerError(error.message, t),
     };
   } finally {
     activeTransfer = null;

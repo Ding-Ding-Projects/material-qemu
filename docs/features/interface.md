@@ -24,3 +24,7 @@ Powering off, removing machines, restoring or deleting a snapshot and deleting a
 ## Verification
 
 `npm test` covers the colour roles, the gate state machine and form serialization. Evidence images in `evidence/lang-gui-remake/` were captured from the real client served by the real server (sign-in and onboarding) and from the same client with mocked API responses (every other screen), because QEMU is not present on the development host. They are not proof of a running guest.
+
+## Server messages in Cantonese
+
+The server answers in English. `public/server-errors.js` holds a Cantonese translation of every fixed server message and a pattern for each message with a variable part, so Cantonese and bilingual modes show translated errors. Raw QEMU and qemu-img output stays exactly as printed. `tests/server-errors.test.mjs` scans the server source and fails when a message has no translation.

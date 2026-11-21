@@ -32,7 +32,7 @@
 - [x] Add server endpoints for live actions, snapshots, storage, resize, clone and disk import, tested against real QEMU.
 - [x] Click through VMDK import, disk resize, clone, snapshot and two-key snapshot restore in the browser against the v2 server.
 - [x] Render the remade interface in Cantonese and bilingual modes without horizontal overflow.
-- [ ] Translate server error messages (they stay in English in Cantonese mode).
+- [x] Translate every server error message for Cantonese and bilingual modes, with a test that fails on an untranslated message.
 - [x] Verify swtpm TPM start-up, UEFI and Secure Boot discovery and KVM in the built container inside the VirtualBox appliance (evidence/appliance-build-19).
 - [ ] Verify physical authenticators, installed guest operating-system boot and guest ACPI handling.
 - [ ] Verify complete latest-source visual (the Material Design 3 Expressive remake is implemented; screenshots use mocked API data), language, keyboard and narrow-screen parity; retain historical evidence with original provenance.
