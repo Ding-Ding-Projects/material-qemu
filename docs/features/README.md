@@ -23,6 +23,7 @@ The application includes task-oriented help for creating machines, controlling l
 - [Retained-disk removal, restoration and bulk lifecycle](machine-lifecycle.md)
 
 - [Workspace tabs and command palette](workspace.md)
+- [Machine page tabs: hardware, monitor and log](machine-page.md)
 
 - [VirtualBox and VMware hosting with the deploy assistant](vm-hosting.md)
 

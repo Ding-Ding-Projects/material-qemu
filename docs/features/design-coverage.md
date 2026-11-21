@@ -108,7 +108,7 @@ This inventory covers the controls in the supplied Main, Onboarding, Overview, M
 | Clipboard/type text | Implemented explicit user text transfer, with 256-character bound and truthful guest-support limitation. Guest acceptance remains unverified. |
 | Media change/eject, USB redirection | Media change and eject implemented through QMP (Change CD). USB redirection pending. |
 | Screenshot/record/drawing | Implemented: QEMU screenshot proven pixel-identical to the live framebuffer, bounded WebM recording, and annotation with separate original and annotated downloads (scripts/verify-console-export.mjs, scripts/verify-console-media.mjs). |
-| Summary/hardware/snapshots/migrate/guest-agent/monitor/stats/log tabs | Pending broader board implementations. |
+| Summary/hardware/snapshots/migrate/guest-agent/monitor/stats/log tabs | Overview (console, CPU and memory use, disks, snapshots and activity), Hardware (every saved setting), Monitor (twelve read-only QEMU queries from a fixed server list) and Log (QEMU messages and the serial log tail) tabs are implemented and checked against a running QEMU machine (scripts/verify-machine-tabs.mjs). Migrate and guest-agent tabs remain pending. |
 | Guest FPS/latency/CPU/RAM | Guest CPU and RAM measured from the QEMU process. Display FPS and latency pending; no sample values are shown. |
 
 ## Explicit preservation checkpoint

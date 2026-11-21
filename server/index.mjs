@@ -23,6 +23,7 @@ import {
   restoreSnapshot,
   deleteSnapshot,
 } from "./snapshots.mjs";
+import { MONITOR_QUERIES, runMonitorQuery, machineLog } from "./machine-monitor.mjs";
 import {
   storageReport,
   resizeDisk,
@@ -546,6 +547,18 @@ export async function createApplication(options = {}) {
           return res.end(image);
         } catch {
           return json(res, 404, { error: "No screenshot has been taken yet." });
+        }
+      }
+      const viewMatch = route.match(/^\/api\/machines\/([a-f0-9-]{36})\/(monitor|log)(?:\/([a-z]+))?$/);
+      if (viewMatch && req.method === "GET") {
+        const machine = store.state.machines.find((m) => m.id === viewMatch[1]);
+        if (!machine) return json(res, 404, { error: "Machine not found." });
+        if (viewMatch[2] === "log") return json(res, 200, await machineLog(qemu, migrateMachine(machine)));
+        if (!viewMatch[3]) return json(res, 200, { queries: Object.keys(MONITOR_QUERIES), running: qemu.running.has(machine.id) });
+        try {
+          return json(res, 200, { query: viewMatch[3], ok: true, result: await runMonitorQuery(qemu, machine, viewMatch[3]) });
+        } catch (error) {
+          return json(res, 200, { query: viewMatch[3], ok: false, error: error.message });
         }
       }
       const snapshotMatch = route.match(

@@ -76,6 +76,31 @@ const regexLibrary = createLibrary();
 let regexTab = "explain", regexSample = null, regexReplacement = "", regexRun = 0, regexLast = { key: "", html: "" };
 let regexDebug = null, regexDebugStep = 0, regexCodeLang = "JavaScript", regexFiles = [];
 let regexFileReplace = false, regexFileReplacement = "", regexFileResults = [];
+// Machine page tab and the data its Monitor and Log tabs have fetched.
+let machineTab = "overview", machineView = { id: null, query: "status", results: {}, log: null };
+function machineViewFor(id) {
+  if (machineView.id !== id) machineView = { id, query: "status", results: {}, log: null };
+  return machineView;
+}
+async function loadMonitorQuery(name) {
+  const id = selected;
+  const view = machineViewFor(id);
+  view.query = name;
+  delete view.results[name];
+  if (page === "console" && machineTab === "monitor") rerenderQuiet();
+  const r = await tryApi(`/machines/${id}/monitor/${name}`);
+  if (machineView.id !== id) return;
+  view.results[name] = r.ok ? { ...r.data, error: r.data.ok ? null : localizeServerError(r.data.error, t), at: Date.now() } : { ok: false, error: localizeServerError(r.error?.message || String(r.error), t), at: Date.now() };
+  if (page === "console" && machineTab === "monitor") rerenderQuiet();
+}
+async function loadMachineLog() {
+  const id = selected;
+  const view = machineViewFor(id);
+  const r = await tryApi(`/machines/${id}/log`);
+  if (machineView.id !== id) return;
+  view.log = r.ok ? r.data : { error: localizeServerError(r.error?.message || String(r.error), t) };
+  if (page === "console" && machineTab === "log") rerenderQuiet();
+}
 // Gives the browser a changed file to save. Nothing on disk is changed in place.
 function downloadText(name, text) {
   const url = URL.createObjectURL(new Blob([text], { type: "text/plain;charset=utf-8" }));
@@ -1816,6 +1841,8 @@ function views() {
     appearance,
     thumbs,
     snaps: snapshotStore[selected] || { status: "loading", items: [] },
+    machineTab,
+    machineView: machineViewFor(selected),
     storage: storage || normalizeStorage(null, state),
     storageTab,
     upload,
@@ -2284,6 +2311,24 @@ async function handleExtra(action, b) {
     input.focus();
     input.setSelectionRange(caret, caret);
     renderCommands(input.value);
+    return true;
+  }
+  if (action.startsWith("machine-tab:")) {
+    machineTab = action.slice(12);
+    render();
+    if (machineTab === "monitor") loadMonitorQuery(machineViewFor(selected).query || "status");
+    if (machineTab === "log") loadMachineLog();
+    document.querySelector(`[data-action="${action}"]`)?.focus();
+    return true;
+  }
+  if (action.startsWith("monitor-query:")) {
+    await loadMonitorQuery(action.slice(14));
+    document.querySelector(`[data-action="${action}"]`)?.focus();
+    return true;
+  }
+  if (action === "log-refresh") {
+    await loadMachineLog();
+    document.querySelector('[data-action="log-refresh"]')?.focus();
     return true;
   }
   if (action.startsWith("open-doc:")) {

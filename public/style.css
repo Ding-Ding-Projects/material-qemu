@@ -2752,3 +2752,135 @@ article.flash {
   flex: 1 1 240px;
   margin: 0;
 }
+
+.machine-tabs {
+  margin: 4px 0 16px;
+}
+.hw-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 16px;
+  margin-bottom: 16px;
+}
+.hw-card h2 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 8px;
+  font-size: 18px;
+}
+.hw-card.wide {
+  grid-column: 1 / -1;
+}
+.hw-card dl {
+  margin: 0;
+}
+.hw-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 8px 0;
+  border-bottom: 1px solid color-mix(in srgb, currentColor 10%, transparent);
+}
+.hw-row:last-child {
+  border-bottom: 0;
+}
+.hw-row dt {
+  opacity: 0.8;
+}
+.hw-row dd {
+  margin: 0;
+  text-align: right;
+  overflow-wrap: anywhere;
+}
+.monitor-layout,
+.log-layout {
+  display: grid;
+  gap: 16px;
+}
+.monitor-layout {
+  grid-template-columns: minmax(220px, 280px) 1fr;
+}
+@media (max-width: 760px) {
+  .monitor-layout {
+    grid-template-columns: 1fr;
+  }
+}
+.mon-nav ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 4px;
+}
+.mon-nav button {
+  width: 100%;
+  justify-content: flex-start;
+  flex-direction: column;
+  align-items: flex-start;
+  min-height: 48px;
+  text-align: left;
+}
+.mon-nav button small {
+  font-weight: 400;
+  opacity: 0.75;
+  font-size: 12px;
+}
+.mon-out .toolbar h2 {
+  margin: 0;
+}
+.mon-result {
+  overflow-x: auto;
+}
+.mon-obj {
+  margin: 0;
+  display: grid;
+  gap: 2px;
+}
+.mon-obj > div {
+  display: grid;
+  grid-template-columns: minmax(120px, 220px) 1fr;
+  gap: 12px;
+  padding: 3px 0;
+}
+.mon-obj dt {
+  font-family: var(--mono, monospace);
+  font-size: 13px;
+  opacity: 0.8;
+}
+.mon-obj dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+.mon-list {
+  margin: 0;
+  padding-left: 20px;
+}
+.mon-list > li + li {
+  margin-top: 6px;
+}
+.mon-raw pre,
+.log-pre {
+  max-height: 420px;
+  overflow: auto;
+  padding: 12px;
+  border-radius: 12px;
+  background: color-mix(in srgb, currentColor 6%, transparent);
+  font-size: 13px;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+/* These lists wrap each pair in a row, so they are one column, not the
+   two-column grid every other description list uses. */
+.hw-card dl,
+dl.mon-obj {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0;
+}
+@media (max-width: 760px) {
+  .mon-obj > div {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+}

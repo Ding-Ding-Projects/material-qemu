@@ -1,0 +1,61 @@
+{
+  "origin": "http://localhost:8097/",
+  "at": "2026-11-21T12:25:45.221Z",
+  "results": [
+    {
+      "name": "A real machine with serial logging was created and started",
+      "ok": true,
+      "detail": "7835035c-d43e-4c3f-8315-0f285a61af64"
+    },
+    {
+      "name": "The machine page shows Overview, Hardware, Monitor and Log tabs",
+      "ok": true,
+      "detail": "dashboard Overview memory Hardware monitor_heart Monitor receipt_long Log"
+    },
+    {
+      "name": "Hardware lists the saved configuration, with the machine ID as its SMBIOS UUID",
+      "ok": true,
+      "detail": "developer_board System Architecture x86_64 Machine type q35 Accelerator TCG SMBIOS UUID 7835035c-d43e-4c3f-8315-0f285a61af64 (the machine ID) Start with the host Off memory Processor and memory Virtual CPUs 2 Topology 1 sockets × 2 cores × "
+    },
+    {
+      "name": "Monitor asks the running machine for its state",
+      "ok": true,
+      "detail": "status running running true"
+    },
+    {
+      "name": "Monitor lists each virtual CPU",
+      "ok": true,
+      "detail": "2"
+    },
+    {
+      "name": "A query for an absent device shows QEMU's own answer",
+      "ok": true,
+      "detail": "No balloon device has been activated"
+    },
+    {
+      "name": "The server refuses anything not on the query list",
+      "ok": true,
+      "detail": "Choose a listed monitor query."
+    },
+    {
+      "name": "The machine is still running after the refused request",
+      "ok": true,
+      "detail": "running"
+    },
+    {
+      "name": "Log shows QEMU messages and the serial console section",
+      "ok": true,
+      "detail": "QEMU messages refresh Refresh QEMU has not reported any warnings or errors. Serial console No serial output yet."
+    },
+    {
+      "name": "Back on Overview the live console connects again",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "The tabs fit a 375-pixel phone screen without sideways scrolling",
+      "ok": true,
+      "detail": "0"
+    }
+  ]
+}

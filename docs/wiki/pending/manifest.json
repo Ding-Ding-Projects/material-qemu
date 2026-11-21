@@ -1,13 +1,13 @@
 {
-  "sourceCommit": "4ffa5a0252d433d5fa553c51399fbe8efdca710c",
+  "sourceCommit": "37ef13645d345a0f6e97906be695d2b17275237e",
   "wikiRemote": "https://github.com/Ding-Ding-Projects/material-qemu.wiki.git",
   "publicationState": "pending-first-page",
   "pages": [
     {
       "source": "docs/features/README.md",
-      "sourceSha256": "fba010e6242f9cd6f6e42f8df315897f93313cbc859c35e222ccf14e97aaefaf",
+      "sourceSha256": "430d72ff5e9107dc83662c3ee176b20941f0e825c5309b41865ee214f6244032",
       "page": "feature-index.md",
-      "pageSha256": "f170a52872c30e52ea42ce43f9567260e503a679e727019e3dc6d9d975af0703"
+      "pageSha256": "a37a8c274c3927ea56187893a723f1c22a33f659ed11166ff91b6bcd6e93bf58"
     },
     {
       "source": "docs/features/authentication.md",
@@ -23,9 +23,9 @@
     },
     {
       "source": "docs/features/design-coverage.md",
-      "sourceSha256": "3fc10eff2ece94c2fa871b4a6df356d812bf23824fc7b3a0f468b3f8806a5a40",
+      "sourceSha256": "926ba6198d400b474a9e7418864780a255525c5828777043f9b2eabed15116f4",
       "page": "design-coverage.md",
-      "pageSha256": "3fc10eff2ece94c2fa871b4a6df356d812bf23824fc7b3a0f468b3f8806a5a40"
+      "pageSha256": "926ba6198d400b474a9e7418864780a255525c5828777043f9b2eabed15116f4"
     },
     {
       "source": "docs/features/interface.md",
@@ -38,6 +38,12 @@
       "sourceSha256": "c92460e5500ec53c031de6684538c0b4e253b42e214542fa2a50cf088da7c121",
       "page": "machine-lifecycle.md",
       "pageSha256": "c92460e5500ec53c031de6684538c0b4e253b42e214542fa2a50cf088da7c121"
+    },
+    {
+      "source": "docs/features/machine-page.md",
+      "sourceSha256": "b2301d8c894926c8d3f1d55f5b8bc3fc2f24caf33f099d7e758d2ef901612aaf",
+      "page": "machine-page.md",
+      "pageSha256": "b2301d8c894926c8d3f1d55f5b8bc3fc2f24caf33f099d7e758d2ef901612aaf"
     },
     {
       "source": "docs/features/media.md",
@@ -77,9 +83,9 @@
     },
     {
       "source": "docs/features/required-features.md",
-      "sourceSha256": "7b13590e95ce1734d5f892418c693bec8e4583636f30aae01ccf7c9f9a9b439f",
+      "sourceSha256": "45a0868ab2fddfa3250c3dacba05878037ccbf8376e77b8dad832e2a88a0a91e",
       "page": "required-features.md",
-      "pageSha256": "7b13590e95ce1734d5f892418c693bec8e4583636f30aae01ccf7c9f9a9b439f"
+      "pageSha256": "45a0868ab2fddfa3250c3dacba05878037ccbf8376e77b8dad832e2a88a0a91e"
     },
     {
       "source": "docs/features/runtime.md",
@@ -95,9 +101,9 @@
     },
     {
       "source": "docs/features/workspace.md",
-      "sourceSha256": "95a51d99d7738659d89141cfa957c53b39bd229d3fbee884bdd1017919f88614",
+      "sourceSha256": "920f595e89f2d8e809a0b329944cb75f6b386a33feecbe08035f6c1482260281",
       "page": "workspace.md",
-      "pageSha256": "95a51d99d7738659d89141cfa957c53b39bd229d3fbee884bdd1017919f88614"
+      "pageSha256": "920f595e89f2d8e809a0b329944cb75f6b386a33feecbe08035f6c1482260281"
     }
   ]
 }
