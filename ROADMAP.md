@@ -36,7 +36,7 @@
 - [x] Verify swtpm TPM start-up, UEFI and Secure Boot discovery and KVM in the built container inside the VirtualBox appliance (evidence/appliance-build-19).
 - [x] Boot an installed guest operating system (Debian 13 imported from a VMDK) to its login prompt and shut it down through ACPI (evidence/installed-guest).
 - [x] Register a passkey in Settings, sign out and sign in with it in headless Edge using the browser's virtual authenticator (scripts/verify-passkeys.mjs).
-- [ ] Verify passkeys with a physical security key or phone.
+- ~~Verify passkeys with a physical security key or phone.~~ Skipped at the owner's request on 2026-11-21; registration and sign-in pass with the browser's virtual authenticator.
 - [ ] Verify complete latest-source visual (the Material Design 3 Expressive remake is implemented; screenshots use mocked API data), language, keyboard and narrow-screen parity; retain historical evidence with original provenance.
 
 ## Delivery and broader design
