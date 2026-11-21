@@ -32,6 +32,8 @@
   - [x] Cloud-init NoCloud seed built at every start and read by Linux by its cidata label (tests/cloud-init.test.mjs, scripts/verify-cloud-init.mjs, evidence/cloud-init). QEMU -readconfig files are deliberately not offered.
   - [x] Guest agent tab and opt-in channel, checked against QEMU without an agent and against a fake agent (tests/guest-agent.test.mjs, scripts/verify-guest-agent.mjs, evidence/guest-agent).
   - [ ] Verify the guest agent tab against a real agent, using the appliance image that now installs qemu-guest-agent.
+  - [x] Save and resume tab: a running machine's whole state saved to a file and resumed with an identical screen, with guards while the state exists (tests/saved-state.test.mjs, scripts/verify-saved-state.mjs, evidence/saved-state).
+  - [ ] Move a machine to another Material QEMU host (disks and saved state).
 - [x] Fix deleting ISOs, snapshots and firmware from the browser, which the server refused because a DELETE has no content type (tests/hardware-api.test.mjs).
 - [x] Add regex explain, a test bench with groups, replace and split previews, a saved pattern library and a one-second worker time limit to the regex builder (scripts/verify-regex-tools.mjs, evidence/regex-tools).
 - [x] Add a step-by-step regex debugger, a comparison with other flavours, code generation in six languages and local file search to the regex builder (tests/regex-parity.test.mjs, scripts/verify-regex-tools.mjs, evidence/regex-tools).

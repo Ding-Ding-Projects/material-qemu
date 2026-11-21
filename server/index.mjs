@@ -25,6 +25,7 @@ import {
 } from "./snapshots.mjs";
 import { MONITOR_QUERIES, runMonitorQuery, machineLog } from "./machine-monitor.mjs";
 import { GUEST_QUERIES, runGuestQuery } from "./guest-agent.mjs";
+import { savedState, saveState, resumeState, discardState, refuseWhileSaved } from "./saved-state.mjs";
 import { createJobs, countedRequest } from "./jobs.mjs";
 import { listFirmware, receiveFirmware, deleteFirmware } from "./firmware-images.mjs";
 import {
@@ -400,11 +401,12 @@ export async function createApplication(options = {}) {
             passkeys: store.state.owner.credentials.length,
             passwordEnabled: store.state.owner.passwordEnabled !== false,
           },
-          machines: store.state.machines.map((m) => ({
+          machines: await Promise.all(store.state.machines.map(async (m) => ({
             ...m,
             ...qemu.status(m.id),
             usage: guestUsage.get(m.id),
-          })),
+            savedState: await savedState(qemu, m.id),
+          }))),
           guestUsageSupported: guestUsage.supported,
           jobs: jobs.list(),
           removedMachines: store.state.removedMachines || [],
@@ -540,6 +542,7 @@ export async function createApplication(options = {}) {
         return json(res, 200, await storageReport(store, qemu));
       if (route === "/api/storage/disks/resize" && req.method === "POST") {
         const resizing = store.state.machines.find((m) => m.id === String(body.machineId));
+        await refuseWhileSaved(qemu, String(body.machineId), "resizing its disks");
         const result = await jobs.run(
           { kind: "resize-disk", label: `${resizing?.name || "machine"}: ${String(body.diskId || "disk")} to ${String(body.sizeGiB ?? "?").slice(0, 12)} GiB`, machineId: String(body.machineId) },
           () => qemu.exclusive(String(body.machineId), () => resizeDisk(store, qemu, body)),
@@ -592,6 +595,27 @@ export async function createApplication(options = {}) {
       if (firmwareMatch && req.method === "DELETE") {
         const result = await deleteFirmware(data, store.state.machines, decodeURIComponent(firmwareMatch[1]));
         await store.transaction((s) => event(s, `Deleted firmware image ${result.name}.`));
+        return json(res, 200, result);
+      }
+      const stateMatch = route.match(/^\/api\/machines\/([a-f0-9-]{36})\/saved-state$/);
+      if (stateMatch && req.method === "POST") {
+        const machine = store.state.machines.find((m) => m.id === stateMatch[1]);
+        if (!machine) return json(res, 404, { error: "Machine not found." });
+        const action = String(body.action || "");
+        if (action === "discard") {
+          await qemu.exclusive(machine.id, () => discardState(qemu, machine.id));
+          await store.transaction((s) => event(s, `${machine.name}: saved state discarded.`));
+          return json(res, 200, { discarded: true });
+        }
+        if (action !== "save" && action !== "resume") return json(res, 400, { error: "Choose save, resume or discard." });
+        const result = await jobs.run(
+          { kind: action === "save" ? "save-state" : "resume-state", label: machine.name, machineId: machine.id },
+          () => qemu.exclusive(machine.id, () => (action === "save" ? saveState(qemu, machine) : resumeState(qemu, machine))),
+        );
+        await store.transaction((s) => {
+          if (action === "resume") s.machines.find((m) => m.id === machine.id).lastUsed = new Date().toISOString();
+          event(s, `${machine.name}: ${action === "save" ? `state saved (${result.bytes} bytes) and stopped` : "saved state resumed"}.`);
+        });
         return json(res, 200, result);
       }
       const agentMatch = route.match(/^\/api\/machines\/([a-f0-9-]{36})\/agent(?:\/([a-z]+))?$/);
@@ -647,6 +671,7 @@ export async function createApplication(options = {}) {
           return json(res, 201, { created: true, name: body.name });
         }
         if (name && snapshotMatch[3] && method === "POST") {
+          await refuseWhileSaved(qemu, machine.id, "restoring a snapshot");
           await work(() => restoreSnapshot(qemu, view, name), `snapshot ${name} restored.`, "snapshot-restore");
           return json(res, 200, { restored: true, name });
         }

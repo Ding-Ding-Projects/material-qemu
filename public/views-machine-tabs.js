@@ -7,6 +7,7 @@ export const MACHINE_TABS = [
   ["hardware", "Hardware", "硬件", "memory"],
   ["monitor", "Monitor", "監察", "monitor_heart"],
   ["agent", "Guest agent", "客體代理", "support_agent"],
+  ["state", "Save and resume", "保存及繼續", "save"],
   ["log", "Log", "記錄", "receipt_long"],
 ];
 
@@ -109,6 +110,17 @@ export function monitorView({ t, escape, button }, m, view) {
     : !r.ok ? `<p class="error-text" role="alert">${escape(r.error)}</p>`
     : `<div class="mon-result">${formatMonitorValue(r.result, escape)}</div><details class="mon-raw"><summary>${t("Raw reply", "原始回覆")}</summary><pre>${escape(JSON.stringify(r.result, null, 2))}</pre></details>`;
   return `<div class="monitor-layout"><nav class="card mon-nav" aria-label="${t("Monitor queries", "監察查詢")}"><p class="muted-line">${t("Read-only questions to QEMU. None of them change the machine.", "向 QEMU 查詢，唯讀，不會更改機器。")}</p><ul>${queries.map((q) => `<li>${button(`monitor-query:${q}`, `${t(...QUERY_LABELS[q])}<small class="mono">query-${q === "cpus" ? "cpus-fast" : q === "memory" ? "memory-size-summary" : q}</small>`, chosen === q ? "selected" : "", `aria-pressed="${chosen === q}"${running ? "" : " disabled"}`)}</li>`).join("")}</ul></nav><section class="card mon-out" aria-live="polite"><div class="toolbar"><h2>${t(...QUERY_LABELS[chosen])}</h2>${button(`monitor-query:${chosen}`, `<span class="icon" aria-hidden="true">refresh</span>${t("Ask again", "再次查詢")}`, "ghost", running ? "" : "disabled")}</div>${body}${r?.at ? `<p class="muted-line">${t("Answered at", "回覆時間")} <time>${escape(new Date(r.at).toLocaleTimeString())}</time></p>` : ""}</section></div>`;
+}
+
+// Save and resume tab: the machine's whole state saved to a file, resumed later.
+export function stateView({ t, escape, button, bytes }, m) {
+  const running = ["running", "paused"].includes(m.state);
+  const saved = m.savedState;
+  const size = (n) => (n >= 1073741824 ? `${(n / 1073741824).toFixed(2)} GiB` : `${(n / 1048576).toFixed(1)} MiB`);
+  const intro = `<p class="muted-line">${t("Saving writes the machine's memory, processor and device state to a file and stops it. Resuming starts it again exactly where it was, with programs still open. While a saved state exists, the machine's disks are kept as they are: a normal start, a disk resize and a snapshot restore wait until you resume or discard it.", "保存會將機器的記憶體、處理器及裝置狀態寫入檔案並停止機器。繼續會令機器在原處重新開始，程式仍然開著。有已保存狀態時，機器的磁碟會保持不變：正常啟動、調整磁碟容量及還原快照都要等你繼續或捨棄狀態後才可進行。")}</p>`;
+  if (saved)
+    return `<section class="card state-card"><h2>${t("Saved state", "已保存狀態")}</h2>${intro}<dl class="state-facts"><div><dt>${t("Saved", "保存時間")}</dt><dd><time datetime="${escape(saved.savedAt)}">${escape(new Date(saved.savedAt).toLocaleString())}</time></dd></div><div><dt>${t("Size", "大小")}</dt><dd>${escape(size(saved.bytes))}</dd></div><div><dt>${t("When resumed", "繼續後")}</dt><dd>${saved.wasRunning ? t("Keeps running", "繼續運行") : t("Stays paused, as it was", "保持暫停，如保存時一樣")}</dd></div></dl><div class="actions">${button("state-resume", `<span class="icon" aria-hidden="true">play_arrow</span>${t("Resume", "繼續")}`, "primary", m.state === "stopped" ? "" : "disabled")}${button("state-discard", `<span class="icon" aria-hidden="true">delete</span>${t("Discard saved state", "捨棄已保存狀態")}`, "danger", m.state === "stopped" ? "" : "disabled")}</div></section>`;
+  return `<section class="card state-card"><h2>${t("Save and resume", "保存及繼續")}</h2>${intro}${running ? button("state-save", `<span class="icon" aria-hidden="true">save</span>${t("Save state and stop", "保存狀態並停止")}`, "primary") : `<p class="muted-line">${t("Start the machine to save its state.", "啟動機器後即可保存其狀態。")}</p>`}</section>`;
 }
 
 export const AGENT_LABELS = {

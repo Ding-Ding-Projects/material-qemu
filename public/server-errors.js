@@ -16,6 +16,12 @@ export const SERVER_ERRORS = {
   "Choose check or apply.": "請選擇檢查或套用。",
   "Choose a listed monitor query.": "請選擇清單上的監察查詢。",
   "Unknown job kind.": "未知的工作類型。",
+  "Choose save, resume or discard.": "請選擇保存、繼續或捨棄。",
+  "Transferring the state took longer than allowed.": "傳送狀態所需時間超出上限。",
+  "The saved state did not finish writing.": "已保存狀態未能完成寫入。",
+  "This machine has no saved state.": "這部機器沒有已保存狀態。",
+  "The hardware changed since the state was saved. Discard the saved state to start normally.": "保存狀態後硬件已改變。請捨棄已保存狀態再正常啟動。",
+  "QEMU did not accept the saved state.": "QEMU 沒有接受已保存狀態。",
   "No guest agent answered. Start the agent inside the guest (qemu-guest-agent).": "客體代理沒有回應。請在客體內啟動代理（qemu-guest-agent）。",
   "This machine has no guest agent channel. Turn it on in Edit hardware.": "這部機器沒有客體代理通道。請在「編輯硬件」開啟。",
   "The guest agent reply exceeded the limit.": "客體代理的回覆超出上限。",
@@ -181,6 +187,8 @@ export const SERVER_ERROR_PATTERNS = [
   { source: "Unsupported ${label}.", re: /^Unsupported (.+)\.$/, yue: "不支援的 $1。" },
   { source: "${label} must be at most ${max / 1024} KiB.", re: /^Cloud-init (user-data|network-config) must be at most (\d+) KiB\.$/, yue: "Cloud-init $1 最多只可有 $2 KiB。" },
   { source: "${label} must be plain text.", re: /^Cloud-init (user-data|network-config) must be plain text\.$/, yue: "Cloud-init $1 必須是純文字。" },
+  { source: "This machine has a saved state. Resume or discard it before ${what}.", re: /^This machine has a saved state\. Resume or discard it before (starting it normally|resizing its disks|restoring a snapshot)\.$/, yue: "這部機器有已保存狀態。請先繼續或捨棄，才可以$1。", map: { "starting it normally": "正常啟動", "resizing its disks": "調整磁碟容量", "restoring a snapshot": "還原快照" } },
+  { source: 'QEMU could not transfer the state: ${m["error-desc"] || m.status}.', re: /^QEMU could not transfer the state: (.+)\.$/, yue: "QEMU 未能傳送狀態：$1。" },
   { source: "Firmware images must contain 1–${MAX_FIRMWARE_BYTES} bytes.", re: /^Firmware images must contain 1–(\d+) bytes\.$/, yue: "韌體映像必須有 1 至 $1 位元組。" },
   { source: 'This firmware image is used by ${users.map((m) => m.name).join(", ")}. Choose built-in firmware for them first.', re: /^This firmware image is used by (.+)\. Choose built-in firmware for them first\.$/, yue: "$1 正在使用這個韌體映像。請先為它們改用內建韌體。" },
   { source: "The firmware image ${name} is not in managed storage.", re: /^The firmware image (.+) is not in managed storage\.$/, yue: "韌體映像 $1 不在管理儲存空間內。" },
@@ -198,7 +206,8 @@ export function cantoneseServerError(message) {
   if (Object.hasOwn(SERVER_ERRORS, text)) return SERVER_ERRORS[text];
   for (const p of SERVER_ERROR_PATTERNS) {
     const m = text.match(p.re);
-    if (m) return p.yue.replace(/\$(\d)/g, (_, i) => m[Number(i)] ?? "");
+    // A pattern's optional map translates a captured phrase as well.
+    if (m) return p.yue.replace(/\$(\d)/g, (_, i) => p.map?.[m[Number(i)]] ?? m[Number(i)] ?? "");
   }
   return null;
 }

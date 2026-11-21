@@ -2348,6 +2348,35 @@ async function handleExtra(action, b) {
     document.querySelector(`[data-action="${action}"]`)?.focus();
     return true;
   }
+  if (action === "state-save" || action === "state-resume") {
+    const id = selected;
+    b.disabled = true;
+    notify(action === "state-save" ? t("Saving the machine's state…", "正在保存機器狀態…") : t("Resuming the saved state…", "正在繼續已保存狀態…"));
+    try {
+      await api(`/machines/${id}/saved-state`, { action: action === "state-save" ? "save" : "resume" });
+      notify(action === "state-save" ? t("State saved. The machine is stopped.", "狀態已保存，機器已停止。") : t("Resumed where it was.", "已在原處繼續。"));
+    } catch (error) {
+      notify(localizeServerError(error.message, t));
+    }
+    await refresh();
+    if (action === "state-resume") { machineTab = "overview"; render(); }
+    return true;
+  }
+  if (action === "state-discard") {
+    const id = selected;
+    gate({
+      title: t("Discard the saved state?", "捨棄已保存狀態？"),
+      body: escape(t("The machine's open programs and unsaved work in the guest are lost. Its disks are kept, and it will start from them normally.", "客體內開著的程式及未儲存的工作會遺失。磁碟會保留，機器之後會正常由磁碟啟動。")),
+      confirmLabel: t("Slide to discard", "滑動以捨棄"),
+      doneText: t("Saved state discarded.", "已捨棄已保存狀態。"),
+      onConfirm: async () => {
+        await api(`/machines/${id}/saved-state`, { action: "discard" });
+        await refresh();
+        render();
+      },
+    });
+    return true;
+  }
   if (action.startsWith("agent-query:")) {
     await loadGuestQuery(action.slice(12));
     document.querySelector(`[data-action="${action}"]`)?.focus();

@@ -1,3 +1,4 @@
+import { refuseWhileSaved } from "./saved-state.mjs";
 import { buildCloudInitSeed } from "./cloud-init.mjs";
 import { firmwareImagePath } from "./firmware-images.mjs";
 import { spawn, execFile } from "node:child_process";
@@ -130,16 +131,18 @@ export class Qemu {
       }),
     );
   }
-  async start(machine) {
-    return this.exclusive("all-starts", () => this.startReserved(machine));
+  // extra.incomingPort starts QEMU waiting for a saved state on that local port.
+  async start(machine, extra = {}) {
+    return this.exclusive("all-starts", () => this.startReserved(machine, extra));
   }
-  async startReserved(machine) {
+  async startReserved(machine, extra = {}) {
     machine = {
       ...machine,
       ...validateMachine(machine, this.capabilities, this.host),
     };
     if (this.running.has(machine.id))
       throw new Error("Machine is already active.");
+    if (!extra.incomingPort) await refuseWhileSaved(this, machine.id, "starting it normally");
     if (!this.capabilities[machine.arch]?.available)
       throw new Error(
         this.capabilities[machine.arch]?.reason || "QEMU unavailable.",
@@ -236,6 +239,7 @@ export class Qemu {
       }
     }
     const { args } = launchPlan(machine, options);
+    if (extra.incomingPort) args.push("-incoming", `tcp:127.0.0.1:${Number(extra.incomingPort)}`);
     const child = spawn(target.executable, args, {
       stdio: ["ignore", "ignore", "pipe"],
       windowsHide: true,

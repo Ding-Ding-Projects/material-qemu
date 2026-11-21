@@ -1,0 +1,41 @@
+{
+  "origin": "http://localhost:8097/",
+  "at": "2026-11-21T14:15:35.689Z",
+  "results": [
+    {
+      "name": "Saving writes the state and stops the machine",
+      "ok": true,
+      "detail": "{\"state\":\"stopped\",\"saved\":{\"savedAt\":\"2026-11-21T14:15:29.794Z\",\"bytes\":1432847,\"wasRunning\":true,\"hardware\":\"fbe1eb3a8dfb690a35d2517d427b9ba42dfecca62631a1f35f91ece62eb71c57\"}}"
+    },
+    {
+      "name": "A normal start is refused while the state is saved",
+      "ok": true,
+      "detail": "This machine has a saved state. Resume or discard it before starting it normally."
+    },
+    {
+      "name": "A disk resize is refused while the state is saved",
+      "ok": true,
+      "detail": "This machine has a saved state. Resume or discard it before resizing its disks."
+    },
+    {
+      "name": "Resume brings the machine back running and removes the saved state",
+      "ok": true,
+      "detail": "{\"state\":\"running\",\"saved\":null}"
+    },
+    {
+      "name": "The resumed screen is identical to the screen before saving",
+      "ok": true,
+      "detail": "5594:1011525162 → 5594:1011525162"
+    },
+    {
+      "name": "Discarding behind the confirmation gate removes the saved state",
+      "ok": true,
+      "detail": "{\"state\":\"stopped\",\"saved\":null}"
+    },
+    {
+      "name": "After discarding, the machine starts normally again",
+      "ok": true,
+      "detail": "200"
+    }
+  ]
+}

@@ -2952,3 +2952,14 @@ dl.mon-obj {
   from { transform: translateX(-100%); }
   to { transform: translateX(300%); }
 }
+
+.state-card .actions {
+  margin-top: 12px;
+}
+dl.state-facts {
+  grid-template-columns: max-content 1fr;
+  margin: 12px 0;
+}
+dl.state-facts > div {
+  display: contents;
+}
