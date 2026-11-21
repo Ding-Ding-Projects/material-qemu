@@ -68,7 +68,9 @@ for d in dev dev/pts proc sys run; do sudo mount --bind "/$d" "$mnt/$d"; done
 sudo chroot "$mnt" /bin/bash -euxc '
   export DEBIAN_FRONTEND=noninteractive
   apt-get update
-  apt-get install -y --no-install-recommends docker.io iptables open-vm-tools curl cloud-guest-utils
+  apt-get install -y --no-install-recommends docker.io docker-cli iptables open-vm-tools curl cloud-guest-utils
+  # docker.io only recommends the CLI in Debian 13; the appliance cannot start without it.
+  test -x /usr/bin/docker
   apt-get purge -y openssh-server || true
   apt-get autoremove -y
   apt-get clean

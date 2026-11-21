@@ -57,6 +57,9 @@ sudo chroot "$mnt" /bin/bash -euxc '
   export DEBIAN_FRONTEND=noninteractive
   apt-get update
   apt-get install -y --no-install-recommends docker.io iptables curl
+  # Newer Debian releases ship the CLI separately; install it when the package exists.
+  if apt-cache show docker-cli >/dev/null 2>&1; then apt-get install -y --no-install-recommends docker-cli; fi
+  test -x /usr/bin/docker
   apt-get clean
   rm -rf /var/lib/apt/lists/*
 '
