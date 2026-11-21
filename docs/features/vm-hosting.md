@@ -28,11 +28,11 @@ On every boot the appliance reads the address its network assigned, sets `PUBLIC
 MQ-READY version=<version> url=http://<address>:8080/ setup=<code or none>
 ```
 
-The assistant reads that line from the serial log file. The same address and the first-run setup code are shown on the VM console login screen, so a manually imported OVA is usable without the assistant. To pin a different origin (for example a DNS name), write it to `/etc/material-qemu/public-origin` inside the appliance.
+The assistant reads that line from the serial log file. The same address is shown on the VM console login screen, so a manually imported OVA is usable without the assistant. To pin a different origin (for example a DNS name), write it to `/etc/material-qemu/public-origin` inside the appliance.
 
 ## Deploying to Docker on this computer
 
-Pick **Docker on this computer**, choose which of this computer's LAN addresses to use and a port (default 8080). The assistant pulls the release's container image, creates a container named `material-qemu-<name>` with a data volume `material-qemu-<name>-data`, sets `PUBLIC_ORIGIN` to `http://<address>:<port>`, starts it, waits for `/health`, and reads the setup code from the container. Ports already used by this computer or by another instance are refused before anything is created.
+Pick **Docker on this computer**, choose which of this computer's LAN addresses to use and a port (default 8080). The assistant pulls the release's container image, creates a container named `material-qemu-<name>` with a data volume `material-qemu-<name>-data`, sets `PUBLIC_ORIGIN` to `http://<address>:<port>`, starts it, waits for `/health`. Ports already used by this computer or by another instance are refused before anything is created.
 
 Docker Desktop's engine must be running. If it is installed but stopped, the Docker card says so and stays disabled.
 
@@ -47,11 +47,11 @@ Only disks Windows reports as removable USB or SD, and that do not hold the runn
 
 Writing raw disks needs administrator rights, so Windows shows its administrator approval prompt. Declining writes nothing. The writer (`flash-writer.ps1`, shipped beside the app) re-checks the disk, takes it offline, writes the decompressed image, then reads the written range back and compares its SHA-256 with the release's recorded hash before reporting success.
 
-After flashing, boot the device with a network cable. The address and setup code appear on its screen after a few minutes; a Raspberry Pi also shows up on the router as `material-qemu`.
+After flashing, boot the device with a network cable. The address appears on its screen after a few minutes; a Raspberry Pi also shows up on the router as `material-qemu`.
 
 ## Instance manager
 
-The **Instances** page lists only machines and containers the assistant created, with target, version, live health and link. Start, stop, restart, open, copy link and copy setup code act on that one instance. Health is checked when the page opens or on **Refresh**; nothing is reported healthy without a fresh check.
+The **Instances** page lists only machines and containers the assistant created, with target, version, live health and link. Start, stop, restart, open and copy link act on that one instance. Health is checked when the page opens or on **Refresh**; nothing is reported healthy without a fresh check.
 
 **Remove** uses the destructive-action super confirmation: two independent keys unlock a full-range slider, and only a completed slider powers off and deletes the VM and its disk files, or the container and its data volume (including every QEMU guest stored inside). **Emergency exit** or Escape cancels with nothing changed.
 
@@ -66,7 +66,7 @@ A failed step opens a full-screen failure view that stays until dismissed. It sh
 - Every hypervisor and Docker command runs with an argument array, never a shell string. Instance names are limited to letters, digits, dots, dashes and underscores; Docker removal only touches containers named `material-qemu-…`.
 - The appliance images have no SSH server and a locked root account. Their only network service is Material QEMU on port 8080, reachable on your LAN. The assistant never publishes anything to the internet.
 - The portable exe and the images are unsigned. Windows may show an unknown-publisher warning.
-- The serial log file contains the first-run setup code until an owner is created; it lives in your own Documents folder.
+- The first account created on a new instance becomes its owner, so open the link and set it up right after deploying, before anyone else on your network does.
 
 ## Known limits
 

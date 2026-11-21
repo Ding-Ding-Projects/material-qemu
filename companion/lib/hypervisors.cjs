@@ -234,11 +234,6 @@ const docker = {
     return r.code === 0 && r.stdout.trim() === 'true';
   },
   async exists(hv, { vmRef }, run = defaultRun) { return (await run(hv.docker, ['container', 'inspect', vmRef], { timeoutMs: 30000 })).code === 0; },
-  async setupCode(hv, { vmRef }, run = defaultRun) {
-    const r = await run(hv.docker, ['exec', vmRef, 'cat', '/data/setup-code'], { timeoutMs: 30000 });
-    const code = r.code === 0 ? r.stdout.trim() : '';
-    return /^[A-Za-z0-9_-]{8,128}$/.test(code) ? code : null;
-  },
   async remove(hv, { vmRef }, run = defaultRun) {
     if (!vmRef.startsWith(CONTAINER_PREFIX)) throw new Error('Refusing to remove a container this app did not name.');
     await must(run, hv.docker, ['rm', '-f', vmRef], { timeoutMs: 120000 });

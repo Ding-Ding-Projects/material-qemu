@@ -6,4 +6,4 @@ The first-machine step opens the actual machine editor. Cancelling returns to se
 
 Machine drafts store the exact current step and current fields in bounded browser storage. New-machine and per-machine edit drafts are separate. Existing unversioned drafts remain readable. Invalid or oversized records are ignored rather than executed or treated as configuration. Successful save removes only the matching draft.
 
-The sign-in screen offers language and theme choices without requesting account identity. These choices persist in that browser and are carried into new-owner setup. Existing authenticated account preferences remain authoritative after sign-in. Changing these controls keeps the current form values in memory and never writes passwords or setup codes into browser storage.
+The sign-in screen offers language and theme choices without requesting account identity. These choices persist in that browser and are carried into new-owner setup. Existing authenticated account preferences remain authoritative after sign-in. Changing these controls keeps the current form values in memory and never writes passwords into browser storage.

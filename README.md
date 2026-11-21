@@ -13,7 +13,7 @@ Use Node.js 22 or newer for the web runtime. The container includes QEMU for x86
 .\host.bat --detached
 ```
 
-Open http://localhost:8080/. Initial ownership requires the protected `setup-code` file in the persistent data directory. Read that file through your trusted host administration channel and enter it only in the setup form. Never publish or log it. It is removed after successful ownership setup.
+Open http://localhost:8080/ and create the first account: the first account created becomes the owner, and every later visitor has to sign in. Set it up right after starting it, before anyone else on your network opens the page.
 
 The default Compose port is loopback-only. Remote access requires a reviewed HTTPS reverse proxy and an exact `PUBLIC_ORIGIN`. LAN delivery and image-registry publication are not yet verified. Preserve the data volume during updates.
 
@@ -22,10 +22,10 @@ The default Compose port is loopback-only. Remote access requires a reviewed HTT
 `go-host.bat` runs Material QEMU directly on Windows for quick testing, with no container and no virtual machine. Double-click it, or run it from a terminal:
 
 ```powershell
-.go-host.bat
+.\go-host.bat
 ```
 
-It installs QEMU for Windows through Chocolatey when it is missing (Windows asks for administrator approval), builds the runtime, starts the server on port 8090 at this computer's LAN address, waits for `/health`, and prints the link and the first-run setup code. `go-host.bat --status` and `go-host.bat --stop` check and stop it; `--port` and `--ip` override the defaults. Test data lives in `DocumentsMaterial QEMU VMsgo-test`, separate from every other deployment, and is kept when it stops.
+It installs QEMU for Windows through Chocolatey when it is missing (Windows asks for administrator approval), builds the runtime, starts the server on port 8090 at this computer's LAN address, waits for `/health`, and prints the link. Open it and create the first account to become the owner. `go-host.bat --status` and `go-host.bat --stop` check and stop it; `--port` and `--ip` override the defaults. Test data lives in `Documents\Material QEMU VMs\go-test`, separate from every other deployment, and is kept when it stops.
 
 This is a test bench, not the appliance: guests use software emulation, the Arm targets report their firmware as unavailable on Windows, and a result here says nothing about the OVA, USB or Raspberry Pi images.
 
@@ -33,7 +33,7 @@ This is a test bench, not the appliance: guests use software emulation, the Arm 
 
 Each release from the build workflow carries a portable Windows deploy assistant (`material-qemu-deploy-<version>-portable.exe`), an appliance VM (`material-qemu-appliance-<version>.ova`), a USB image for spare PCs and, when its build passes, a Raspberry Pi 4/5 image. Run the assistant and pick a target:
 
-- **VirtualBox or VMware Workstation**: it imports the appliance, bridges it onto your network, waits for it to report its address, checks its health, then shows the LAN link and first-run setup code.
+- **VirtualBox or VMware Workstation**: it imports the appliance, bridges it onto your network, waits for it to report its address, checks its health, then shows the LAN link.
 - **Docker on this computer**: it runs the release container on a port of this computer's LAN address.
 - **Flash**: it writes the PC or Raspberry Pi image to a removable USB or SD disk behind a two-key slider gate, then reads the disk back to verify it.
 

@@ -150,8 +150,7 @@ $env:DATA_DIR = $serverData
 Write-Host ''
 Write-Host "Material QEMU test host is running: $url"
 Write-Host "Test data: $dataDir"
-$code = Join-Path $env:DATA_DIR 'setup-code'
-if (Test-Path $code) { Write-Host "First-run setup code: $((Get-Content $code -Raw).Trim())" }
+Write-Host 'Open the link and create the first account: the first account becomes the owner.'
 Write-Host 'Windows may ask whether Node.js can accept connections on your network; allow it on private networks for other devices to connect.'
 Write-Host 'Stop it with: go-host.bat --stop'
 Exit-Host 0

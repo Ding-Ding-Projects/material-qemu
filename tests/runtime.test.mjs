@@ -112,23 +112,12 @@ test("HTTP owner claim, sessions, CSRF and persistence boundaries", async () => 
     assert.equal("bootstrap" in anonymous, false);
     assert.equal(app.server.requestTimeout, 901000);
     assert.equal((await request("/state")).status, 401);
-    assert.equal(
-      (
-        await request("/setup", {
-          name: "Fixture owner",
-          password: "a long fixture-only password",
-        })
-      ).status,
-      403,
-    );
-    const bootstrap = (
-      await readFile(path.join(dir, "setup-code"), "utf8")
-    ).trim();
-    const created = await request(
-      "/setup",
-      { name: "Fixture owner", password: "a long fixture-only password" },
-      { "X-Setup-Token": bootstrap },
-    );
+    // The first registration claims ownership without any setup code.
+    await assert.rejects(readFile(path.join(dir, "setup-code"), "utf8"));
+    const created = await request("/setup", {
+      name: "Fixture owner",
+      password: "a long fixture-only password",
+    });
     assert.equal(created.status, 200);
     const cookie = created.headers.get("set-cookie").split(";")[0];
     const { csrf } = await created.json();
@@ -331,13 +320,12 @@ test("HTTP owner claim, sessions, CSRF and persistence boundaries", async () => 
     }
     assert.equal(
       (
-        await request(
-          "/setup",
-          { name: "Other", password: "a long fixture-only password" },
-          { "X-Setup-Token": bootstrap },
-        )
+        await request("/setup", {
+          name: "Other",
+          password: "a long fixture-only password",
+        })
       ).status,
-      403,
+      409,
     );
     assert.equal(
       (await request("/logout", {}, { Cookie: cookie, "X-CSRF-Token": csrf }))
@@ -409,12 +397,10 @@ test("HTTP preview is inert, start-after-create launches, and live folder moves 
         },
         body: body === undefined ? undefined : JSON.stringify(body),
       });
-    const code = (await readFile(path.join(dir, "setup-code"), "utf8")).trim();
-    const response = await call(
-      "/setup",
-      { name: "Fixture", password: "a sufficiently long fixture password" },
-      { "X-Setup-Token": code },
-    );
+    const response = await call("/setup", {
+      name: "Fixture",
+      password: "a sufficiently long fixture password",
+    });
     const cookie = response.headers.get("set-cookie").split(";")[0],
       { csrf } = await response.json();
     const headers = { Cookie: cookie, "X-CSRF-Token": csrf };

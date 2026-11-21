@@ -38,12 +38,11 @@ if [ "$healthy" -ne 1 ]; then
   printf 'Material QEMU did not become healthy. Check: journalctl -u material-qemu\n\n' > /etc/issue.d/material-qemu.issue
   exit 1
 fi
-setup=$(docker exec material-qemu cat /data/setup-code 2>/dev/null | tr -cd 'A-Za-z0-9_-' || true)
-serial "MQ-READY version=$version url=$PUBLIC_ORIGIN/ setup=${setup:-none}"
+serial "MQ-READY version=$version url=$PUBLIC_ORIGIN/"
 {
   printf 'Material QEMU %s is running.\n' "$version"
   printf 'Open %s/ from a browser on your network.\n' "$PUBLIC_ORIGIN"
-  if [ -n "$setup" ]; then printf 'First-run setup code: %s\n' "$setup"; fi
+  printf 'The first account created there becomes the owner.\n'
   printf '\n'
 } > /etc/issue.d/material-qemu.issue
 exit 0

@@ -177,13 +177,11 @@
     $('readyTitle').textContent = t('{name} is running', { name: r.instance.name });
     $('readyDetail').textContent = t('Deployed in {m} min {s} s. Health checked just now.', { m: Math.floor(r.seconds / 60), s: r.seconds % 60 });
     $('readyUrl').textContent = r.url; $('readyUrl').dataset.url = r.url;
-    $('setupRow').hidden = !r.setup; $('setupCode').textContent = r.setup || '';
   }
   $('cancelBtn').addEventListener('click', () => api.cancel());
   $('readyUrl').addEventListener('click', (e) => { e.preventDefault(); api.open(e.currentTarget.dataset.url); });
   $('openReady').addEventListener('click', () => api.open($('readyUrl').dataset.url));
   $('copyUrl').addEventListener('click', () => api.copy($('readyUrl').dataset.url));
-  $('copySetup').addEventListener('click', () => api.copy($('setupCode').textContent));
   $('toInstances').addEventListener('click', () => show('instances'));
   $('newDeploy').addEventListener('click', () => show('deploy'));
   $('refresh').addEventListener('click', () => loadInstances());
@@ -239,7 +237,6 @@
           running ? el('button', { type: 'button', onclick: act('restart') }, t('Restart')) : null,
           i.state === 'healthy' ? el('button', { type: 'button', onclick: () => api.open(i.lastUrl) }, t('Open')) : null,
           i.lastUrl ? el('button', { type: 'button', onclick: () => api.copy(i.lastUrl) }, t('Copy link')) : null,
-          i.setupCode ? el('button', { type: 'button', onclick: () => api.copy(i.setupCode) }, t('Copy setup code')) : null,
           el('button', { type: 'button', class: 'remove', onclick: (e) => openRemove(i, e.currentTarget) }, t('Remove')))));
     }
   }

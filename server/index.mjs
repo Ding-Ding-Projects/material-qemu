@@ -1,5 +1,5 @@
 import http from "node:http";
-import { readFile, stat, writeFile, unlink } from "node:fs/promises";
+import { readFile, stat, unlink } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { randomUUID, randomBytes } from "node:crypto";
@@ -42,17 +42,9 @@ export async function createApplication(options = {}) {
   const sessions = new Sessions();
   const challenges = new Map();
   let activeUploads = 0;
-  const bootstrapFile = path.join(data, "setup-code");
-  let bootstrap = null;
-  if (!store.state.owner) {
-    try {
-      bootstrap = (await readFile(bootstrapFile, "utf8")).trim();
-    } catch (error) {
-      if (error.code !== "ENOENT") throw error;
-      bootstrap = randomBytes(32).toString("base64url");
-      await writeFile(bootstrapFile, bootstrap, { mode: 0o600, flag: "wx" });
-    }
-  }
+  // The first person to register becomes the owner; no setup code is needed.
+  // Remove the code file older versions wrote so it does not linger.
+  await unlink(path.join(data, "setup-code")).catch(() => {});
   const json = (res, status, body, headers = {}) => {
     res.writeHead(status, {
       "Content-Type": "application/json; charset=utf-8",
@@ -159,12 +151,10 @@ export async function createApplication(options = {}) {
           return json(res, 429, {
             error: "Too many attempts. Try again in 15 minutes.",
           });
-        if (!bootstrap || req.headers["x-setup-token"] !== bootstrap) {
-          sessions.failure(req.socket.remoteAddress);
-          return json(res, 403, {
-            error: "The setup authorization code was not accepted.",
+        if (store.state.owner)
+          return json(res, 409, {
+            error: "This workspace already has an owner. Sign in instead.",
           });
-        }
         const password = await hashPassword(body.password);
         const name = String(body.name || "")
           .trim()
@@ -181,8 +171,6 @@ export async function createApplication(options = {}) {
             state.settings.theme = body.preferences.theme;
           event(state, "Owner account created.");
         });
-        bootstrap = null;
-        await unlink(bootstrapFile).catch(() => {});
         return login(res);
       }
       if (route === "/api/login" && req.method === "POST") {

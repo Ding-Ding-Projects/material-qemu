@@ -34,7 +34,7 @@ This inventory covers the controls in the supplied Main, Onboarding, Overview, M
 
 | Supplied control | Current state and exact limit |
 | --- | --- |
-| Owner account/passkey | Password owner setup implemented with protected setup authorization; passkey registration lives in Settings, not the owner step. |
+| Owner account/passkey | Password owner setup implemented: the first account created becomes the owner; passkey registration lives in Settings, not the owner step. |
 | Language | Implemented and persisted. |
 | Hardware check | QEMU executable/version and host resources implemented; IOMMU, hugepages, VFIO and confidential-computing discovery pending. |
 | Disk/NFS pool selection | Pending; current runtime uses its managed persistent volume and does not modify host partitions. |

@@ -123,10 +123,9 @@ async function deployDocker({ registry, hypervisor, image, version, name, ip, po
   if (!health.ok) throw new Error(`The container started but ${url} did not answer within 4 minutes (${health.detail || health.status}).`);
   step('report', 'done', url);
   step('health', 'active');
-  const setup = await d.setupCode(hypervisor, { vmRef }, run);
-  await registry.update(id, { setupCode: setup, lastHealth: health });
+  await registry.update(id, { lastHealth: health });
   step('health', 'done', `healthy ${health.checkedAt}`);
-  return { instance: registry.get(id), url, setup, seconds: Math.round((Date.now() - started) / 1000) };
+  return { instance: registry.get(id), url, seconds: Math.round((Date.now() - started) / 1000) };
 }
 
 async function status({ registry, hypervisors, run = defaultRun }) {

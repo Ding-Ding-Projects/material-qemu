@@ -63,8 +63,8 @@ window.Flash = (() => {
       done = el('div', { class: 'celebrate' }, el('h2', {}, t('{name} is ready', { name: s.disk?.name || '' })),
         el('p', {}, t('Written and read back: the disk matches the release image (SHA-256 {sha}).', { sha: s.result.sha256.slice(0, 16) + '…' })),
         el('p', { class: 'muted' }, s.kind === 'rpi'
-          ? t('Put it in the Raspberry Pi with a network cable and power it on. After a few minutes the address and setup code are on the HDMI screen, and on your router\'s device list as material-qemu.')
-          : t('Boot the PC from this drive with a network cable connected. After a few minutes the address and setup code are on its screen.')),
+          ? t('Put it in the Raspberry Pi with a network cable and power it on. After a few minutes its address is on the HDMI screen, and on your router\'s device list as material-qemu.')
+          : t('Boot the PC from this drive with a network cable connected. After a few minutes its address is on its screen.')),
         el('button', { type: 'button', class: 'outline', onclick: () => { s.result = null; s.disk = null; s.keys = [false, false]; refreshDisks(); } }, t('Flash another')));
     }
     root.replaceChildren(
