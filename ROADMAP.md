@@ -51,7 +51,8 @@
 - [x] Verify the same on VMware: with VMnet0 pinned to the real Ethernet adapter, the appliance got its LAN address at boot and answered healthy (VMware's automatic bridge had picked a network without DHCP).
 - [ ] Verify LAN reachability from a second device (only this computer has been checked).
 - [x] Add the Docker host target, USB flashing, and English/Cantonese/bilingual modes to the deploy assistant.
-- [ ] Verify the Docker target against a running Docker engine. On the development host the Windows hypervisor is off (HypervisorPresent false, no Host Compute Service), so WSL and Docker Desktop cannot start; enabling it needs an owner decision and a restart.
+- [x] Launch a UEFI, Secure Boot, TPM and KVM machine with QEMU inside the appliance on both VirtualBox and VMware (evidence/appliance-build-23).
+- ~~Verify the Docker target against a running Docker engine.~~ Skipped at the owner's request on 2026-11-21: the development host has the Windows hypervisor off, so Docker Desktop cannot run there.
 - [ ] Verify a real USB flash and boot on a physical PC.
 - ~~Raspberry Pi image and flashing~~: deliberately not doing. The owner decided on 2026-11-21 that this runs on Intel and AMD CPUs only, so the Raspberry Pi job, scripts and Flash option were removed.
 - [ ] Deliver appliance operating-system images and USB installer.
