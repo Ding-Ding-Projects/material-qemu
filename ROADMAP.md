@@ -34,7 +34,12 @@
 ## Delivery and broader design
 
 - [ ] Implement and verify the other 50 design boards.
-- [ ] Publish an immutable container image and verify intended LAN delivery.
+- [ ] Publish an immutable container image and verify intended LAN delivery. (Workflow pushes to GHCR on every push; first run and LAN check not yet observed.)
+- [x] Add a build workflow that builds the image, appliance OVA and portable deploy assistant and publishes one normal release per push.
+- [x] Design the deploy assistant on a canvas (wizard, progress/ready, failure takeover, instance manager, two-key remove gate) and keep the boards in design/deploy-assistant/.
+- [x] Build the portable deploy assistant and confirm it detects real VirtualBox and VMware installs on Windows.
+- [ ] Verify a real one-click deployment end to end on VirtualBox and on VMware with the first released OVA.
+- [ ] Add the Docker host target, USB flashing, Raspberry Pi image and flashing, and translations to the deploy assistant.
 - [ ] Deliver appliance operating-system images and USB installer.
 - [ ] Deliver portable hosting/build companions and supported native packaging.
 - [ ] Complete the required-feature inventory and remaining acceptance.

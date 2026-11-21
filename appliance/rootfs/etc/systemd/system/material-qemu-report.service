@@ -1,0 +1,12 @@
+[Unit]
+Description=Report the Material QEMU address on the serial console
+After=material-qemu.service
+Wants=material-qemu.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/sbin/material-qemu-report
+TimeoutStartSec=20min
+
+[Install]
+WantedBy=multi-user.target

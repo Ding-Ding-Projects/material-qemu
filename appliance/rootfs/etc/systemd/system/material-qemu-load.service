@@ -1,0 +1,15 @@
+[Unit]
+Description=Load the bundled Material QEMU container image
+Requires=docker.service
+After=docker.service
+ConditionPathExists=/opt/material-qemu/image.tar.gz
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/usr/bin/docker load -i /opt/material-qemu/image.tar.gz
+ExecStartPost=/bin/rm -f /opt/material-qemu/image.tar.gz
+TimeoutStartSec=30min
+
+[Install]
+WantedBy=multi-user.target

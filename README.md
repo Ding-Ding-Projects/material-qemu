@@ -17,6 +17,14 @@ Open http://localhost:8080/. Initial ownership requires the protected `setup-cod
 
 The default Compose port is loopback-only. Remote access requires a reviewed HTTPS reverse proxy and an exact `PUBLIC_ORIGIN`. LAN delivery and image-registry publication are not yet verified. Preserve the data volume during updates.
 
+## Host in VirtualBox or VMware
+
+Each release from the build workflow carries a portable Windows deploy assistant (`material-qemu-deploy-<version>-portable.exe`) and an appliance VM (`material-qemu-appliance-<version>.ova`). Run the assistant, pick VirtualBox or VMware Workstation, and select **Deploy**: it imports the appliance, bridges it onto your network, waits for it to report its address and checks its health, then shows the LAN link and first-run setup code. Its **Instances** page starts, stops, restarts and removes the VMs it created. See [VirtualBox and VMware hosting](docs/features/vm-hosting.md).
+
+![Deploy assistant detecting VirtualBox and VMware on a real Windows host](evidence/deploy-assistant/deploy-wizard.png)
+
+The assistant screens were designed first on a canvas; the source boards are in `design/deploy-assistant/`.
+
 ## Runtime behavior
 
 - Password authentication uses scrypt; sessions use opaque HttpOnly SameSite cookies and CSRF verification.
@@ -29,7 +37,7 @@ The default Compose port is loopback-only. Remote access requires a reviewed HTT
 
 ## Scope and remaining work
 
-The other 50 design boards remain design-only. Appliance operating-system images, USB installation, advanced QEMU hardware, snapshots, migration, desktop assistants, portable companions and native installers are not delivered. Full required-feature parity, regex tooling, complete translation and production hardening remain incomplete. `build-installer.bat` reports that gap with a nonzero exit code.
+The other 50 design boards remain design-only. A VirtualBox/VMware appliance and its portable deploy assistant now build in the workflow; their first release still needs a real import on both hypervisors before they count as verified. USB and Raspberry Pi images, advanced QEMU hardware, snapshots, migration and native installers are not delivered. Full required-feature parity, regex tooling, complete translation and production hardening remain incomplete. `build-installer.bat` reports that gap with a nonzero exit code.
 
 See [roadmap](ROADMAP.md), [handoff](HANDOFF.md), [runtime architecture](docs/features/runtime.md) and the original [design contract](design/HANDOFF.md). Design frames illustrate the reference only and are not runtime evidence.
 

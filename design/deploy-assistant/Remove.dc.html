@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Remove instance super confirmation</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto+Flex:opsz,wght@8..144,400..700&amp;display=swap">
+<style>
+body{margin:0}
+a{color:#ff995c}a:hover{color:#ffb98f}
+button{font:inherit}
+@keyframes mqpulse{0%,100%{box-shadow:0 0 0 0 rgba(255,154,147,.0)}50%{box-shadow:0 0 0 10px rgba(255,154,147,.25)}}
+@keyframes mqdone{0%{transform:scale(.6);opacity:0}60%{transform:scale(1.12);opacity:1}100%{transform:scale(1)}}
+</style>
+</helmet>
+<div style="width: 1280px; height: 800px; box-sizing: border-box; display: flex; align-items: center; justify-content: center; background: rgba(8,7,7,.86); color: #eeeae7; font-family: 'Roboto Flex', system-ui, sans-serif;">
+<div role="dialog" aria-labelledby="rt" aria-describedby="rd" style="width: 600px; box-sizing: border-box; padding: 32px; border-radius: 28px; background: #232120; display: flex; flex-direction: column; gap: 18px;">
+<h1 id="rt" style="margin: 0; font-size: 24px; font-weight: 600;">Remove material-qemu-test?</h1>
+<p id="rd" style="margin: 0; font-size: 15px; color: #ada6a1; line-height: 1.5;">Action: power off and delete the VirtualBox machine material-qemu-test. Deleted: its disk files and every QEMU guest, ISO and setting stored inside it. This cannot be undone.</p>
+<div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px;">
+<button type="button" aria-pressed="{{k1p}}" onClick="{{turn1}}" style="{{k1s}}">Key 1: {{k1t}}</button>
+<button type="button" aria-pressed="{{k2p}}" onClick="{{turn2}}" style="{{k2s}}">Key 2: {{k2t}}</button>
+</div>
+<label style="display: flex; flex-direction: column; gap: 8px; font-size: 13px; color: #ada6a1;">{{sliderLabel}}
+<input type="range" min="0" max="100" value="{{slide}}" disabled="{{locked}}" onInput="{{onSlide}}" aria-valuetext="{{slide}} percent" style="width: 100%; accent-color: {{danger}};">
+</label>
+<div aria-hidden="true" style="height: 10px; border-radius: 5px; background: #181615; overflow: hidden;"><div style="{{barStyle}}"></div></div>
+<sc-if value="{{done}}" hint-placeholder-val="{{ false }}">
+<p role="status" style="{{doneStyle}}">Authorized. Removing material-qemu-test…</p>
+</sc-if>
+<div style="display: flex; gap: 12px; justify-content: flex-end;">
+<a href="Instances.dc.html" style="display: inline-flex; align-items: center; height: 48px; padding: 0 24px; border-radius: 24px; border: 1px solid #5c5651; color: #eeeae7; text-decoration: none; font-weight: 600;">Emergency exit (Esc)</a>
+</div>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"danger":{"editor":"color","default":"#ff9a93","options":["#ff9a93","#ffb4ab","#ff7a6b"]},"motion":{"editor":"boolean","default":true},"$preview":{"width":1280,"height":800}}'>
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = { k1: false, k2: false, slide: 0 }; }
+  renderVals() {
+    const danger = this.props.danger ?? '#ff9a93';
+    const motion = this.props.motion ?? true;
+    const { k1, k2, slide } = this.state;
+    const armed = k1 && k2;
+    const done = armed && slide >= 100;
+    const key = (on) => 'height:56px;border-radius:16px;cursor:pointer;font-weight:600;color:' + (on ? '#1a1817' : '#eeeae7') + ';background:' + (on ? danger : 'transparent') + ';border:2px solid ' + (on ? danger : '#5c5651') + ';' + (motion ? 'transition:background 180ms;' : '');
+    return { danger, slide, done, locked: !armed,
+      k1p: String(k1), k2p: String(k2), k1t: k1 ? 'turned' : 'turn', k2t: k2 ? 'turned' : 'turn',
+      k1s: key(k1), k2s: key(k2),
+      turn1: () => this.setState({ k1: !k1, slide: 0 }), turn2: () => this.setState({ k2: !k2, slide: 0 }),
+      onSlide: (e) => this.setState({ slide: Number(e.target.value) }),
+      sliderLabel: armed ? 'Slide all the way to authorize removal' : 'Turn both keys to unlock the slider',
+      barStyle: 'height:10px;width:' + slide + '%;background:' + danger + ';' + (motion && armed && slide > 0 && slide < 100 ? 'animation:mqpulse 700ms ease-in-out infinite;' : ''),
+      doneStyle: 'margin:0;font-size:16px;font-weight:700;color:' + danger + ';' + (motion ? 'animation:mqdone 520ms cubic-bezier(.2,0,0,1);' : '') };
+  }
+}
+</script>
+</body>
+</html>

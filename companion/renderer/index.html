@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; font-src 'self'; img-src 'self' data:; connect-src 'none'; object-src 'none'; base-uri 'none'">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Material QEMU Deploy</title>
+<link rel="stylesheet" href="styles.css">
+<script src="app.js" defer></script>
+</head>
+<body>
+<div class="shell">
+  <nav class="rail" aria-label="Sections">
+    <div class="brand">
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="4" width="18" height="12" rx="2"></rect><path d="M8 20h8M12 16v4"></path></svg>
+      <div><strong>Material QEMU</strong><span>Deploy Assistant</span></div>
+    </div>
+    <button type="button" class="nav" data-view="deploy" aria-current="page">Deploy</button>
+    <button type="button" class="nav" data-view="instances">Instances</button>
+    <span class="grow"></span>
+    <label class="switch"><input type="checkbox" id="motion" checked> Animations</label>
+    <span class="muted small" id="appVersion"></span>
+  </nav>
+
+  <main id="deploy" class="view">
+    <header>
+      <h1>Host Material QEMU in a virtual machine</h1>
+      <p class="muted">One click imports the appliance, puts it on your network and gives you its link.</p>
+    </header>
+    <section aria-labelledby="hvTitle">
+      <h2 id="hvTitle">1. Hypervisor</h2>
+      <div id="hvCards" class="cards"><p class="muted">Looking for VirtualBox and VMware…</p></div>
+    </section>
+    <section aria-labelledby="srcTitle">
+      <h2 id="srcTitle">2. Appliance</h2>
+      <div class="panel row">
+        <label><input type="radio" name="src" value="release" checked> <span id="releaseLabel">Latest release (checking…)</span></label>
+        <label><input type="radio" name="src" value="local"> Local .ova file</label>
+        <button type="button" id="pickOva" class="outline" hidden>Choose file…</button>
+        <span id="localName" class="muted small"></span>
+      </div>
+    </section>
+    <section aria-labelledby="vmTitle">
+      <h2 id="vmTitle">3. Virtual machine</h2>
+      <div class="grid4">
+        <label>Instance name<input id="name" value="material-qemu-1" maxlength="48" spellcheck="false"></label>
+        <label>CPUs<input id="cpus" type="number" min="1" max="64" value="4"></label>
+        <label>Memory (MB)<input id="memory" type="number" min="1024" max="262144" step="512" value="8192"></label>
+        <label>Bridged network adapter<select id="adapter"></select></label>
+      </div>
+      <label class="check"><input type="checkbox" id="nested" checked> Enable nested virtualization so guests can use hardware acceleration when the host allows it</label>
+      <p id="formError" class="error" role="alert"></p>
+    </section>
+    <footer class="actions">
+      <span class="muted small grow">The VM gets its own address on your network. Nothing is exposed to the internet.</span>
+      <button type="button" id="deployBtn" class="filled">Deploy</button>
+    </footer>
+  </main>
+
+  <main id="progress" class="view" hidden>
+    <header>
+      <h1 id="progressTitle">Deploying</h1>
+      <p class="muted">Every step below reports what actually happened.</p>
+    </header>
+    <ol id="steps" class="steps" aria-label="Deployment steps"></ol>
+    <div class="bar" role="progressbar" aria-label="Download progress" aria-valuemin="0" aria-valuemax="100" id="bar"><div id="barFill"></div></div>
+    <pre id="liveOutput" class="output" aria-label="Command output"></pre>
+    <footer class="actions"><span class="grow"></span><button type="button" id="cancelBtn" class="outline">Cancel</button></footer>
+  </main>
+
+  <main id="ready" class="view" hidden>
+    <div class="celebrate" id="readyPanel">
+      <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#5eead4" stroke-width="2" role="img" aria-label="Ready"><circle cx="12" cy="12" r="10"></circle><path d="M7 12.5l3.2 3.2L17 9"></path></svg>
+      <h1 id="readyTitle" tabindex="-1"></h1>
+      <p id="readyDetail" class="muted"></p>
+      <div class="panel row"><span class="muted small">LAN link</span><a id="readyUrl" href="#" class="big"></a><button type="button" class="outline" id="copyUrl">Copy</button></div>
+      <div class="panel row" id="setupRow"><span class="muted small">First-run setup code</span><code id="setupCode"></code><button type="button" class="outline" id="copySetup">Copy</button></div>
+      <div class="row"><button type="button" class="filled" id="openReady">Open in browser</button><button type="button" class="outline" id="toInstances">Go to instances</button></div>
+    </div>
+  </main>
+
+  <main id="instances" class="view" hidden>
+    <header class="row">
+      <div class="grow"><h1>Instances</h1><p class="muted">Only virtual machines this app created are listed. Health is checked when you open this page or press Refresh.</p></div>
+      <button type="button" class="outline" id="refresh">Refresh</button>
+      <button type="button" class="filled" id="newDeploy">New deployment</button>
+    </header>
+    <div id="instanceList" class="list" aria-live="polite"></div>
+    <button type="button" class="text" id="openFolder">Open the VM folder</button>
+  </main>
+</div>
+
+<div id="failOverlay" class="overlay fail" role="alertdialog" aria-labelledby="failTitle" aria-describedby="failMsg" hidden>
+  <div class="failbody">
+    <div class="row"><svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="#ff9a93" stroke-width="2" aria-hidden="true"><path d="M12 3l10 18H2z"></path><path d="M12 10v5M12 18h.01"></path></svg>
+      <div><h1 id="failTitle">Deployment failed</h1><p id="failMsg"></p></div></div>
+    <div class="grid3">
+      <div class="stat"><span>Exit code</span><strong id="failCode"></strong></div>
+      <div class="stat"><span>Time taken</span><strong id="failTime"></strong></div>
+      <div class="stat"><span>Failed at</span><strong id="failAt"></strong></div>
+    </div>
+    <h2>Command</h2><pre id="failCommand" class="output"></pre>
+    <h2>Last output</h2><pre id="failOutput" class="output tall"></pre>
+    <div class="row"><button type="button" class="danger" id="failRetry">Back to deploy</button><button type="button" class="outline" id="failCopy">Copy details</button><span class="grow"></span><button type="button" class="outline" id="failDismiss">Dismiss (Esc)</button></div>
+  </div>
+</div>
+
+<div id="removeOverlay" class="overlay" role="dialog" aria-labelledby="removeTitle" hidden>
+  <div class="dialog">
+    <h1 id="removeTitle"></h1>
+    <p id="removeText" class="muted"></p>
+    <div class="keys">
+      <button type="button" class="key" id="key1" aria-pressed="false">Key 1: turn</button>
+      <button type="button" class="key" id="key2" aria-pressed="false">Key 2: turn</button>
+    </div>
+    <label><span id="slideLabel">Turn both keys to unlock the slider</span>
+      <input type="range" id="removeSlide" min="0" max="100" value="0" disabled aria-valuetext="0 percent"></label>
+    <div class="slidebar" aria-hidden="true"><div id="slideFill"></div></div>
+    <p id="removeDone" class="authorized" role="status" hidden></p>
+    <p id="removeError" class="error" role="alert"></p>
+    <div class="row end"><button type="button" class="outline" id="removeCancel">Emergency exit (Esc)</button></div>
+  </div>
+</div>
+</body>
+</html>

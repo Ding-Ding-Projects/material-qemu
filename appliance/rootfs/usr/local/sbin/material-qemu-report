@@ -1,0 +1,34 @@
+#!/bin/sh
+# Wait for the web service to become healthy, then report its address on the
+# first serial port (read by the deploy app) and on the local console.
+set -u
+. /run/material-qemu.env
+host=$(printf '%s' "$PUBLIC_ORIGIN" | sed 's#^[a-z]*://##; s#/.*##')
+version=$(cat /opt/material-qemu/version 2>/dev/null || echo unknown)
+serial() { printf '%s\r\n' "$1" > /dev/ttyS0 2>/dev/null || true; }
+serial "MQ-BOOT version=$version ip=$MQ_IP"
+healthy=0
+i=0
+while [ "$i" -lt 900 ]; do
+  if curl -fsS --max-time 3 -H "Host: $host" "http://127.0.0.1:$MQ_PORT/health" >/dev/null 2>&1; then
+    healthy=1
+    break
+  fi
+  i=$((i + 1))
+  sleep 1
+done
+mkdir -p /etc/issue.d
+if [ "$healthy" -ne 1 ]; then
+  serial "MQ-FAILED version=$version reason=health-timeout"
+  printf 'Material QEMU did not become healthy. Check: journalctl -u material-qemu\n\n' > /etc/issue.d/material-qemu.issue
+  exit 1
+fi
+setup=$(docker exec material-qemu cat /data/setup-code 2>/dev/null | tr -cd 'A-Za-z0-9_-' || true)
+serial "MQ-READY version=$version url=$PUBLIC_ORIGIN/ setup=${setup:-none}"
+{
+  printf 'Material QEMU %s is running.\n' "$version"
+  printf 'Open %s/ from a browser on your network.\n' "$PUBLIC_ORIGIN"
+  if [ -n "$setup" ]; then printf 'First-run setup code: %s\n' "$setup"; fi
+  printf '\n'
+} > /etc/issue.d/material-qemu.issue
+exit 0

@@ -49,3 +49,9 @@ Task record: https://github.com/Ding-Ding-Projects/material-qemu/issues/1
 Implementation stopped at the owner’s explicit preservation request. Inactive console drafts remain preserved without activation. Current inspected runtime evidence is under `evidence/8e7802f/`; complete prepared wiki pages and navigation are under `docs/wiki/pending/`, with publication awaiting wiki initialization.
 
 The [public screenshot gallery](https://ding-ding-projects.github.io/material-qemu-gallery/) is live and its nine images were hash-verified. Search/filter behavior, empty-state/Escape, 360/1440 layouts and zero page exceptions were independently checked. The source README contains the direct gallery backlink. See `CLOSEOUT_PROMPT.md` for the complete continuation state and the task Discussion for final remote readbacks.
+
+## VirtualBox/VMware hosting and build workflow (2026-11-20)
+
+Added `.github/workflows/build.yml` (container image to GHCR, appliance OVA with a QEMU boot check, portable deploy assistant on Windows, one normal release per push with timing), `appliance/` (guest units and scripts, build, boot check and OVA packer) and `companion/` (Electron deploy assistant with instance manager and two-key remove gate). Canvas boards are in `design/deploy-assistant/`.
+
+Verified locally: 9 deploy-assistant unit tests pass; the built exe launched on a hidden desktop and detected VirtualBox 7.2.22 and VMware Workstation with OVF Tool plus a real bridged adapter (evidence/deploy-assistant/deploy-wizard.png). Not yet verified: the first workflow run, the appliance build and boot check, and a real one-click import on either hypervisor. See docs/features/vm-hosting.md.

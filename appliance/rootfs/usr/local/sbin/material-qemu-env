@@ -1,0 +1,27 @@
+#!/bin/sh
+# Resolve this appliance's LAN address and write the runtime environment.
+# The web service only answers requests whose Host matches PUBLIC_ORIGIN,
+# so the origin is derived from the address the network actually assigned.
+set -eu
+port=8080
+ip=""
+i=0
+while [ "$i" -lt 180 ]; do
+  ip=$(ip -4 -o route get 1.1.1.1 2>/dev/null | sed -n 's/.* src \([0-9.]*\).*/\1/p' || true)
+  if [ -z "$ip" ]; then
+    ip=$(ip -4 -o addr show scope global 2>/dev/null | awk '{print $4}' | cut -d/ -f1 | head -n1 || true)
+  fi
+  [ -n "$ip" ] && break
+  i=$((i + 1))
+  sleep 1
+done
+if [ -z "$ip" ]; then
+  echo "material-qemu: no IPv4 address was assigned" >&2
+  exit 1
+fi
+origin="http://$ip:$port"
+if [ -s /etc/material-qemu/public-origin ]; then
+  origin=$(head -n1 /etc/material-qemu/public-origin)
+fi
+umask 022
+printf 'PUBLIC_ORIGIN=%s\nMQ_IP=%s\nMQ_PORT=%s\n' "$origin" "$ip" "$port" > /run/material-qemu.env

@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Deploying and ready</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto+Flex:opsz,wght@8..144,400..700&amp;display=swap">
+<style>
+body{margin:0}
+a{color:#ff995c}a:hover{color:#ffb98f}
+button{font:inherit}
+@keyframes mqpop{from{transform:scale(.92);opacity:0}to{transform:scale(1);opacity:1}}
+</style>
+</helmet>
+<div style="width: 1280px; height: 800px; box-sizing: border-box; padding: 40px 56px; display: flex; flex-direction: column; gap: 24px; background: #0f0e0e; color: #eeeae7; font-family: 'Roboto Flex', system-ui, sans-serif;">
+<sc-if value="{{notReady}}" hint-placeholder-val="{{ true }}">
+<header style="display: flex; flex-direction: column; gap: 6px;">
+<h1 style="margin: 0; font-size: 30px; font-weight: 600;">Deploying material-qemu-1 to VMware</h1>
+<p style="margin: 0; color: #ada6a1; font-size: 15px;">Every step below reports what actually happened. You can cancel until the VM starts.</p>
+</header>
+<ol aria-label="Deployment steps" style="margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 10px;">
+<sc-for list="{{steps}}" as="s" hint-placeholder-count="7">
+<li style="display: flex; align-items: center; gap: 14px; padding: 14px 18px; border-radius: 14px; background: #181615; border: 1px solid #302b29;">
+<span style="{{s.dotStyle}}" aria-hidden="true"></span>
+<span style="flex-grow: 1; font-size: 15px;">{{s.label}}</span>
+<span style="font-size: 13px; color: #ada6a1;">{{s.detail}}</span>
+</li>
+</sc-for>
+</ol>
+<div role="progressbar" aria-label="Overall progress" aria-valuenow="58" aria-valuemin="0" aria-valuemax="100" style="height: 8px; border-radius: 4px; background: #232120; overflow: hidden;"><div style="width: 58%; height: 8px; background: {{accent}};"></div></div>
+<div style="display: flex; gap: 12px; justify-content: flex-end;">
+<button type="button" style="height: 44px; padding: 0 22px; border-radius: 22px; border: 1px solid #5c5651; background: transparent; color: #eeeae7;">Cancel</button>
+</div>
+</sc-if>
+<sc-if value="{{ready}}" hint-placeholder-val="{{ false }}">
+<div style="{{panelStyle}}">
+<svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#5eead4" stroke-width="2" role="img" aria-label="Ready"><circle cx="12" cy="12" r="10"></circle><path d="M7 12.5l3.2 3.2L17 9"></path></svg>
+<h1 style="margin: 0; font-size: 34px; font-weight: 600;">material-qemu-1 is running</h1>
+<p style="margin: 0; color: #ada6a1; font-size: 15px;">Deployed to VMware Workstation in 4 min 12 s. Health checked just now.</p>
+<div style="display: flex; align-items: center; gap: 12px; padding: 16px 20px; border-radius: 16px; background: #181615; border: 1px solid #302b29;">
+<span style="font-size: 13px; color: #ada6a1;">LAN link</span>
+<a href="Instances.dc.html" style="font-size: 20px; font-weight: 600;">http://192.168.50.141:8080/</a>
+<button type="button" style="height: 40px; padding: 0 16px; border-radius: 20px; border: 1px solid #5c5651; background: transparent; color: #eeeae7;">Copy</button>
+</div>
+<div style="display: flex; align-items: center; gap: 12px; padding: 16px 20px; border-radius: 16px; background: #181615; border: 1px solid #302b29;">
+<span style="font-size: 13px; color: #ada6a1;">First-run setup code</span>
+<code style="font-size: 15px;">[SETUP CODE FROM THE APPLIANCE]</code>
+<button type="button" style="height: 40px; padding: 0 16px; border-radius: 20px; border: 1px solid #5c5651; background: transparent; color: #eeeae7;">Copy</button>
+</div>
+<div style="display: flex; gap: 12px;">
+<a href="Instances.dc.html" style="display: inline-flex; align-items: center; height: 48px; padding: 0 26px; border-radius: 24px; background: {{accent}}; color: #1a1817; font-weight: 700; text-decoration: none;">Open in browser</a>
+<a href="Instances.dc.html" style="display: inline-flex; align-items: center; height: 48px; padding: 0 26px; border-radius: 24px; border: 1px solid #5c5651; color: #eeeae7; text-decoration: none;">Go to instances</a>
+</div>
+</div>
+</sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"accent":{"editor":"color","default":"#ff995c","options":["#ff995c","#5eead4","#9ab4ff"]},"motion":{"editor":"boolean","default":true},"ready":{"editor":"boolean","default":false},"$preview":{"width":1280,"height":800}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const accent = this.props.accent ?? '#ff995c';
+    const motion = this.props.motion ?? true;
+    const ready = this.props.ready ?? false;
+    const states = { done: '#5eead4', active: accent, waiting: '#5c5651' };
+    const raw = [
+      ['Download appliance', 'done', '1.1 GB'],
+      ['Verify SHA-256', 'done', 'matches release'],
+      ['Import OVA with OVF Tool', 'done', '38 s'],
+      ['Configure bridged network and serial report', 'done', 'Intel(R) Ethernet'],
+      ['Start virtual machine', 'active', 'booting'],
+      ['Wait for appliance report', 'waiting', ''],
+      ['Check health at the LAN address', 'waiting', '']
+    ];
+    const steps = raw.map(([label, st, detail]) => ({ label, detail, dotStyle: 'width:14px;height:14px;border-radius:7px;flex:none;background:' + states[st] + ';' }));
+    return { accent, ready, notReady: !ready, steps,
+      panelStyle: 'display:flex;flex-direction:column;gap:20px;align-items:flex-start;padding:40px;border-radius:28px;background:#1b1210;border:1px solid #302b29;' + (motion ? 'animation:mqpop 420ms cubic-bezier(.2,0,0,1);' : '') };
+  }
+}
+</script>
+</body>
+</html>
