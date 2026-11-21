@@ -30,6 +30,10 @@ MQ-READY version=<version> url=http://<address>:8080/ setup=<code or none>
 
 The assistant reads that line from the serial log file. The same address is shown on the VM console login screen, so a manually imported OVA is usable without the assistant. To pin a different origin (for example a DNS name), write it to `/etc/material-qemu/public-origin` inside the appliance.
 
+### VMware bridged networking
+
+VMware Workstation bridges every VM through its `VMnet0` network, which by default picks a host adapter automatically. On a computer that also has VirtualBox, it can pick the VirtualBox host-only adapter, where no router answers DHCP; the appliance then reports `MQ-FAILED reason=no-lan-address`. Fix it once in VMware: **Edit → Virtual Network Editor → Change Settings → VMnet0 → Bridged to:** your real Ethernet or Wi-Fi adapter. This affects every VMware VM that uses bridged networking.
+
 ## Deploying to Docker on this computer
 
 Pick **Docker on this computer**, choose which of this computer's LAN addresses to use and a port (default 8080). The assistant pulls the release's container image, creates a container named `material-qemu-<name>` with a data volume `material-qemu-<name>-data`, sets `PUBLIC_ORIGIN` to `http://<address>:<port>`, starts it, waits for `/health`. Ports already used by this computer or by another instance are refused before anything is created.
