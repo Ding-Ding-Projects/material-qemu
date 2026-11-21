@@ -35,16 +35,20 @@ window.Flash = (() => {
         : el('p', { class: 'muted' }, t('No removable USB or SD disk is attached. Plug one in, then press Refresh.')));
     const tooSmall = s.disk && asset && s.disk.size < asset.size;
     const canArm = s.disk && asset && !s.busy && !s.result?.ok;
-    const gate = el('section', { class: 'panel gate', 'aria-labelledby': 'flashGateTitle' },
+    const gate = el('section', { class: 'gate', 'aria-labelledby': 'flashGateTitle' },
+      el('span', { class: 'warn-eyebrow' }, t('Erases the whole disk · cannot be undone')),
       el('h2', { id: 'flashGateTitle' }, s.disk ? t('Erase {name} and write the image?', { name: s.disk.name }) : t('Choose a disk first')),
       s.disk ? el('p', { class: 'muted' }, t('Everything on disk {n} ({name}, {size} GB) is erased and replaced by the Material QEMU image. This cannot be undone.', { n: s.disk.number, name: s.disk.name, size: gb(s.disk.size) })) : null,
       s.disk && s.disk.size > 512 * 1073741824 ? el('p', { class: 'error', role: 'alert' }, t('This disk is larger than 512 GB, so it may be a backup or external drive rather than a spare USB stick. Check that it holds nothing you need.')) : null,
-      el('div', { class: 'keys' },
-        el('button', { type: 'button', class: 'key', 'aria-pressed': String(s.keys[0]), disabled: !canArm, onclick: () => { s.keys[0] = !s.keys[0]; draw(); } }, t(s.keys[0] ? 'Key {n}: turned' : 'Key {n}: turn', { n: 1 })),
-        el('button', { type: 'button', class: 'key', 'aria-pressed': String(s.keys[1]), disabled: !canArm, onclick: () => { s.keys[1] = !s.keys[1]; draw(); } }, t(s.keys[1] ? 'Key {n}: turned' : 'Key {n}: turn', { n: 2 }))),
+      el('div', { class: 'keys' }, ...[0, 1].map((n) => el('button', {
+        type: 'button', class: 'key', 'aria-pressed': String(s.keys[n]), disabled: !canArm,
+        'aria-label': t(s.keys[n] ? 'Key {n}: turned' : 'Key {n}: turn', { n: n + 1 }),
+        onclick: () => { s.keys[n] = !s.keys[n]; draw(); },
+      }, ...ui().keySwitch(n + 1, s.keys[n])))),
       el('label', {}, el('span', {}, armed ? t('Slide all the way to start writing') : t('Turn both keys to unlock the slider')),
-        el('input', { type: 'range', min: '0', max: '100', value: '0', id: 'flashSlide', disabled: !armed || !canArm, 'aria-valuetext': t('{n} percent', { n: 0 }), oninput: onSlide })),
-      el('div', { class: 'slidebar', 'aria-hidden': 'true' }, el('div', { id: 'flashSlideFill' })),
+        el('span', { class: 'arming' },
+          el('span', { class: `slidebar${armed ? ' armed' : ''}`, id: 'flashSlideBar', 'aria-hidden': 'true' }, el('div', { id: 'flashSlideFill' })),
+          el('input', { type: 'range', min: '0', max: '100', value: '0', id: 'flashSlide', disabled: !armed || !canArm, 'aria-valuetext': t('{n} percent', { n: 0 }), oninput: onSlide }))),
       el('p', { class: 'muted small' }, t('Windows asks for administrator approval before anything is written. Declining writes nothing.')));
     let status = null;
     if (s.progress) {

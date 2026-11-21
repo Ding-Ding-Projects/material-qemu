@@ -14,13 +14,10 @@
 <div id="notice" class="notice" role="alert" hidden><span id="noticeText"></span><button type="button" class="outline" id="noticeClose" data-i18n="Dismiss">Dismiss</button></div>
 <div class="shell">
   <nav class="rail" aria-label="Sections">
-    <div class="brand">
-      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="4" width="18" height="12" rx="2"></rect><path d="M8 20h8M12 16v4"></path></svg>
-      <div><strong>Material QEMU</strong><span data-i18n="Deploy Assistant">Deploy Assistant</span></div>
-    </div>
-    <button type="button" class="nav" data-view="deploy" aria-current="page" data-i18n="Deploy">Deploy</button>
-    <button type="button" class="nav" data-view="instances" data-i18n="Instances">Instances</button>
-    <button type="button" class="nav" data-view="flash" data-i18n="Flash">Flash</button>
+    <div class="brand"><span class="mark">MATERIAL QEMU</span><strong data-i18n="Deploy Assistant">Deploy Assistant</strong></div>
+    <button type="button" class="nav" data-view="deploy" aria-current="page"><span class="num">01</span><span data-i18n="Deploy">Deploy</span></button>
+    <button type="button" class="nav" data-view="instances"><span class="num">02</span><span data-i18n="Instances">Instances</span></button>
+    <button type="button" class="nav" data-view="flash"><span class="num">03</span><span data-i18n="Flash">Flash</span></button>
     <span class="grow"></span>
     <label class="stack"><span data-i18n="Language">Language</span>
       <select id="lang"><option value="en">English</option><option value="yue">粵語</option><option value="both">English + 粵語</option></select></label>
@@ -79,7 +76,7 @@
 
   <main id="ready" class="view" hidden>
     <div class="celebrate" id="readyPanel">
-      <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#5eead4" stroke-width="2" role="img" aria-label="Ready"><circle cx="12" cy="12" r="10"></circle><path d="M7 12.5l3.2 3.2L17 9"></path></svg>
+      <span class="eyebrow" data-i18n="Racked and healthy">Racked and healthy</span>
       <h1 id="readyTitle" tabindex="-1"></h1>
       <p id="readyDetail" class="muted"></p>
       <div class="panel row"><span class="muted small" data-i18n="LAN link">LAN link</span><a id="readyUrl" href="#" class="big"></a><button type="button" class="outline" id="copyUrl" data-i18n="Copy">Copy</button></div>
@@ -102,9 +99,10 @@
 </div>
 
 <div id="failOverlay" class="overlay fail" role="alertdialog" aria-labelledby="failTitle" aria-describedby="failMsg" hidden>
+  <div class="hazard" aria-hidden="true"></div>
   <div class="failbody">
-    <div class="row"><svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="#ff9a93" stroke-width="2" aria-hidden="true"><path d="M12 3l10 18H2z"></path><path d="M12 10v5M12 18h.01"></path></svg>
-      <div><h1 id="failTitle" data-i18n="Deployment failed">Deployment failed</h1><p id="failMsg"></p></div></div>
+    <div class="fault"><span class="led bad" aria-hidden="true"></span><span data-i18n="Fault">Fault</span></div>
+    <h1 id="failTitle" data-i18n="Deployment failed">Deployment failed</h1><p id="failMsg"></p>
     <div class="grid3">
       <div class="stat"><span data-i18n="Exit code">Exit code</span><strong id="failCode"></strong></div>
       <div class="stat"><span data-i18n="Time taken">Time taken</span><strong id="failTime"></strong></div>
@@ -118,6 +116,9 @@
 
 <div id="removeOverlay" class="overlay" role="dialog" aria-labelledby="removeTitle" aria-describedby="removeText" hidden>
   <div class="dialog">
+    <div class="hazard" aria-hidden="true"></div>
+    <div class="inner">
+    <span class="warn-eyebrow" data-i18n="Destructive action · cannot be undone">Destructive action · cannot be undone</span>
     <h1 id="removeTitle"></h1>
     <p id="removeText" class="muted"></p>
     <div class="keys">
@@ -125,11 +126,11 @@
       <button type="button" class="key" id="key2" aria-pressed="false"></button>
     </div>
     <label><span id="slideLabel"></span>
-      <input type="range" id="removeSlide" min="0" max="100" value="0" disabled></label>
-    <div class="slidebar" aria-hidden="true"><div id="slideFill"></div></div>
+      <span class="arming"><span class="slidebar" id="slideBar" aria-hidden="true"><div id="slideFill"></div></span><input type="range" id="removeSlide" min="0" max="100" value="0" disabled></span></label>
     <p id="removeDone" class="authorized" role="status" hidden></p>
     <p id="removeError" class="error" role="alert"></p>
     <div class="row end"><button type="button" class="outline" id="removeCancel" data-i18n="Emergency exit (Esc)">Emergency exit (Esc)</button></div>
+    </div>
   </div>
 </div>
 </body>

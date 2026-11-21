@@ -154,6 +154,13 @@ window.I18N = (() => {
     'Put it in the Raspberry Pi with a network cable and power it on. After a few minutes the address and setup code are on the HDMI screen, and on your router\'s device list as material-qemu.': '插入 Raspberry Pi，駁好網線再開機。幾分鐘後 HDMI 畫面會顯示地址同設定碼，路由器裝置清單都會見到 material-qemu。',
     'Boot the PC from this drive with a network cable connected. After a few minutes the address and setup code are on its screen.': '駁好網線，用呢隻磁碟幫電腦開機。幾分鐘後畫面會顯示地址同設定碼。',
     'Flash another': '再燒一隻',
+    'Key {n}': '鎖匙 {n}',
+    'Safe': '安全',
+    'Armed': '已解鎖',
+    'Destructive action · cannot be undone': '破壞性操作 · 冇得復原',
+    'Erases the whole disk · cannot be undone': '會清除成隻磁碟 · 冇得復原',
+    'Fault': '故障',
+    'Racked and healthy': '已上架 · 運作正常',
     'This disk is larger than 512 GB, so it may be a backup or external drive rather than a spare USB stick. Check that it holds nothing you need.': '呢隻磁碟大過 512 GB，可能係備份碟或者外置硬碟，唔係後備 USB 手指。請確認入面冇你需要嘅嘢。',
     'Docker on this computer': '呢部電腦嘅 Docker',
   };

@@ -222,17 +222,25 @@
       const running = i.state === 'healthy' || i.state === 'starting';
       const checked = i.health?.checkedAt ? ` · ${t('checked {time}', { time: new Date(i.health.checkedAt).toLocaleTimeString([], { hour12: false, hour: '2-digit', minute: '2-digit' }) })}` : '';
       const act = (a) => async (ev) => { ev.currentTarget.disabled = true; const r = await api.action(i.id, a); if (!r.ok) fail(r); loadInstances(); };
-      box.append(el('article', { class: 'instance' },
-        el('span', { class: `state ${i.state}`, 'aria-hidden': 'true' }),
-        el('div', { class: 'meta' }, el('strong', {}, i.name), el('span', {}, `${HV_SHORT[i.hypervisor] || i.hypervisor} · ${i.version}`)),
-        el('span', { class: 'small' }, t(STATE_LABELS[i.state]) + (i.state === 'healthy' ? checked : '')),
-        el('span', { class: 'url' }, i.lastUrl ? (running ? i.lastUrl : t('Last seen {url}', { url: i.lastUrl })) : t('No address reported yet')),
-        i.state !== 'missing' && i.state !== 'unavailable' ? el('button', { type: 'button', onclick: act(running ? 'stop' : 'start') }, running ? t('Stop') : t('Start')) : null,
-        running ? el('button', { type: 'button', onclick: act('restart') }, t('Restart')) : null,
-        i.state === 'healthy' ? el('button', { type: 'button', onclick: () => api.open(i.lastUrl) }, t('Open')) : null,
-        i.lastUrl ? el('button', { type: 'button', onclick: () => api.copy(i.lastUrl) }, t('Copy link')) : null,
-        i.setupCode ? el('button', { type: 'button', onclick: () => api.copy(i.setupCode) }, t('Copy setup code')) : null,
-        el('button', { type: 'button', class: 'remove', onclick: (e) => openRemove(i, e.currentTarget) }, t('Remove'))));
+      // A rack unit: screw ear, power/network LEDs, faceplate, controls.
+      const pwr = running ? 'on' : (i.state === 'missing' || i.state === 'unavailable' ? 'bad' : '');
+      const net = i.state === 'healthy' ? 'act' : '';
+      box.append(el('article', { class: `instance${running ? '' : ' off'}`, 'aria-label': `${i.name}: ${t(STATE_LABELS[i.state])}` },
+        el('div', { class: 'ear', 'aria-hidden': 'true' }, el('span'), el('span')),
+        el('div', { class: 'leds', 'aria-hidden': 'true' },
+          el('span', {}, el('span', { class: `led ${pwr}` }), 'PWR'),
+          el('span', {}, el('span', { class: `led ${net}` }), 'NET')),
+        el('div', { class: 'face' },
+          el('div', { class: 'title' }, el('strong', {}, i.name), el('span', { class: 'tag' }, HV_SHORT[i.hypervisor] || i.hypervisor)),
+          el('span', { class: `url${running ? '' : ' stale'}` }, i.lastUrl ? (running ? i.lastUrl : t('Last seen {url}', { url: i.lastUrl })) : t('No address reported yet')),
+          el('span', { class: 'meta' }, `${i.version} · ${t(STATE_LABELS[i.state])}${i.state === 'healthy' ? checked : ''}`)),
+        el('div', { class: 'ctl' },
+          i.state !== 'missing' && i.state !== 'unavailable' ? el('button', { type: 'button', onclick: act(running ? 'stop' : 'start') }, running ? t('Stop') : t('Start')) : null,
+          running ? el('button', { type: 'button', onclick: act('restart') }, t('Restart')) : null,
+          i.state === 'healthy' ? el('button', { type: 'button', onclick: () => api.open(i.lastUrl) }, t('Open')) : null,
+          i.lastUrl ? el('button', { type: 'button', onclick: () => api.copy(i.lastUrl) }, t('Copy link')) : null,
+          i.setupCode ? el('button', { type: 'button', onclick: () => api.copy(i.setupCode) }, t('Copy setup code')) : null,
+          el('button', { type: 'button', class: 'remove', onclick: (e) => openRemove(i, e.currentTarget) }, t('Remove')))));
     }
   }
 
@@ -250,16 +258,30 @@
       : t('This powers off and deletes the {hv} machine {name} and its disk files. Every QEMU guest, ISO and setting stored inside it is deleted too. This cannot be undone.', { hv: HV_SHORT[i.hypervisor], name: i.name });
     syncGate();
   }
+  // The drawn key switch: a round lock whose slot turns from SAFE to ARMED.
+  function keySwitch(n, turned) {
+    return [el('span', { class: 'lock', 'aria-hidden': 'true' }, el('span', { class: 'slot' })),
+      el('span', { class: 'keytext', 'aria-hidden': 'true' }, el('small', {}, t('Key {n}', { n })), el('strong', {}, turned ? t('Armed') : t('Safe')))];
+  }
+  window.ui.keySwitch = keySwitch;
+
   function syncGate() {
     const armed = state.keys[0] && state.keys[1];
-    [['key1', 0], ['key2', 1]].forEach(([id, n]) => { $(id).setAttribute('aria-pressed', String(state.keys[n])); $(id).textContent = t(state.keys[n] ? 'Key {n}: turned' : 'Key {n}: turn', { n: n + 1 }); $(id).disabled = state.removeBusy; });
+    [['key1', 0], ['key2', 1]].forEach(([id, n]) => {
+      const b = $(id);
+      b.setAttribute('aria-pressed', String(state.keys[n]));
+      b.setAttribute('aria-label', t(state.keys[n] ? 'Key {n}: turned' : 'Key {n}: turn', { n: n + 1 }));
+      b.replaceChildren(...keySwitch(n + 1, state.keys[n]));
+      b.disabled = state.removeBusy;
+    });
+    $('slideBar').classList.toggle('armed', armed);
     const s = $('removeSlide');
     if (!armed) s.value = '0';
     s.disabled = !armed || state.removeBusy;
     $('slideLabel').textContent = armed ? t('Slide all the way to authorize removal') : t('Turn both keys to unlock the slider');
     s.setAttribute('aria-valuetext', t('{n} percent', { n: s.value }));
     $('slideFill').style.width = `${s.value}%`;
-    $('slideFill').parentElement.classList.toggle('moving', armed && Number(s.value) > 0 && Number(s.value) < 100);
+    $('slideBar').classList.toggle('moving', armed && Number(s.value) > 0 && Number(s.value) < 100);
   }
   $('key1').addEventListener('click', () => { state.keys[0] = !state.keys[0]; syncGate(); });
   $('key2').addEventListener('click', () => { state.keys[1] = !state.keys[1]; syncGate(); });
