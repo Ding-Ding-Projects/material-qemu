@@ -5,7 +5,7 @@
 import { Transform, pipeline } from "node:stream";
 import { randomUUID } from "node:crypto";
 
-export const JOB_KINDS = ["upload-iso", "upload-firmware", "import-disk", "resize-disk", "clone", "snapshot-create", "snapshot-restore", "snapshot-delete", "save-state", "resume-state"];
+export const JOB_KINDS = ["upload-iso", "upload-firmware", "import-disk", "resize-disk", "clone", "snapshot-create", "snapshot-restore", "snapshot-delete", "save-state", "resume-state", "export-machine", "import-machine"];
 const KEEP_FINISHED_MS = 10 * 60 * 1000;
 const MAX_FINISHED = 30;
 

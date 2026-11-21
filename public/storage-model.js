@@ -49,6 +49,8 @@ export function normalizeStorage(data, state) {
 }
 export function kindOfUpload(fileName) {
   const ext = String(fileName).toLowerCase().split(".").pop();
+  // A machine bundle exported from another Material QEMU host.
+  if (ext === "tar" || String(fileName).toLowerCase().endsWith(".mqvm.tar")) return "bundle";
   if (ext === "iso") return "iso";
   if (["qcow2", "raw", "img", "vmdk", "vdi", "vhdx"].includes(ext)) return "disk";
   return null;

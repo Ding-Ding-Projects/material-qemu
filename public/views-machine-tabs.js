@@ -83,7 +83,7 @@ ${section(t("Devices", "裝置"), "devices", [
     [t("QEMU guest agent channel", "QEMU 客體代理通道"), yesNo(t, m.guestAgent)],
     [t("Random number generator", "亂數產生器"), yesNo(t, m.rng)],
   ])}
-</div><button type="button" data-action="edit:${escape(m.id)}"><span class="icon" aria-hidden="true">edit</span>${t("Edit hardware", "編輯硬件")}</button>`;
+</div><div class="actions"><button type="button" data-action="edit:${escape(m.id)}"><span class="icon" aria-hidden="true">edit</span>${t("Edit hardware", "編輯硬件")}</button>${m.state === "stopped" ? `<a class="btn-link" href="/api/machines/${escape(m.id)}/export" download><span class="icon" aria-hidden="true">move_up</span>${t("Export to move it to another host", "匯出以移到另一部主機")}</a>` : `<span class="muted">${t("Stop the machine, or save its state, to export it.", "停止機器或保存其狀態後即可匯出。")}</span>`}</div><p class="muted-line">${t("The export is one .mqvm.tar file with this machine's settings, disks, firmware variables, TPM state and any saved state. Drop it into Storage on the other host.", "匯出的是一個 .mqvm.tar 檔案，包含這部機器的設定、磁碟、韌體變數、TPM 狀態及任何已保存狀態。在另一部主機的儲存空間拖放即可。")}</p>`;
 }
 
 // Draws a QEMU monitor result as rows of key and value, readable without JSON.

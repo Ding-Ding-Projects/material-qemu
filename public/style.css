@@ -3023,3 +3023,20 @@ dl.state-facts > div {
 .account-pill {
   white-space: nowrap;
 }
+
+a.btn-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 40px;
+  padding: 0 20px;
+  border-radius: 20px;
+  font-weight: 600;
+  text-decoration: none;
+  background: var(--secondary-container);
+  color: var(--on-secondary-container);
+}
+a.btn-link:focus-visible {
+  outline: 3px solid var(--primary);
+  outline-offset: 2px;
+}

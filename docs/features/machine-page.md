@@ -29,7 +29,7 @@ QEMU streams the state over a local TCP socket into `saved-state.bin` in the mac
 
 ## Not yet available
 
-Moving a machine to another host is not implemented; Save and resume works on the same host. The guest agent tab has been checked against QEMU with no agent in the guest; a reply from a real agent has not been checked yet. The appliance image now installs qemu-guest-agent so it can be checked with the next appliance build.
+Moving a machine to another host is done with an export from the Hardware tab; see [moving-machines.md](moving-machines.md). The guest agent tab has been checked against QEMU with no agent in the guest; a reply from a real agent has not been checked yet. The appliance image now installs qemu-guest-agent so it can be checked with the next appliance build.
 
 ## Verification
 

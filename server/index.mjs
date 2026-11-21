@@ -26,6 +26,9 @@ import {
 import { MONITOR_QUERIES, runMonitorQuery, machineLog } from "./machine-monitor.mjs";
 import { GUEST_QUERIES, runGuestQuery } from "./guest-agent.mjs";
 import { savedState, saveState, resumeState, discardState, refuseWhileSaved } from "./saved-state.mjs";
+import { bundleEntries, importBundle } from "./machine-bundle.mjs";
+import { writeTar } from "./tar.mjs";
+import { Writable } from "node:stream";
 import { createJobs, countedRequest } from "./jobs.mjs";
 import { listFirmware, receiveFirmware, deleteFirmware } from "./firmware-images.mjs";
 import {
@@ -140,7 +143,7 @@ export async function createApplication(options = {}) {
           req.headers.origin !== origin ||
           (!bodyless &&
             req.headers["content-type"]?.split(";")[0] !==
-              (route === "/api/media" || route === "/api/storage/import" || route === "/api/firmware"
+              (route === "/api/media" || route === "/api/storage/import" || route === "/api/firmware" || route === "/api/storage/import-bundle"
                 ? "application/octet-stream"
                 : "application/json"))
         )
@@ -206,6 +209,23 @@ export async function createApplication(options = {}) {
           );
           await store.transaction((s) => event(s, `Added firmware image ${image.name} (${image.bytes} bytes).`));
           return json(res, 201, image);
+        } finally {
+          clearTimeout(deadline);
+          activeUploads--;
+        }
+      }
+      if (route === "/api/storage/import-bundle" && req.method === "POST") {
+        if (!session) return json(res, 401, { error: "Sign in to import a machine." });
+        if (activeUploads >= 2)
+          return json(res, 429, { error: "Two uploads are already active. Wait for one to finish." });
+        activeUploads++;
+        const deadline = setTimeout(() => req.destroy(new Error("Upload exceeded the 6-hour limit.")), 6 * 60 * 60 * 1000);
+        try {
+          const result = await jobs.run(
+            { kind: "import-machine", label: String(url.searchParams.get("name") || "machine bundle"), totalBytes: declaredBytes(req) },
+            (job) => importBundle({ request: countedRequest(req, job), store, qemu }),
+          );
+          return json(res, 201, result);
         } finally {
           clearTimeout(deadline);
           activeUploads--;
@@ -633,6 +653,32 @@ export async function createApplication(options = {}) {
         const result = await deleteFirmware(data, store.state.machines, decodeURIComponent(firmwareMatch[1]));
         await store.transaction((s) => event(s, `Deleted firmware image ${result.name}.`));
         return json(res, 200, result);
+      }
+      const exportMatch = route.match(/^\/api\/machines\/([a-f0-9-]{36})\/export$/);
+      if (exportMatch && req.method === "GET") {
+        const machine = store.state.machines.find((m) => m.id === exportMatch[1]);
+        if (!machine) return json(res, 404, { error: "Machine not found." });
+        // The machine stays locked for the whole export, so it cannot be
+        // started (and its disks changed) while they are being sent.
+        let headersSent = false;
+        await qemu.exclusive(machine.id, async () => {
+          const entries = await bundleEntries(qemu, machine);
+          // The exact size is known, so the browser can show real progress.
+          const total = entries.reduce((n, e) => n + 512 + Math.ceil((e.data ? e.data.length : e.size) / 512) * 512, 1024);
+          const file = `${machine.name.replace(/[^A-Za-z0-9._ -]+/g, "_").slice(0, 80) || "machine"}.mqvm.tar`;
+          res.writeHead(200, { "Content-Type": "application/x-tar", "Content-Length": total, "Content-Disposition": `attachment; filename="${file}"`, "Cache-Control": "no-store" });
+          headersSent = true;
+          await jobs.run({ kind: "export-machine", label: machine.name, machineId: machine.id, totalBytes: total }, async (job) => {
+            const counter = new Writable({
+              write(chunk, _e, cb) { job.progress(chunk.length); res.write(chunk) ? cb() : res.once("drain", cb); },
+            });
+            await writeTar(counter, entries);
+          });
+        }).catch((error) => {
+          if (!headersSent) throw error;
+          res.destroy();
+        });
+        return res.end();
       }
       const stateMatch = route.match(/^\/api\/machines\/([a-f0-9-]{36})\/saved-state$/);
       if (stateMatch && req.method === "POST") {

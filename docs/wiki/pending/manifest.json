@@ -1,13 +1,13 @@
 {
-  "sourceCommit": "0c3c60cef40be35e2e00c3bc47d3f1e557eb28ac",
+  "sourceCommit": "68f8aa812f25b9d94225a9b8801e0276fbd17d4a",
   "wikiRemote": "https://github.com/Ding-Ding-Projects/material-qemu.wiki.git",
   "publicationState": "pending-first-page",
   "pages": [
     {
       "source": "docs/features/README.md",
-      "sourceSha256": "84259017e6f25447d96fb6c32c74680064112fe61cbfec3f9429ff8cc98f356f",
+      "sourceSha256": "036d8703d73c0d79c15f275a92ae7f6bd25a98f59069881ccda7811160c14c0f",
       "page": "feature-index.md",
-      "pageSha256": "25bdde899c36306494ea40ca01eb2344d71dcb8c1b0ca64e34ca2f8ba7810170"
+      "pageSha256": "2a8a75d0f0854be73fde700d064fc9360e226a802aacbafd5dbedf80622e4ab9"
     },
     {
       "source": "docs/features/authentication.md",
@@ -23,9 +23,9 @@
     },
     {
       "source": "docs/features/design-coverage.md",
-      "sourceSha256": "099b716ad0f7058af760de3da8eb078719cc8424716557c2f65bfb23305e2ee4",
+      "sourceSha256": "91a02315063ae91f4621f36669a2b0acf900094afcabff6e805d4222e5672227",
       "page": "design-coverage.md",
-      "pageSha256": "099b716ad0f7058af760de3da8eb078719cc8424716557c2f65bfb23305e2ee4"
+      "pageSha256": "91a02315063ae91f4621f36669a2b0acf900094afcabff6e805d4222e5672227"
     },
     {
       "source": "docs/features/interface.md",
@@ -47,15 +47,21 @@
     },
     {
       "source": "docs/features/machine-page.md",
-      "sourceSha256": "7efcbcdb937fcab27cccde97bf5205aee1ff9d576cdc36eb80fe17f9ae51dae9",
+      "sourceSha256": "935de59aa751f7c2f42d1474817954d26462bafc1ca23864d67e778fbb9c6d84",
       "page": "machine-page.md",
-      "pageSha256": "7efcbcdb937fcab27cccde97bf5205aee1ff9d576cdc36eb80fe17f9ae51dae9"
+      "pageSha256": "e26ff1c6a33437eddb06dedc44ac5fae4f9b153bc02fd6803225609c9852349a"
     },
     {
       "source": "docs/features/media.md",
       "sourceSha256": "0d81dcbeaff42a46ec0d23fbd8780c51b6e02d5d6fee106eb549e9109c996a96",
       "page": "media.md",
       "pageSha256": "0d81dcbeaff42a46ec0d23fbd8780c51b6e02d5d6fee106eb549e9109c996a96"
+    },
+    {
+      "source": "docs/features/moving-machines.md",
+      "sourceSha256": "0952c841209bf6062ef6233538aee8b2e3a963006bfdf26baf945756abf9eb52",
+      "page": "moving-machines.md",
+      "pageSha256": "0952c841209bf6062ef6233538aee8b2e3a963006bfdf26baf945756abf9eb52"
     },
     {
       "source": "docs/features/onboarding.md",

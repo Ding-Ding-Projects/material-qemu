@@ -9,6 +9,7 @@
 - [Remove machine records without deleting disks](machine-lifecycle)
 - [Machine page tabs](machine-page)
 - [Import installation media](media)
+- [Moving a machine to another host](moving-machines)
 - [Resume setup and machine drafts](onboarding)
 - [Organize machines without changing their storage](organization)
 - [Measured Overview history](overview)

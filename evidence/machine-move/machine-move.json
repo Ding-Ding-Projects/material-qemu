@@ -1,0 +1,30 @@
+{
+  "at": "2026-11-21T15:06:09.398Z",
+  "results": [
+    {
+      "name": "Host A saves the running machine's state",
+      "ok": true,
+      "detail": "{\"savedAt\":\"2026-11-21T15:05:58.650Z\",\"bytes\":1432865,\"wasRunning\":true,\"hardwar"
+    },
+    {
+      "name": "Host A's Export button downloads one .mqvm.tar bundle",
+      "ok": true,
+      "detail": "mover-543253.mqvm.tar 1635840 bytes"
+    },
+    {
+      "name": "Host B imports the bundle from Storage and says the saved state came along",
+      "ok": true,
+      "detail": "Imported mover-543253 with its saved state; resume it from its Save and resume tab."
+    },
+    {
+      "name": "On host B the machine has a new ID, the same SMBIOS UUID and its saved state",
+      "ok": true,
+      "detail": "{\"state\":\"stopped\",\"saved\":true,\"name\":\"mover-543253\",\"uuid\":\"14fe6dba-c29c-42cf-a5ee-6ab618ce763c\"}"
+    },
+    {
+      "name": "Resumed on host B, the machine shows exactly the screen it had on host A",
+      "ok": true,
+      "detail": "5560:3249790902 → 5560:3249790902 (200)"
+    }
+  ]
+}

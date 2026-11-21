@@ -52,7 +52,7 @@ This inventory covers the controls in the supplied Main, Onboarding, Overview, M
 | Host CPU/memory/uptime | Actual bounded sampled history and CPU/memory charts implemented; host-visible versus container scope is explicit. No fabricated initial history. |
 | Disk I/O and network rates | Explicitly unavailable; not simulated. |
 | New machine | Implemented. |
-| Machine import | Implemented end to end: Storage drop zone or file picker, format detected from content, converted to qcow2 (VMDK import checked in scripts/verify-browser-workflows.mjs). |
+| Machine import | Implemented end to end: Storage drop zone or file picker, format detected from content, converted to qcow2 (VMDK import checked in scripts/verify-browser-workflows.mjs). Whole machines also move between hosts as one bundle with disks, firmware variables, TPM state and saved state (scripts/verify-machine-move.mjs). |
 | State/architecture chips | Independent persisted Overview state/architecture filters implemented. |
 | Machine console/start/pause/details | Implemented against real runtime. |
 | Live thumbnails, guest CPU/RAM | Implemented: live console thumbnails on running cards, and per-guest CPU (share of its vCPUs) and resident memory measured from the QEMU process on Linux and Windows (evidence/guest-usage). |
@@ -108,7 +108,7 @@ This inventory covers the controls in the supplied Main, Onboarding, Overview, M
 | Clipboard/type text | Implemented explicit user text transfer, with 256-character bound and truthful guest-support limitation. Guest acceptance remains unverified. |
 | Media change/eject, USB redirection | Media change and eject implemented through QMP (Change CD). USB redirection pending. |
 | Screenshot/record/drawing | Implemented: QEMU screenshot proven pixel-identical to the live framebuffer, bounded WebM recording, and annotation with separate original and annotated downloads (scripts/verify-console-export.mjs, scripts/verify-console-media.mjs). |
-| Summary/hardware/snapshots/migrate/guest-agent/monitor/stats/log tabs | Overview (console, CPU and memory use, disks, snapshots and activity), Hardware, Monitor (thirteen read-only QEMU queries), Guest agent (ten read-only questions through an opt-in virtio-serial channel), Save and resume (whole-machine state saved to a file and resumed on the same host) and Log tabs are implemented and checked against running QEMU machines (scripts/verify-machine-tabs.mjs, scripts/verify-guest-agent.mjs, scripts/verify-saved-state.mjs). A reply from a real guest agent and moving a machine to another host are not yet available. |
+| Summary/hardware/snapshots/migrate/guest-agent/monitor/stats/log tabs | Overview (console, CPU and memory use, disks, snapshots and activity), Hardware, Monitor (thirteen read-only QEMU queries), Guest agent (ten read-only questions through an opt-in virtio-serial channel), Save and resume (whole-machine state saved to a file and resumed on the same host) and Log tabs are implemented and checked against running QEMU machines (scripts/verify-machine-tabs.mjs, scripts/verify-guest-agent.mjs, scripts/verify-saved-state.mjs). A reply from a real guest agent is not yet verified; moving a machine to another host is done with an export (moving-machines.md). |
 | Guest FPS/latency/CPU/RAM | Guest CPU and RAM measured from the QEMU process. Display FPS and latency pending; no sample values are shown. |
 
 ## Explicit preservation checkpoint

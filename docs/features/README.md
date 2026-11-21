@@ -25,6 +25,7 @@ The application includes task-oriented help for creating machines, controlling l
 - [Workspace tabs and command palette](workspace.md)
 - [Machine page tabs: hardware, monitor and log](machine-page.md)
 - [Running jobs](jobs.md)
+- [Moving a machine to another host](moving-machines.md)
 
 - [VirtualBox and VMware hosting with the deploy assistant](vm-hosting.md)
 

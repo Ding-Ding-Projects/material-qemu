@@ -2258,7 +2258,7 @@ async function startUpload(file) {
   if (!file) return;
   const kind = kindOfUpload(file.name);
   if (!kind) {
-    notify(t("Choose an ISO, qcow2, raw, VMDK, VDI or VHDX file.", "請選擇 ISO、qcow2、raw、VMDK、VDI 或 VHDX 檔案。"));
+    notify(t("Choose an ISO, a disk image (qcow2, raw, VMDK, VDI or VHDX) or a machine bundle (.mqvm.tar).", "請選擇 ISO、磁碟映像（qcow2、raw、VMDK、VDI 或 VHDX）或機器套件（.mqvm.tar）。"));
     return;
   }
   if (kind === "iso" && (!file.size || file.size > state.mediaMaxBytes)) {
@@ -2272,7 +2272,9 @@ async function startUpload(file) {
   const onProgress = (loaded, total) =>
     setUploadView({ active: true, loaded, total, percent: total ? Math.round((100 * loaded) / total) : 0 });
   activeTransfer =
-    kind === "iso"
+    kind === "bundle"
+      ? uploadFile(`/api/storage/import-bundle?name=${encodeURIComponent(name.replace(/\.mqvm\.tar$|\.tar$/i, "").slice(0, 80))}`, file, session.csrf, onProgress)
+      : kind === "iso"
       ? uploadIso(file, name, session.csrf, onProgress)
       : uploadFile(`/api/storage/import?mode=machine&name=${encodeURIComponent(name.replace(/\.[^.]+$/, "").slice(0, 80))}`, file, session.csrf, onProgress);
   try {
@@ -2281,7 +2283,9 @@ async function startUpload(file) {
     await refresh(false);
     upload = {
       active: false,
-      message: t(`Imported ${result.name || name}.`, `已匯入 ${result.name || name}。`),
+      message: result.machine && kind === "bundle"
+        ? t(`Imported ${result.machine.name}${result.savedState ? " with its saved state; resume it from its Save and resume tab" : ""}.`, `已匯入 ${result.machine.name}${result.savedState ? "，連同已保存狀態；可在其「保存及繼續」分頁繼續" : ""}。`)
+        : t(`Imported ${result.name || name}.`, `已匯入 ${result.name || name}。`),
     };
   } catch (error) {
     upload = {
