@@ -9,6 +9,7 @@ import { writeFileSync, mkdirSync } from "node:fs";
 import path from "node:path";
 import os from "node:os";
 import { createRequire } from "node:module";
+import { stopBrowser, ensurePortFree } from "./browser-process.mjs";
 const require = createRequire(import.meta.url);
 const WebSocket = require("ws");
 const [rootUrl, outDir] = process.argv.slice(2);
@@ -54,7 +55,9 @@ const pages = [...seen].filter((u) => /\.html$|\/$/.test(new URL(u).pathname));
 
 // 2. Interactions in Edge.
 const port = 9350;
+await ensurePortFree(port);
 const edge = spawn("C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe", ["--headless=new", `--remote-debugging-port=${port}`, `--user-data-dir=${path.join(os.tmpdir(), "mq-site-" + Date.now())}`, "--no-first-run", "--hide-scrollbars", "about:blank"], { stdio: "ignore" });
+process.on("exit", () => stopBrowser(edge));
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 let target;
 for (let i = 0; i < 40 && !target; i++) { await sleep(250); try { target = (await (await fetch(`http://127.0.0.1:${port}/json`)).json()).find((t) => t.type === "page"); } catch {} }
@@ -114,5 +117,5 @@ for (const url of pages) {
 check("no page scrolls sideways at 375 pixels", wide.length === 0, `${pages.length} pages checked; ${wide.slice(0, 5).join(" | ")}`);
 await go(site, 1500); await shot("home-phone");
 writeFileSync(path.join(outDir, "site-check.json"), JSON.stringify({ site, at: new Date().toISOString(), pages: pages.length, results }, null, 2));
-ws.close(); edge.kill();
+ws.close(); stopBrowser(edge);
 process.exit(results.every((r) => r.ok) ? 0 : 1);

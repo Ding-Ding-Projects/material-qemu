@@ -8,12 +8,15 @@ import { writeFileSync, mkdirSync } from "node:fs";
 import path from "node:path";
 import os from "node:os";
 import { createRequire } from "node:module";
+import { stopBrowser, ensurePortFree } from "./browser-process.mjs";
 const require = createRequire(import.meta.url);
 const WebSocket = require("ws");
 const [origin, password, outDir] = process.argv.slice(2);
 mkdirSync(outDir, { recursive: true });
 const port = 9351;
+await ensurePortFree(port);
 const edge = spawn("C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe", ["--headless=new", `--remote-debugging-port=${port}`, `--user-data-dir=${path.join(os.tmpdir(), "mq-search-" + Date.now())}`, "--no-first-run", "--hide-scrollbars", "about:blank"], { stdio: "ignore" });
+process.on("exit", () => stopBrowser(edge));
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 let target;
 for (let i = 0; i < 40 && !target; i++) { await sleep(250); try { target = (await (await fetch(`http://127.0.0.1:${port}/json`)).json()).find((t) => t.type === "page"); } catch {} }
@@ -74,5 +77,5 @@ writeFileSync(path.join(outDir, "regex-search.png"), Buffer.from(shot2.result.da
 await send("Page.navigate", { url: origin }); await sleep(3000);
 check("regex mode is remembered after a reload", (await ev(`return document.querySelector('[data-action="regex-toggle"]').getAttribute('aria-pressed')`)) === "true");
 writeFileSync(path.join(outDir, "search.json"), JSON.stringify({ origin, at: new Date().toISOString(), results }, null, 2));
-ws.close(); edge.kill();
+ws.close(); stopBrowser(edge);
 process.exit(results.every((r) => r.ok) ? 0 : 1);

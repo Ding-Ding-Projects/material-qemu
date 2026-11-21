@@ -5,6 +5,7 @@ import { mkdirSync, writeFileSync, rmSync } from "node:fs";
 import path from "node:path";
 import os from "node:os";
 import { createRequire } from "node:module";
+import { stopBrowser, ensurePortFree } from "./browser-process.mjs";
 const require = createRequire(import.meta.url);
 const WebSocket = require("ws");
 const [origin, outDir, password] = process.argv.slice(2);
@@ -12,10 +13,12 @@ mkdirSync(outDir, { recursive: true });
 const profile = path.join(os.tmpdir(), "mq-capture-profile");
 rmSync(profile, { recursive: true, force: true });
 const port = 9341;
+await ensurePortFree(port);
 const edge = spawn("C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe", [
   "--headless=new", `--remote-debugging-port=${port}`, `--user-data-dir=${profile}`,
   "--no-first-run", "--hide-scrollbars", "about:blank",
 ], { stdio: "ignore" });
+process.on("exit", () => stopBrowser(edge));
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 let target;
 for (let i = 0; i < 40 && !target; i++) {
@@ -56,4 +59,4 @@ await shot("narrow-dashboard");
 console.log(await click('[data-action="page:new"]')); await shot("narrow-create");
 console.log(await click('[data-action="page:storage"]')); await shot("narrow-storage");
 console.log(await evaluate(`document.documentElement.scrollWidth+'x'+innerWidth`));
-ws.close(); edge.kill();
+ws.close(); stopBrowser(edge);
