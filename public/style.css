@@ -2462,3 +2462,16 @@ dialog:has(.annotation-canvas) {
     right: 16px;
   }
 }
+
+/* Drag and drop of machine cards onto folders. */
+.machine[draggable="true"] {
+  cursor: grab;
+}
+.machine.dragging {
+  opacity: 0.5;
+}
+.drop-target {
+  outline: 3px dashed var(--primary);
+  outline-offset: 4px;
+  border-radius: var(--shape-l);
+}

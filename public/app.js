@@ -1182,6 +1182,32 @@ document.addEventListener("click", async (e) => {
       );
       return;
     }
+    if (action === "bulk-snapshot") {
+      const ids = [...checked];
+      const stamp = new Date().toISOString().slice(0, 16).replace(/[T:]/g, "-");
+      return modal(
+        t("Snapshot selected machines", "為已選機器建立快照"),
+        field("bulkSnapName", t("Snapshot name", "快照名稱"), `snap-${stamp}`, "text", 'required maxlength="64" pattern="[A-Za-z0-9][A-Za-z0-9._-]*"') +
+          `<p class="muted">${t(`${ids.length} machines. Running machines are snapshotted live; stopped machines snapshot every qcow2 disk.`, `共 ${ids.length} 部機器。運行中的機器會即時建立快照；已停止的機器會為每個 qcow2 磁碟建立快照。`)}</p>`,
+        t("Take snapshots", "建立快照"),
+        async (f) => {
+          const name = String(f.get("bulkSnapName") || "").trim();
+          const outcomes = [];
+          let saved = 0;
+          for (const id of ids) {
+            const machine = state.machines.find((m) => m.id === id)?.name || id;
+            const result = await tryApi(`/machines/${id}/snapshots`, { name });
+            if (result.ok) saved++;
+            outcomes.push(`${machine}: ${result.ok ? t("snapshot saved", "已建立快照") : result.unavailable ? unavailableMessage() : result.error.message}`);
+            delete snapshotStore[id];
+          }
+          await refresh();
+          notify(t(`Snapshot ${name}: ${saved} of ${ids.length} saved.`, `快照 ${name}：${ids.length} 部中已建立 ${saved} 部。`));
+          modal(t("Snapshot results", "快照結果"), `<ul>${outcomes.map((value) => `<li>${escape(value)}</li>`).join("")}</ul>`, t("Close", "關閉"), async () => {});
+          return false;
+        },
+      );
+    }
     if (action.startsWith("move:") || action === "bulk-move") {
       const ids = action === "bulk-move" ? [...checked] : [action.slice(5)];
       return modal(
@@ -1421,6 +1447,52 @@ document.addEventListener("keydown", (e) => {
 document.addEventListener("click", (e) => {
   const panel = document.querySelector("#notification-panel");
   if (panel && !panel.hidden && !panel.contains(e.target) && !e.target.closest('[data-action="notifications"]')) toggleNotifications(false);
+});
+// Drag a machine card onto a folder group or folder chip to move it there.
+// The same request as Move to folder: only the organization changes.
+let draggedMachine = null;
+const dropFolderOf = (el) => {
+  const group = el.closest?.("[data-drop-folder]");
+  if (group) return group.dataset.dropFolder;
+  const chip = el.closest?.('[data-action^="folder-filter:"]');
+  return chip ? chip.dataset.action.slice("folder-filter:".length) : null;
+};
+document.addEventListener("dragstart", (e) => {
+  const card = e.target.closest?.("[data-drag-machine]");
+  if (!card) return;
+  draggedMachine = card.dataset.dragMachine;
+  e.dataTransfer.effectAllowed = "move";
+  e.dataTransfer.setData("text/plain", draggedMachine);
+  card.classList.add("dragging");
+});
+document.addEventListener("dragend", (e) => {
+  e.target.closest?.("[data-drag-machine]")?.classList.remove("dragging");
+  document.querySelectorAll(".drop-target").forEach((el) => el.classList.remove("drop-target"));
+  draggedMachine = null;
+});
+document.addEventListener("dragover", (e) => {
+  if (!draggedMachine || dropFolderOf(e.target) === null) return;
+  e.preventDefault();
+  e.dataTransfer.dropEffect = "move";
+  const zone = e.target.closest("[data-drop-folder]") || e.target.closest('[data-action^="folder-filter:"]');
+  document.querySelectorAll(".drop-target").forEach((el) => el !== zone && el.classList.remove("drop-target"));
+  zone?.classList.add("drop-target");
+});
+document.addEventListener("drop", async (e) => {
+  const folderName = dropFolderOf(e.target);
+  const id = draggedMachine || e.dataTransfer.getData("text/plain");
+  if (folderName === null || !id) return;
+  e.preventDefault();
+  document.querySelectorAll(".drop-target").forEach((el) => el.classList.remove("drop-target"));
+  const machine = state.machines.find((m) => m.id === id);
+  if (!machine || (machine.folder || "") === folderName) return;
+  try {
+    await api(`/machines/${id}`, { folder: folderName });
+    await refresh();
+    notify(t(`${machine.name} moved to ${folderName || "Unfiled"}.`, `${machine.name} 已移至${folderName || "未分類"}。`));
+  } catch (error) {
+    notify(localizeServerError(error.message, t));
+  }
 });
 window.addEventListener("beforeunload", (e) => {
   if (consoleTools.instance?.hasUnsaved()) e.preventDefault();

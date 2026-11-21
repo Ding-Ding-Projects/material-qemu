@@ -1,0 +1,26 @@
+{
+  "origin": "http://localhost:8097/",
+  "at": "2026-11-21T09:28:38.389Z",
+  "results": [
+    {
+      "name": "one action snapshots every selected machine",
+      "ok": true,
+      "detail": "[true,true]"
+    },
+    {
+      "name": "the results list each machine",
+      "ok": true,
+      "detail": "Snapshot resultsdebian-13-dev: snapshot savedwin11-test: snapshot savedCancelClose"
+    },
+    {
+      "name": "dragging a card onto a folder moves the machine there",
+      "ok": true,
+      "detail": "folder \"Lab\", dropped true"
+    },
+    {
+      "name": "the drop target is highlighted while dragging over it",
+      "ok": true,
+      "detail": "dropped true"
+    }
+  ]
+}

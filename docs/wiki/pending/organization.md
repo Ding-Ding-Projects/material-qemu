@@ -19,3 +19,7 @@ Dialogs use native modal focus containment and Escape dismissal. Closing a neste
 Focused tests reload stored state after rename, removal and saved-view deletion; prove retained machine and disk definitions; and reject duplicate names, stale references, invalid confirmation and mixed-operation partial updates. Built browser acceptance is recorded separately in the task evidence.
 
 Needs attention uses real machine errors. Recently used shows machines with recorded activity in the last seven days, newest first. Direct and bulk Move to folder actions update metadata while preserving process state and disk definitions; each bulk result is reported individually.
+
+## Bulk snapshots and dragging to folders
+
+With machines selected, **Snapshot selected** takes a snapshot with one name on each of them (live for running machines, on every qcow2 disk for stopped ones) and lists the result per machine. Machine cards can be dragged onto a folder group or a folder chip to move them there; this is the same change as **Move to folder**, which stays available from the keyboard, and running machines keep running. `scripts/verify-bulk-and-drag.mjs` checks both in headless Edge (evidence/bulk-and-drag).
