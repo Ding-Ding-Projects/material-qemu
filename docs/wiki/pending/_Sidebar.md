@@ -17,5 +17,6 @@
 - [QEMU hardware, live actions, snapshots and storage](qemu-hardware)
 - [Required-feature inventory](required-features)
 - [Runtime architecture](runtime)
+- [Storage pools](storage-pools)
 - [Hosting with the deploy assistant](vm-hosting)
 - [Workspace tabs and command palette](workspace)

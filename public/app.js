@@ -78,6 +78,18 @@ let regexTab = "explain", regexSample = null, regexReplacement = "", regexRun = 
 let regexDebug = null, regexDebugStep = 0, regexCodeLang = "JavaScript", regexFiles = [];
 let regexFileReplace = false, regexFileReplacement = "", regexFileResults = [];
 // Machine page tab and the data its Monitor and Log tabs have fetched.
+// Storage pools with their health, used by Storage, the create form and the Overview.
+let poolsList = null, poolsLoadedAt = 0, poolsLoading = false;
+// Health changes (a drive can be unplugged), so it is fetched again after 30 seconds.
+const poolsStale = () => poolsList === null || Date.now() - poolsLoadedAt > 30000;
+async function loadPools() {
+  if (poolsLoading) return;
+  poolsLoading = true;
+  const r = await tryApi("/pools").finally(() => { poolsLoading = false; });
+  poolsLoadedAt = Date.now();
+  poolsList = r.ok ? r.data : { pools: [] };
+  if (["storage", "new", "overview"].includes(page) && session?.authenticated) rerenderQuiet();
+}
 // People who can sign in besides the owner (owner only).
 let peopleList = null;
 async function loadPeople() {
@@ -627,6 +639,7 @@ function render() {
     return;
   }
   if (page === "settings" && peopleList === null) loadPeople();
+  if (["storage", "new", "overview"].includes(page) && poolsStale()) loadPools();
   if (page === "settings" && !applianceUpdate)
     loadUpdate().then(() => page === "settings" && session?.authenticated && rerenderQuiet());
   if (!hostLoaded)
@@ -1877,6 +1890,8 @@ function views() {
     firmwareUpload,
     people: peopleList,
     session,
+    pools: poolsList,
+    editingDiskIds: editing ? (state.machines.find((m) => m.id === createCfg?.id)?.disks || []).map((d) => d.id) : [],
     storage: storage || normalizeStorage(null, state),
     storageTab,
     upload,
@@ -2727,6 +2742,7 @@ async function handleExtra(action, b) {
   if (action.startsWith("storage-tab:")) {
     storageTab = action.slice(12);
     if (storageTab === "firmware") loadFirmware();
+    if (storageTab === "pools") loadPools();
     render();
     return true;
   }
@@ -2775,6 +2791,30 @@ async function handleExtra(action, b) {
         render();
       },
     });
+    return true;
+  }
+  if (action === "pool-add") {
+    try {
+      const pool = await api("/pools", { name: $("#pool-name").value, path: $("#pool-path").value });
+      notify(t(`Added the storage pool ${pool.name}.`, `已新增儲存池 ${pool.name}。`));
+      await loadPools();
+      render();
+    } catch (error) {
+      const status = $("#pool-status");
+      if (status) status.textContent = localizeServerError(error.message, t);
+    }
+    return true;
+  }
+  if (action.startsWith("pool-remove:")) {
+    const id = action.slice(12);
+    try {
+      await apiDelete(`/pools/${id}`);
+      notify(t("Storage pool removed. Its folder and files were left in place.", "已移除儲存池，其資料夾及檔案保持不變。"));
+    } catch (error) {
+      notify(localizeServerError(error.message, t));
+    }
+    await loadPools();
+    render();
     return true;
   }
   if (action === "fw-browse") {

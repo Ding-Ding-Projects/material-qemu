@@ -178,6 +178,7 @@ export function toV2Payload(cfg) {
     memory: toInt(cfg.memory, 2048, 128, 1048576),
     balloon: Boolean(cfg.balloon),
     disks: cfg.disks.map((d) => ({
+      ...(d.pool ? { pool: d.pool } : {}),
       id: d.id,
       name: String(d.name || "disk").trim(),
       sizeGiB: toInt(d.sizeGiB, 20, 1, 65536),

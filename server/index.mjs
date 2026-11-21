@@ -28,6 +28,7 @@ import { GUEST_QUERIES, runGuestQuery } from "./guest-agent.mjs";
 import { savedState, saveState, resumeState, discardState, refuseWhileSaved } from "./saved-state.mjs";
 import { bundleEntries, importBundle } from "./machine-bundle.mjs";
 import { writeTar } from "./tar.mjs";
+import { checkPoolFolder, addPool, removePool, poolReport } from "./pools.mjs";
 import { Writable } from "node:stream";
 import { createJobs, countedRequest } from "./jobs.mjs";
 import { listFirmware, receiveFirmware, deleteFirmware } from "./firmware-images.mjs";
@@ -66,6 +67,8 @@ export async function createApplication(options = {}) {
     secure = expected.protocol === "https:";
   const store = await new Store(data).open();
   const qemu = await new Qemu(data).open();
+  // Disk locations come from the saved storage pools.
+  Object.defineProperty(qemu, "pools", { get: () => store.state.pools || [] });
   const metrics = await new MetricSampler().start();
   // Per-machine CPU and memory, measured from each running QEMU process.
   const guestUsage = new GuestUsage();
@@ -654,6 +657,26 @@ export async function createApplication(options = {}) {
         await store.transaction((s) => event(s, `Deleted firmware image ${result.name}.`));
         return json(res, 200, result);
       }
+      if (route === "/api/pools" && req.method === "GET")
+        return json(res, 200, { pools: await poolReport(data, store.state.pools, store.state.machines.map(migrateMachine)) });
+      if (route === "/api/pools" && req.method === "POST") {
+        const folder = await checkPoolFolder(body.path);
+        const pool = await store.transaction((s) => {
+          const added = addPool(s, { name: body.name, folder });
+          event(s, `Added the storage pool ${added.name}.`);
+          return added;
+        });
+        return json(res, 201, pool);
+      }
+      const poolMatch = route.match(/^\/api\/pools\/([a-z0-9-]{1,40})$/);
+      if (poolMatch && req.method === "DELETE") {
+        await store.transaction((s) => {
+          const name = (s.pools || []).find((p) => p.id === poolMatch[1])?.name;
+          removePool(s, poolMatch[1]);
+          event(s, `Removed the storage pool ${name}. Its folder and files were left in place.`);
+        });
+        return json(res, 200, { removed: true });
+      }
       const exportMatch = route.match(/^\/api\/machines\/([a-f0-9-]{36})\/export$/);
       if (exportMatch && req.method === "GET") {
         const machine = store.state.machines.find((m) => m.id === exportMatch[1]);
@@ -799,9 +822,7 @@ export async function createApplication(options = {}) {
           })
           .catch(async (error) => {
             for (const disk of machine.disks)
-              await unlink(
-                path.join(data, "disks", diskFileName(machine.id, disk)),
-              ).catch(() => {});
+              await unlink(qemu.diskPath(machine.id, disk)).catch(() => {});
             throw error;
           });
         if (body.startAfterCreate === true) {
@@ -920,9 +941,7 @@ export async function createApplication(options = {}) {
             }
           } catch (error) {
             for (const disk of created)
-              await unlink(
-                path.join(data, "disks", diskFileName(machine.id, disk)),
-              ).catch(() => {});
+              await unlink(qemu.diskPath(machine.id, disk)).catch(() => {});
             throw error;
           }
           await store.transaction((s) => {

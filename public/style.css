@@ -3040,3 +3040,36 @@ a.btn-link:focus-visible {
   outline: 3px solid var(--primary);
   outline-offset: 2px;
 }
+
+.pool-bar {
+  height: 8px;
+  border-radius: 4px;
+  overflow: hidden;
+  background: color-mix(in srgb, var(--primary) 18%, transparent);
+  align-self: center;
+}
+.pool-bar i {
+  display: block;
+  height: 100%;
+  background: var(--primary);
+}
+.pool-bar i.low {
+  background: var(--error);
+}
+.pool-form {
+  margin-top: 16px;
+}
+.pool-form h3 {
+  margin: 0 0 4px;
+}
+.storage-row.pool-row {
+  grid-template-columns: minmax(160px, 2fr) minmax(80px, 140px) max-content max-content auto;
+}
+.pool-row .name small {
+  overflow-wrap: anywhere;
+}
+@media (max-width: 760px) {
+  .storage-row.pool-row {
+    grid-template-columns: 1fr;
+  }
+}

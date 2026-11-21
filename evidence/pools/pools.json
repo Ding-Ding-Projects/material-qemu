@@ -1,0 +1,36 @@
+{
+  "origin": "http://localhost:8097/",
+  "at": "2026-11-21T15:32:52.923Z",
+  "results": [
+    {
+      "name": "A folder is added as a pool from Storage and shows its free space",
+      "ok": true,
+      "detail": "2 C:\\ProgramData\\mq-pool-check 1.7 TiB free of 3.6 TiB 0 disks Remove | meter 53"
+    },
+    {
+      "name": "The disk form offers managed storage and the pool",
+      "ok": true,
+      "detail": "Managed storage,Second drive 45129,Second drive 119258,Second drive 156612"
+    },
+    {
+      "name": "The machine's disk is created in the pool folder",
+      "ok": true,
+      "detail": "3baae4f7-2996-4800-b8d1-e78045a9f8ca-dmwqkh9hv0.qcow2"
+    },
+    {
+      "name": "QEMU runs the machine from the disk in the pool",
+      "ok": true,
+      "detail": "file=C:\\ProgramData\\mq-pool-check\\material-qemu-disks\\3baae4f7-2996-4800-b8d1-e78045a9f8ca-dmwqkh9hv0.qcow2"
+    },
+    {
+      "name": "The pool cannot be removed while it holds a disk",
+      "ok": true,
+      "detail": "true 1 disk"
+    },
+    {
+      "name": "The Overview warns when a pool's folder is missing",
+      "ok": true,
+      "detail": "warningSecond drive 156612: the folder is missing or cannot be read. Open Storage"
+    }
+  ]
+}

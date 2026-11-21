@@ -16,7 +16,6 @@ import { event } from "./store.mjs";
 import { requireFolder } from "./organization.mjs";
 
 const GIB = 1024 ** 3;
-const disksDirectory = (qemu) => path.join(qemu.directory, "disks");
 const upgrade = (machine) => Object.assign(machine, validateMachine(machine));
 const quiet = (file) => unlink(file).catch(() => {});
 
@@ -32,10 +31,8 @@ export async function storageReport(store, qemu) {
     disks.push(
       ...(await Promise.all(
         entries.slice(i, i + 8).map(async ({ machine, disk }) => {
-          const file = path.join(
-            disksDirectory(qemu),
-            diskFileName(machine.id, disk),
-          );
+          let file = null;
+          try { file = qemu.diskPath(machine.id, disk); } catch { /* pool removed */ }
           const row = {
             machineId: machine.id,
             machineName: machine.name,
@@ -45,6 +42,7 @@ export async function storageReport(store, qemu) {
             snapshots: 0,
           };
           try {
+            if (!file) return row; // its pool is no longer configured
             const info = await imageInfo(file, { forceShare: true });
             row.actualBytes = info["actual-size"] ?? null;
             row.virtualBytes = info["virtual-size"] ?? null;
@@ -92,7 +90,7 @@ export async function resizeDisk(store, qemu, { machineId, diskId, sizeGiB }) {
   const disk = migrateMachine(machine).disks.find((d) => d.id === diskId);
   if (!disk) throw new Error("Disk not found.");
   const file = await containedFile(
-    disksDirectory(qemu),
+    qemu.diskDirectory(disk),
     diskFileName(machineId, disk),
   );
   const info = await imageInfo(file);
@@ -132,14 +130,12 @@ export async function cloneMachine(store, qemu, machine, name) {
   const written = [];
   try {
     for (const [i, disk] of source.disks.entries()) {
+      // A clone's disks go to the same pool as the original's.
       const from = await containedFile(
-        disksDirectory(qemu),
+        qemu.diskDirectory(disk),
         diskFileName(machine.id, disk),
       );
-      const to = path.join(
-        disksDirectory(qemu),
-        diskFileName(id, config.disks[i]),
-      );
+      const to = qemu.diskPath(id, config.disks[i]);
       written.push(to);
       await qemuImg(
         ["convert", "-f", disk.format, "-O", "qcow2", from, to],

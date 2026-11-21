@@ -1,3 +1,4 @@
+import { POOL_SUBFOLDER } from "./pools.mjs";
 import { refuseWhileSaved } from "./saved-state.mjs";
 import { buildCloudInitSeed } from "./cloud-init.mjs";
 import { firmwareImagePath } from "./firmware-images.mjs";
@@ -85,12 +86,19 @@ export class Qemu {
       sizeGiB: size,
     });
   }
+  // Where a disk lives: its storage pool's folder, or managed storage.
+  diskDirectory(disk) {
+    if (!disk?.pool) return path.join(this.directory, "disks");
+    const pool = (this.pools || []).find((p) => p.id === disk.pool);
+    if (!pool) throw new Error("This disk's storage pool is no longer configured.");
+    return path.join(pool.path, POOL_SUBFOLDER);
+  }
+  diskPath(machineId, disk) {
+    return path.join(this.diskDirectory(disk), diskFileName(machineId, disk));
+  }
   async createDisk(machineId, disk) {
-    const destination = path.join(
-      this.directory,
-      "disks",
-      diskFileName(machineId, disk),
-    );
+    await mkdir(this.diskDirectory(disk), { recursive: true });
+    const destination = this.diskPath(machineId, disk);
     // Never overwrite existing data, including a detached disk's file.
     if (await stat(destination).then(() => true, () => false))
       throw new Error(
@@ -167,7 +175,7 @@ export class Qemu {
     const diskPaths = {};
     for (const d of machine.disks)
       diskPaths[d.id] = await containedFile(
-        path.join(this.directory, "disks"),
+        this.diskDirectory(d),
         diskFileName(machine.id, d),
       );
     const cdPaths = [];

@@ -1,3 +1,4 @@
+import { POOL_ID } from "./pools.mjs";
 import { validateCloudInit } from "./cloud-init.mjs";
 import { checkFirmwareName } from "./firmware-images.mjs";
 import { validateCpuFlags, validateNuma } from "./cpu-numa.mjs";
@@ -28,6 +29,10 @@ export function generateMac() {
 }
 // Name of the managed file that stores a disk. The first migrated disk keeps
 // the historical `<machine id>.qcow2` name so existing data stays in place.
+function checkPoolId(id) {
+  if (!POOL_ID.test(String(id))) throw new Error("Choose a listed storage pool.");
+  return String(id);
+}
 export function diskFileName(machineId, disk) {
   return disk.id === "disk0" && disk.format === "qcow2"
     ? `${machineId}.qcow2`
@@ -116,6 +121,8 @@ function validateDisks(list, arch) {
       format: pick(raw.format, DISK_FORMATS, "qcow2", "disk format"),
       cache: pick(raw.cache, DISK_CACHES, "writeback", "cache mode"),
       discard: bool(raw.discard),
+      // A storage pool's id, or none for managed storage.
+      ...(raw.pool ? { pool: checkPoolId(raw.pool) } : {}),
     };
   });
   if (new Set(disks.map((d) => d.id)).size !== disks.length)
@@ -366,7 +373,9 @@ export function mergeMachineUpdate(machine, body) {
         );
       if ((disk.format ?? existing.format) !== existing.format)
         throw new Error("The format of an existing disk cannot change.");
-      return { ...existing, ...disk };
+      // A disk stays in the pool it was created in; its file is not moved.
+      const { pool, ...rest } = disk;
+      return { ...existing, ...rest };
     });
   }
   return { ...next, ...update };

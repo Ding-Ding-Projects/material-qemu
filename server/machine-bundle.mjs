@@ -35,7 +35,7 @@ export async function bundleEntries(qemu, raw) {
     entries.push(await fileEntry("saved-state.json", path.join(runtime, "saved-state.json")));
     entries.push(await fileEntry("saved-state.bin", path.join(runtime, "saved-state.bin")));
   }
-  for (const disk of machine.disks) entries.push(await fileEntry(`disks/${disk.id}.${disk.format}`, path.join(qemu.directory, "disks", diskFileName(machine.id, disk))));
+  for (const disk of machine.disks) entries.push(await fileEntry(`disks/${disk.id}.${disk.format}`, qemu.diskPath(machine.id, disk)));
   return entries;
 }
 
@@ -77,7 +77,8 @@ export async function importBundle({ request, store, qemu }) {
     if (!metaEntry) throw new Error("This is not a Material QEMU machine bundle.");
     const meta = JSON.parse(await readFile(metaEntry.file, "utf8"));
     if (meta.version !== BUNDLE_VERSION || !meta.machine) throw new Error("This bundle was made by a version of Material QEMU this host does not read.");
-    const source = migrateMachine(meta.machine);
+    // Disks arrive in managed storage; the other host's pools mean nothing here.
+    const source = migrateMachine({ ...meta.machine, disks: (meta.machine.disks || []).map(({ pool, ...d }) => d) });
     const config = validateMachine(source, qemu.capabilities, qemu.host);
     // Every disk the machine lists must be in the bundle, in its stated format.
     for (const disk of config.disks) {

@@ -17,7 +17,8 @@ const OWNER_ONLY = [/^\/api\/users(\/|$)/, /^\/api\/security$/, /^\/api\/passkey
 export function roleAllows(role, method, route) {
   if (!role || role === "owner") return true;
   if (OWNER_ONLY.some((re) => re.test(route))) return false;
-  if (role === "operator") return !(route === "/api/appliance/update" && method !== "GET");
+  // Operators may choose a pool for a disk, but not add or remove pools.
+  if (role === "operator") return !((route === "/api/appliance/update" || route.startsWith("/api/pools")) && method !== "GET");
   // A viewer may look, but not download whole machines (their disks).
   if (role === "viewer") return (method === "GET" && !/\/export$/.test(route)) || route === "/api/logout";
   return false;

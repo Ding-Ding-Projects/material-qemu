@@ -16,10 +16,9 @@ async function qcow2Files(qemu, machine) {
     throw new Error(
       "Snapshots need every disk of the machine to be qcow2. Raw disks do not support snapshots.",
     );
-  const directory = path.join(qemu.directory, "disks");
   return Promise.all(
     machine.disks.map((d) =>
-      containedFile(directory, diskFileName(machine.id, d)),
+      containedFile(qemu.diskDirectory(d), diskFileName(machine.id, d)),
     ),
   );
 }
