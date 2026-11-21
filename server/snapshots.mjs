@@ -45,7 +45,12 @@ export async function listSnapshots(qemu, machine) {
       { "command-line": "info snapshots" },
       15000,
     );
-    return { live: true, snapshots: parseHmpSnapshots(text) };
+    // HMP lists a snapshot that exists only on some disks once per disk.
+    const seen = new Set();
+    const snapshots = parseHmpSnapshots(text).filter(
+      (s) => !seen.has(s.name) && seen.add(s.name),
+    );
+    return { live: true, snapshots };
   }
   // `qemu-img info` reports the internal snapshots of an image as JSON.
   const info = await imageInfo(files[0]);

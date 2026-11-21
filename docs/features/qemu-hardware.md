@@ -16,7 +16,7 @@ All fields are optional on input. Older records (`diskGiB`, a `network` string, 
 | `cpuModel` | `host` (KVM only), `max`, `qemu64`, `Skylake-Client`, `EPYC`; checked against `-cpu help` when it could be read. Default: `host` with KVM, `max` on x86 otherwise, the target default on Arm. |
 | `sockets`, `cores`, `threads` | Integers; the product is the CPU count (maximum 64). Without topology the CPU count becomes cores. |
 | `memory`, `balloon` | 128 to 262144 MiB; virtio balloon device. |
-| `disks` | 1 to 8 entries of `{id, name, sizeGiB 1..4096, bus virtio\|sata\|nvme\|scsi\|ide, format qcow2\|raw, cache none\|writeback\|writethrough, discard}`. IDE is x86 only, at most two. |
+| `disks` | 1 to 8 entries of `{id, name, sizeGiB 1..4096, bus virtio\|sata\|nvme\|scsi\|ide, format qcow2\|raw, cache none\|writeback\|writethrough, discard}`. IDE is x86 only, at most two. On Windows hosts `cache none` launches as `writethrough`, because QEMU for Windows cannot open images with O_DIRECT. |
 | `cdroms` | 0 to 4 managed ISO names (replaces `iso`). |
 | `network` | `{mode user\|none, model virtio\|e1000e\|e1000\|rtl8139, mac, forwards}`. The MAC (`52:54:00:xx:xx:xx`) is generated when missing. At most 16 forwards of `{proto, hostPort 1024..65535, guestPort 1..65535}`. |
 | `display` | `{adapter virtio\|std\|qxl\|ramfb\|none}`. VNC stays on loopback. Default: `std` on x86, `virtio` on Arm. |
@@ -46,7 +46,7 @@ Behaviour worth knowing:
 - `start`, `pause`, `resume`, `reset`, `powerdown` (ACPI), `poweroff` (quit).
 - `cd-change` with `iso` (managed ISO name) and optional `cdrom` index; `cd-eject` with optional `cdrom` index. The machine must have been started with that CD-ROM attached.
 - `send-keys` with `keys`: `ctrl-alt-delete`, `ctrl-alt-backspace`, `ctrl-alt-f1` to `ctrl-alt-f7`, `print`, `escape`, `enter`, `tab`.
-- `screenshot`: writes a PNG into the runtime directory. `GET /api/machines/:id/screenshot` serves the latest one with `Cache-Control: no-store`.
+- `screenshot`: writes a PNG into the runtime directory. `GET /api/machines/:id/screenshot` serves the latest one with `Cache-Control: no-store`; while the machine runs, a request takes a fresh capture when the stored one is older than two seconds, which keeps dashboard thumbnails live. Live snapshot listings show each name once even when it exists on several disks.
 
 The older `POST /api/machines/:id/action` (`start`, `pause`, `resume`, `shutdown`, `stop`, `reset`) and `/keys` routes keep working.
 

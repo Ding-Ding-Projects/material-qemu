@@ -6,7 +6,7 @@ import {
   mergeMachineUpdate,
   diskFileName,
 } from "../server/machine-config.mjs";
-import { launchPlan } from "../server/launch-plan.mjs";
+import { launchPlan, hostCache } from "../server/launch-plan.mjs";
 import {
   findFirmware,
   parseCpuModels,
@@ -201,6 +201,7 @@ test("launch plan covers every hardware option", () => {
     tpmSocket: "/run/tpm.sock",
     serialLog: "/run/serial.log",
     disks: { disk0: "/d/0.qcow2", disk1: "/d/1.raw" },
+    platform: "linux",
   });
   const joined = args.join(" ");
   assert.equal(flag(args, "-machine")[0], "q35,smm=on");
@@ -287,4 +288,10 @@ test("firmware and CPU model discovery", async () => {
     parseCpuModels("Available CPUs:\n  qemu64   QEMU\n  max  all\nx86 Opteron_G1  AMD\n"),
     ["qemu64", "max", "Opteron_G1"],
   );
+});
+
+test("Windows hosts open cache=none disks with writethrough instead of O_DIRECT", () => {
+  assert.equal(hostCache("none", "win32"), "writethrough");
+  assert.equal(hostCache("none", "linux"), "none");
+  assert.equal(hostCache("writeback", "win32"), "writeback");
 });

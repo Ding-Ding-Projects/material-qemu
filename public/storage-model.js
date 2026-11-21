@@ -9,15 +9,21 @@ export function normalizeStorage(data, state) {
     const names = new Map(state.machines.map((m) => [m.id, m.name]));
     return {
       source: "server",
-      disks: (data.disks || []).map((d, i) => ({
-        id: String(d.id ?? d.name ?? i),
+      disks: (data.disks || []).map((entry, i) => {
+        const d = entry.disk ? { ...entry, ...entry.disk } : entry;
+        return {
+        id: d.machineId ? `${d.machineId}:${d.id ?? i}` : String(d.id ?? d.name ?? i),
+        diskId: String(d.id ?? d.name ?? i),
         name: String(d.name ?? d.file ?? `disk-${i + 1}`),
+        diskName: d.name,
+        snapshots: Array.isArray(d.snapshots) ? d.snapshots.length : num(d.snapshots),
         machineId: d.machineId ?? d.machine?.id ?? null,
         machineName: d.machineName ?? (typeof d.machine === "string" ? d.machine : d.machine?.name) ?? names.get(d.machineId) ?? "",
         bytes: num(d.bytes, d.sizeBytes, d.virtualBytes, d.sizeGiB != null ? d.sizeGiB * GIB : null),
         usedBytes: num(d.usedBytes, d.used, d.actualBytes),
         format: String(d.format ?? "qcow2"),
-      })),
+      };
+      }),
       isos: (data.isos || []).map((i) => ({
         name: String(typeof i === "string" ? i : i.name),
         bytes: typeof i === "string" ? null : num(i.bytes, i.size, i.sizeBytes),

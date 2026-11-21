@@ -1,6 +1,12 @@
 export function renderStorage(ctx) {
   const { t, escape, button, storage, storageTab, upload, bytes } = ctx;
-  const size = (v) => (v == null ? "—" : bytes(v));
+  const size = (v) => {
+    if (v == null) return "—";
+    const units = ["B", "KiB", "MiB", "GiB", "TiB"];
+    let n = Number(v), u = 0;
+    while (n >= 1024 && u < units.length - 1) { n /= 1024; u++; }
+    return `${n.toFixed(u && n < 10 ? 1 : 0)} ${units[u]}`;
+  };
   const diskRows = storage.disks
     .map(
       (d, i) => `<div class="storage-row" style="animation-delay:${i * 30}ms"><div class="name"><strong>${escape(d.name)}</strong><small>${escape(d.machineName ? t("Attached to ", "連接至 ") + d.machineName : t("Unattached", "未連接"))}</small></div><span>${size(d.bytes)}</span><span>${escape(d.format)}</span><span>${d.usedBytes == null ? "—" : size(d.usedBytes)}</span><div class="acts">${button(`disk-resize:${encodeURIComponent(d.id)}`, t("Resize", "調整容量"))}${d.machineId ? button(`clone:${d.machineId}`, t("Clone", "複製")) : ""}${button("disk-convert", t("Convert", "轉換"), "", `disabled title="${escape(t("Disks are converted to qcow2 when imported", "磁碟在匯入時轉換為 qcow2"))}"`)}${d.machineId ? button(`edit:${d.machineId}`, t("Attach", "連接")) : ""}${button(`disk-delete:${encodeURIComponent(d.id)}`, t("Delete", "刪除"), "danger", d.machineId ? `disabled title="${escape(t("Remove the machine first; its disks are retained", "請先移除機器，磁碟會保留"))}"` : "")}</div></div>`,

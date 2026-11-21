@@ -1644,7 +1644,7 @@ pre.code {
 }
 .storage-row {
   display: grid;
-  grid-template-columns: minmax(160px, 2fr) 96px 72px 96px 340px;
+  grid-template-columns: minmax(160px, 2fr) 96px 72px 96px auto;
   gap: 8px 16px;
   align-items: center;
   padding: 12px 16px;
@@ -1663,7 +1663,7 @@ pre.code {
 .storage-row .acts {
   display: flex;
   gap: 6px;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   justify-content: flex-end;
 }
 .storage-row .acts button {
@@ -2113,6 +2113,7 @@ dialog .actions {
   .storage-row .acts {
     grid-column: 1 / -1;
     justify-content: flex-start;
+    flex-wrap: wrap;
   }
 }
 @media (max-width: 760px) {

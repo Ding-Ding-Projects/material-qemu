@@ -500,6 +500,17 @@ export async function createApplication(options = {}) {
       if (screenshotMatch && req.method === "GET") {
         if (!store.state.machines.some((m) => m.id === screenshotMatch[1]))
           return json(res, 404, { error: "Machine not found." });
+        const shotMachine = store.state.machines.find((m) => m.id === screenshotMatch[1]);
+        const shotFile = path.join(qemu.runtimeDirectory(shotMachine.id), SCREENSHOT_FILE);
+        if (qemu.status(shotMachine.id)?.state === "running") {
+          const age = await stat(shotFile).then((s) => Date.now() - s.mtimeMs, () => Infinity);
+          if (age > 2000)
+            await qemu
+              .exclusive(shotMachine.id, () =>
+                performLiveAction(qemu, migrateMachine(shotMachine), { action: "screenshot" }),
+              )
+              .catch(() => {});
+        }
         try {
           const image = await readFile(
             path.join(

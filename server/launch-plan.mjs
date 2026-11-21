@@ -13,6 +13,12 @@ const NIC = {
 // Pure builder for the QEMU command line. Every argument is derived from a
 // validated machine record; browsers never supply raw QEMU arguments. Path
 // options default to placeholders so the preview never reveals private paths.
+// Windows hosts cannot open images with O_DIRECT (cache=none), so they use
+// writethrough, which also bypasses the host write cache for durability.
+export function hostCache(cache, platform) {
+  return platform === "win32" && cache === "none" ? "writethrough" : cache;
+}
+
 export function launchPlan(machineRecord, options = {}) {
   const machine = migrateMachine(machineRecord);
   const {
@@ -128,7 +134,7 @@ export function launchPlan(machineRecord, options = {}) {
     const drive = `drive-${d.id}`;
     args.push(
       "-drive",
-      `file=${escape(file)},format=${d.format},if=none,id=${drive},cache=${d.cache},discard=${d.discard ? "unmap" : "ignore"}`,
+      `file=${escape(file)},format=${d.format},if=none,id=${drive},cache=${hostCache(d.cache, options.platform ?? process.platform)},discard=${d.discard ? "unmap" : "ignore"}`,
     );
     const index = boot("disk", i);
     if (d.bus === "virtio")

@@ -61,16 +61,18 @@ The assistant screens were designed first on a canvas; the source boards are in 
 
 ## Scope and remaining work
 
-The other 50 design boards remain design-only. The deploy assistant, the appliance OVA and the USB image build in the workflow (Intel and AMD only; Raspberry Pi is out of scope); see the [roadmap](ROADMAP.md) for which of them have been verified on real hypervisors and hardware. Advanced QEMU hardware, snapshots, migration and native installers are not delivered. Full required-feature parity, regex tooling, complete translation and production hardening remain incomplete. `build-installer.bat` reports that gap with a nonzero exit code.
+The other 50 design boards remain design-only. The deploy assistant, the appliance OVA and the USB image build in the workflow (Intel and AMD only; Raspberry Pi is out of scope); see the [roadmap](ROADMAP.md) for which of them have been verified on real hypervisors and hardware. The web app was remade in Material Design 3 with UEFI and Secure Boot firmware, CPU topology and models, multiple disks on virtio, SATA, NVMe, SCSI or IDE, network models and port forwards, display, sound, USB, serial and RNG devices, boot order, autostart, live pause, resume, reset, key and CD actions, screenshots, snapshots, and a storage manager with resize, clone and disk import ([QEMU hardware](docs/features/qemu-hardware.md), [interface](docs/features/interface.md)). TPM (swtpm) start-up, KVM, an installed guest OS, migration and native installers are not verified or not delivered. Full required-feature parity, regex tooling, complete translation and production hardening remain incomplete. `build-installer.bat` reports that gap with a nonzero exit code.
 
 See [roadmap](ROADMAP.md), [handoff](HANDOFF.md), [runtime architecture](docs/features/runtime.md) and the original [design contract](design/HANDOFF.md). Design frames illustrate the reference only and are not runtime evidence.
 
 ## Verified runtime images
 
-The following images show the real container built from `8e7802f38df82728a5db4fe58959be70f3a7bc09`. The [evidence inventory](evidence/README.md) records source and image identity, exact hashes, viewports, observed interactions and limitations. Later source changes require their own evidence.
+These images come from the Material Design 3 web app running natively on Windows with QEMU 11.1, driving a real UEFI machine with a virtio system disk and an NVMe data disk. Headless Microsoft Edge captured them at 1440 by 960 and 375 by 812 pixels. The [evidence inventory](evidence/README.md) records the details and limitations; earlier container images are kept there with their provenance.
 
-![Initial owner setup with empty credential fields](evidence/8e7802f/initial.png)
+![Dashboard with host gauges and a live thumbnail taken from the running guest](evidence/lang-gui-remake/real/dark-dashboard.png)
 
-![Authenticated QEMU console displaying SeaBIOS on an intentionally blank disk](evidence/8e7802f/console.png)
+![Machine page showing the live UEFI shell, console toolbar, power controls and snapshots](evidence/lang-gui-remake/real/dark-machine.png)
 
-[Machine management at 360 pixels](evidence/8e7802f/machines-360.png)
+![Storage manager in the light theme listing both disks with resize, clone and attach actions](evidence/lang-gui-remake/real/light-storage.png)
+
+![New machine form at 375 pixels with the bottom navigation bar](evidence/lang-gui-remake/real/narrow-create.png)

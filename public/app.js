@@ -453,10 +453,20 @@ function renderOnboarding() {
 }
 const machineWizard = () => views().create();
 
+// A render can call this again while the viewer module is still loading; only
+// the latest call may attach, so viewers never stack inside one console.
+let consoleAttempt = 0;
 async function connectConsole() {
   if (!$("#vnc")) return;
+  const attempt = ++consoleAttempt;
   try {
     const { default: RFB } = await import("/vendor/novnc/core/rfb.js");
+    if (attempt !== consoleAttempt || !$("#vnc")) return;
+    if (rfb) {
+      try { rfb.disconnect(); } catch { /* already closed */ }
+      rfb = null;
+    }
+    $("#vnc").replaceChildren();
     rfb = new RFB(
       $("#vnc"),
       `${location.protocol === "https:" ? "wss" : "ws"}://${location.host}/console/${selected}`,
@@ -1682,7 +1692,7 @@ async function startUpload(file) {
   activeTransfer =
     kind === "iso"
       ? uploadIso(file, name, session.csrf, onProgress)
-      : uploadFile(`/api/storage/import?name=${encodeURIComponent(name)}`, file, session.csrf, onProgress);
+      : uploadFile(`/api/storage/import?mode=machine&name=${encodeURIComponent(name.replace(/\.[^.]+$/, "").slice(0, 80))}`, file, session.csrf, onProgress);
   try {
     const result = await activeTransfer.promise;
     storage = null;
@@ -1942,7 +1952,7 @@ async function handleExtra(action, b) {
       `<p><strong>${escape(disk.name)}</strong></p>` + field("diskSize", t("New size (GiB)", "新容量（GiB）"), disk.bytes ? Math.ceil(disk.bytes / 1073741824) : "", "number", 'required min="1" max="65536"') + `<p class="muted">${t("Disks can only grow. Grow the partition inside the guest afterwards.", "磁碟只可擴大，之後需要在客體內擴大分割區。")}</p>`,
       t("Resize", "調整"),
       async (f) => {
-        const result = await tryApi("/storage/disks/resize", { machineId: disk.machineId, diskId: disk.id, id: disk.id, name: disk.diskName || disk.name, sizeGiB: Number(f.get("diskSize")) });
+        const result = await tryApi("/storage/disks/resize", { machineId: disk.machineId, diskId: disk.diskId ?? disk.id, id: disk.diskId ?? disk.id, name: disk.diskName || disk.name, sizeGiB: Number(f.get("diskSize")) });
         if (!result.ok) throw result.unavailable ? new Error(unavailableMessage()) : result.error;
         await refresh(false);
         await loadStorage(true);
