@@ -1,6 +1,6 @@
 export function filterMachines(
   machines,
-  { query = "", state = "all", folder = "", now = Date.now() } = {},
+  { query = "", state = "all", folder = "", now = Date.now(), matcher = null } = {},
 ) {
   const result = machines.filter((machine) => {
     const text =
@@ -17,7 +17,7 @@ export function filterMachines(
       (state === "recent" && recent) ||
       machine.state === state;
     return (
-      (!query || text.includes(query.toLowerCase())) &&
+      (matcher ? matcher(machine) : !query || text.includes(query.toLowerCase())) &&
       matches &&
       (!folder || machine.folder === folder)
     );

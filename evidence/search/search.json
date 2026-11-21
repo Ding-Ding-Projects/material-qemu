@@ -1,0 +1,51 @@
+{
+  "origin": "http://localhost:8097/",
+  "at": "2026-11-21T09:21:23.077Z",
+  "results": [
+    {
+      "name": "plain text search filters machines",
+      "ok": true,
+      "detail": "debian-13-dev"
+    },
+    {
+      "name": "the regex toggle opens the builder beside the search",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "a pattern filters machines",
+      "ok": true,
+      "detail": "debian-13-dev,win11-test"
+    },
+    {
+      "name": "the builder reports the match count",
+      "ok": true,
+      "detail": "Valid pattern · 2 of 3 machines match."
+    },
+    {
+      "name": "unticking a field narrows what is searched",
+      "ok": true,
+      "detail": "no machines"
+    },
+    {
+      "name": "turning off ignore-case makes the pattern case-sensitive",
+      "ok": true,
+      "detail": "no machines"
+    },
+    {
+      "name": "insert buttons edit the pattern at the cursor",
+      "ok": true,
+      "detail": "^server"
+    },
+    {
+      "name": "an invalid pattern is reported",
+      "ok": true,
+      "detail": "true Not a valid pattern: /(unclosed/i: Unterminated group"
+    },
+    {
+      "name": "regex mode is remembered after a reload",
+      "ok": true,
+      "detail": ""
+    }
+  ]
+}

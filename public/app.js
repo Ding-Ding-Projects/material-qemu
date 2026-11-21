@@ -34,6 +34,7 @@ import { normalizeStorage, kindOfUpload } from "./storage-model.js";
 import { localizeServerError } from "./server-errors.js";
 import { createReleaseChord } from "./input-release.js";
 import { createConsoleTools } from "./console-tools.js";
+import { compileSearch, SEARCH_FIELDS, MAX_PATTERN } from "./search-pattern.js";
 const { startRegistration, startAuthentication } = window.SimpleWebAuthnBrowser;
 
 const $ = (selector) => document.querySelector(selector);
@@ -53,6 +54,14 @@ let session,
   state,
   page = "overview",
   query = "",
+  searchOpts = (() => {
+    try {
+      const saved = JSON.parse(localStorage.getItem("mq-search") || "{}");
+      return { regex: saved.regex === true, flags: { i: saved.flags?.i !== false, m: saved.flags?.m === true, s: saved.flags?.s === true }, fields: Array.isArray(saved.fields) && saved.fields.length ? saved.fields.filter((f) => SEARCH_FIELDS.includes(f)) : [...SEARCH_FIELDS] };
+    } catch {
+      return { regex: false, flags: { i: true, m: false, s: false }, fields: [...SEARCH_FIELDS] };
+    }
+  })(),
   filter = "all",
   folder = "",
   selected = "",
@@ -330,7 +339,7 @@ function render() {
   const paint = () => {
     document.documentElement.toggleAttribute("data-silent", silentRender);
     $("#app").innerHTML =
-      `<div class="shell">${railHtml()}<div class="content"><header class="appbar"><div class="brand"><span class="mark" aria-hidden="true"><span class="icon">memory</span></span>Material QEMU</div>${buildMetadata()}<label class="searchbar"><span class="icon" aria-hidden="true">search</span><input id="global-search" type="search" aria-label="${t("Search machines", "搜尋機器")}" placeholder="${t("Search machines, folders and notes", "搜尋機器、資料夾和備註")}" value="${escape(query)}"><kbd>Ctrl+Shift+F</kbd></label><span class="spacer"></span><span class="pill healthy health">${t("Host connected", "主機已連線")}</span>${button("commands", `<span class="icon" aria-hidden="true">terminal</span>${t("Commands", "指令")}`, "ghost")}${button("logout", t("Sign out", "登出"), "ghost")}</header>${tabs}<main class="main" id="main" tabindex="-1" role="tabpanel" aria-labelledby="workspace-tab-${encodeURIComponent(currentTabId())}">${pageHtml()}</main></div></div>`;
+      `<div class="shell">${railHtml()}<div class="content"><header class="appbar"><div class="brand"><span class="mark" aria-hidden="true"><span class="icon">memory</span></span>Material QEMU</div>${buildMetadata()}<label class="searchbar"><span class="icon" aria-hidden="true">search</span><input id="global-search" type="search" maxlength="${MAX_PATTERN}" spellcheck="false" aria-label="${searchOpts.regex ? t("Search machines with a regular expression", "用正規表達式搜尋機器") : t("Search machines", "搜尋機器")}" placeholder="${searchOpts.regex ? t("Regular expression, for example ^(debian|win)", "正規表達式，例如 ^(debian|win)") : t("Search machines, folders and notes", "搜尋機器、資料夾和備註")}" value="${escape(query)}"${searchOpts.regex ? ' class="mono"' : ""}${currentSearch().ok ? "" : " aria-invalid"}><kbd>Ctrl+Shift+F</kbd></label>${button("regex-toggle", '<span class="mono" aria-hidden="true">.*</span>', "regex-toggle", `aria-pressed="${searchOpts.regex}" aria-controls="regex-panel" aria-label="${escape(t("Regular expression search", "正規表達式搜尋"))}" title="${escape(t("Regular expression search", "正規表達式搜尋"))}"`)}<span class="spacer"></span><span class="pill healthy health">${t("Host connected", "主機已連線")}</span>${button("commands", `<span class="icon" aria-hidden="true">terminal</span>${t("Commands", "指令")}`, "ghost")}${button("logout", t("Sign out", "登出"), "ghost")}</header>${regexPanel()}${tabs}<main class="main" id="main" tabindex="-1" role="tabpanel" aria-labelledby="workspace-tab-${encodeURIComponent(currentTabId())}">${pageHtml()}</main></div></div>`;
     if (page === "console") {
       updateConsoleControls();
       connectConsole();
@@ -342,6 +351,7 @@ function render() {
     const search = $("#global-search");
     search?.addEventListener("input", (e) => {
       query = e.target.value;
+      updateRegexStatus();
       if (page !== "machines") {
         page = "machines";
         render();
@@ -1338,7 +1348,20 @@ const releaseChord = createReleaseChord(() => {
   updateConsoleControls();
   notify(t("Keyboard and mouse released from the guest. Choose Guest input to capture them again.", "已從客體釋放鍵盤和滑鼠，按「客體輸入」可再次控制。"));
 });
-document.addEventListener("change", (e) => consoleTools().change(e));
+document.addEventListener("change", (e) => {
+  consoleTools().change(e);
+  const flag = e.target.dataset?.searchFlag, field = e.target.dataset?.searchField;
+  if (!flag && !field) return;
+  if (flag) searchOpts.flags[flag] = e.target.checked;
+  if (field) {
+    const set = new Set(searchOpts.fields);
+    e.target.checked ? set.add(field) : set.delete(field);
+    searchOpts.fields = SEARCH_FIELDS.filter((f) => set.has(f));
+  }
+  saveSearchOpts();
+  updateRegexStatus();
+  if (page === "machines" && $("#machine-results")) $("#machine-results").innerHTML = views().machineResults();
+});
 window.addEventListener("beforeunload", (e) => {
   if (consoleTools.instance?.hasUnsaved()) e.preventDefault();
 });
@@ -1384,6 +1407,35 @@ setInterval(async () => {
   }
 }, 5000);
 
+function currentSearch() {
+  return compileSearch(query, searchOpts);
+}
+function saveSearchOpts() {
+  try { localStorage.setItem("mq-search", JSON.stringify(searchOpts)); } catch { /* storage unavailable */ }
+}
+// The builder sits directly under the header search while regular expression
+// search is on: flags, which fields are searched, quick tokens and a live result.
+function regexPanel() {
+  if (!searchOpts.regex) return "";
+  const names = { name: t("Name", "名稱"), notes: t("Notes", "備註"), folder: t("Folder", "資料夾"), tags: t("Tags", "標籤"), arch: t("Architecture", "架構") };
+  const flag = (k, label) => `<label class="chip-check"><input type="checkbox" data-search-flag="${k}" ${searchOpts.flags[k] ? "checked" : ""}> <span class="mono">${k}</span> ${label}</label>`;
+  const tokens = [["\\d", t("digit", "數字")], ["\\w", t("word", "字元")], ["\\s", t("space", "空白")], [".", t("any", "任何")], ["*", t("0 or more", "零或多個")], ["+", t("1 or more", "一或多個")], ["?", t("optional", "可有可無")], ["|", t("or", "或")], ["^", t("start", "開頭")], ["$", t("end", "結尾")], ["()", t("group", "群組")], ["[]", t("set", "集合")]];
+  return `<section id="regex-panel" class="regex-panel" aria-label="${t("Regular expression builder", "正規表達式建構器")}"><div class="regex-row"><span class="label">${t("Flags", "旗標")}</span>${flag("i", t("ignore case", "不分大小寫"))}${flag("m", t("multiline", "多行"))}${flag("s", t("dot matches newline", "點號配對換行"))}</div><div class="regex-row"><span class="label">${t("Search in", "搜尋範圍")}</span>${SEARCH_FIELDS.map((f) => `<label class="chip-check"><input type="checkbox" data-search-field="${f}" ${searchOpts.fields.includes(f) ? "checked" : ""}> ${names[f]}</label>`).join("")}</div><div class="regex-row"><span class="label">${t("Insert", "插入")}</span>${tokens.map(([tok, label]) => `<button type="button" class="token mono" data-action="regex-token" data-token="${escape(tok)}" title="${escape(label)}" aria-label="${escape(t("Insert ", "插入 ") + tok + " (" + label + ")")}">${escape(tok)}</button>`).join("")}</div><p id="regex-status" class="muted-line" role="status">${escape(regexStatusText())}</p></section>`;
+}
+// Text for the builder status line; used when the panel is drawn (including the
+// periodic redraw) and while typing.
+function regexStatusText() {
+  const s = currentSearch();
+  if (!s.ok) return t("Not a valid pattern: ", "樣式無效：") + localizeServerError(s.error, t);
+  if (!s.active) return t("Type a pattern to filter machines.", "輸入樣式以篩選機器。");
+  const n = state.machines.filter(s.test).length;
+  return t(`Valid pattern · ${n} of ${state.machines.length} machines match.`, `樣式有效 · ${state.machines.length} 部機器中有 ${n} 部符合。`);
+}
+function updateRegexStatus() {
+  $("#global-search")?.toggleAttribute("aria-invalid", !currentSearch().ok);
+  const el = $("#regex-status");
+  if (el) el.textContent = regexStatusText();
+}
 function views() {
   thumbs.tick = Math.floor(Date.now() / 5000);
   return createViews({
@@ -1408,6 +1460,7 @@ function views() {
     consoleInput,
     host,
     applianceUpdate,
+    searchMatcher: currentSearch().test,
     appearance,
     thumbs,
     snaps: snapshotStore[selected] || { status: "loading", items: [] },
@@ -1814,6 +1867,25 @@ function sectionName(id) {
   return t(...names[id] || [id, id]);
 }
 async function handleExtra(action, b) {
+  if (action === "regex-toggle") {
+    searchOpts.regex = !searchOpts.regex;
+    saveSearchOpts();
+    render();
+    $("#global-search")?.focus();
+    updateRegexStatus();
+    return true;
+  }
+  if (action === "regex-token") {
+    const input = $("#global-search");
+    const tok = b.dataset.token;
+    const at = input.selectionStart ?? input.value.length;
+    input.value = input.value.slice(0, at) + tok + input.value.slice(input.selectionEnd ?? at);
+    const caret = at + (tok === "()" || tok === "[]" ? 1 : tok.length);
+    input.focus();
+    input.setSelectionRange(caret, caret);
+    input.dispatchEvent(new Event("input", { bubbles: true }));
+    return true;
+  }
   if (await consoleTools().handle(action)) {
     updateMediaControls();
     return true;
