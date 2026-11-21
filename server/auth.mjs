@@ -27,13 +27,17 @@ export class Sessions {
     this.failures = new Map();
     this.inflight = new Map();
   }
-  issue(method = "password") {
+  // who: { userId, role, name } of the person signing in; the owner by default.
+  issue(method = "password", who = { userId: "owner", role: "owner", name: "" }) {
     const id = randomBytes(32).toString("base64url");
     const value = {
       csrf: randomBytes(24).toString("base64url"),
       expires: Date.now() + 8 * 60 * 60 * 1000,
       method,
       passkeyVerifiedAt: method === "passkey" ? Date.now() : null,
+      userId: who.userId,
+      role: who.role,
+      name: who.name,
     };
     this.items.set(id, value);
     return { id, ...value };
@@ -77,6 +81,10 @@ export class Sessions {
     else this.inflight.delete(address);
     if (success) this.failures.delete(address);
     else this.failure(address);
+  }
+  // Ends every session of one person, after their role, password or account changes.
+  revokeUser(userId) {
+    for (const [id, s] of this.items) if (s.userId === userId) this.items.delete(id);
   }
   cookie(id, secure) {
     return `mq_session=${id}; HttpOnly; SameSite=Strict; Path=/; Max-Age=28800${secure ? "; Secure" : ""}`;

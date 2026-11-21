@@ -34,6 +34,7 @@
   - [ ] Verify the guest agent tab against a real agent, using the appliance image that now installs qemu-guest-agent.
   - [x] Save and resume tab: a running machine's whole state saved to a file and resumed with an identical screen, with guards while the state exists (tests/saved-state.test.mjs, scripts/verify-saved-state.mjs, evidence/saved-state).
   - [ ] Move a machine to another Material QEMU host (disks and saved state).
+  - [x] Multiple people with operator and viewer roles, enforced by the server, managed by the owner in Settings (tests/users-api.test.mjs, scripts/verify-people.mjs, evidence/people). Passkeys stay owner-only.
 - [x] Fix deleting ISOs, snapshots and firmware from the browser, which the server refused because a DELETE has no content type (tests/hardware-api.test.mjs).
 - [x] Add regex explain, a test bench with groups, replace and split previews, a saved pattern library and a one-second worker time limit to the regex builder (scripts/verify-regex-tools.mjs, evidence/regex-tools).
 - [x] Add a step-by-step regex debugger, a comparison with other flavours, code generation in six languages and local file search to the regex builder (tests/regex-parity.test.mjs, scripts/verify-regex-tools.mjs, evidence/regex-tools).

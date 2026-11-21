@@ -37,6 +37,7 @@ import {
 import { importDisk } from "./disk-import.mjs";
 import { removeMachine, restoreMachine } from "./machine-records.mjs";
 import { setPasswordAccess } from "./security-settings.mjs";
+import { roleAllows, roleRefusal, prepareUser, addUser, updateUser, removeUser, publicUser, findUser } from "./users.mjs";
 import { Sessions, hashPassword, checkPassword } from "./auth.mjs";
 import { updateOrganization, requireFolder } from "./organization.mjs";
 import { receiveIso, MAX_ISO_BYTES } from "./media.mjs";
@@ -88,8 +89,9 @@ export async function createApplication(options = {}) {
     });
     res.end(JSON.stringify(body));
   };
-  const login = (res, method = "password") => {
-    const session = sessions.issue(method);
+  const ownerIdentity = () => ({ userId: "owner", role: "owner", name: store.state.owner?.name || "" });
+  const login = (res, method = "password", who = ownerIdentity()) => {
+    const session = sessions.issue(method, who);
     json(
       res,
       200,
@@ -103,6 +105,7 @@ export async function createApplication(options = {}) {
     passwordEnabled: store.state.owner?.passwordEnabled !== false,
     setup: session ? store.state.setup : null,
     csrf: session?.csrf,
+    user: session ? { name: session.name || store.state.owner?.name || "", role: session.role || "owner" } : null,
     version: "0.1.0",
     updatedAt: process.env.BUILD_DATE || buildInfo?.builtAt || null,
     origin,
@@ -147,6 +150,9 @@ export async function createApplication(options = {}) {
             error: "Session verification failed. Reload and try again.",
           });
       }
+      // Roles are checked here, before any route, uploads included.
+      if (session && !roleAllows(session.role, req.method, route))
+        return json(res, 403, { error: roleRefusal(session.role) });
       if (route === "/api/media" && req.method === "POST") {
         if (!session)
           return json(res, 401, {
@@ -277,18 +283,18 @@ export async function createApplication(options = {}) {
         let successful = false;
         try {
           const owner = store.state.owner;
-          const passwordMatches = owner
-            ? await checkPassword(body.password, owner)
-            : false;
-          const usernameMatches =
+          const isOwner =
             typeof body.username === "string" &&
             body.username.trim() === (owner?.username || owner?.name);
-          if (!owner || !usernameMatches || !passwordMatches)
+          // The owner's name is checked first; otherwise another person's account.
+          const person = isOwner ? owner : owner ? findUser(store.state, body.username) : null;
+          const passwordMatches = person ? await checkPassword(body.password, person) : false;
+          if (!owner || !person || !passwordMatches)
             return json(res, 401, {
               error: "The sign-in details were not accepted.",
             });
           successful = true;
-          return login(res);
+          return isOwner ? login(res) : login(res, "password", { userId: person.id, role: person.role, name: person.name });
         } finally {
           sessions.finish(address, successful);
         }
@@ -363,6 +369,37 @@ export async function createApplication(options = {}) {
         }
       }
       if (!session) return json(res, 401, { error: "Sign in to continue." });
+      if (route === "/api/users" && req.method === "GET")
+        return json(res, 200, { users: (store.state.users || []).map(publicUser) });
+      if (route === "/api/users" && req.method === "POST") {
+        const prepared = await prepareUser(body);
+        const user = await store.transaction((s) => {
+          const added = addUser(s, prepared);
+          event(s, `Added ${added.name} as ${added.role}.`);
+          return added;
+        });
+        return json(res, 201, user);
+      }
+      const userMatch = route.match(/^\/api\/users\/([a-f0-9-]{36})$/);
+      if (userMatch && req.method === "POST") {
+        const password = body.password ? await prepareUser({ ...body, username: "x" }).then((p) => p.password) : undefined;
+        const user = await store.transaction((s) => {
+          const updated = updateUser(s, userMatch[1], { role: body.role, name: body.name, password });
+          event(s, `Updated ${updated.name}${body.role ? ` (${updated.role})` : ""}${password ? ", password reset" : ""}.`);
+          return updated;
+        });
+        if (body.role !== undefined || password) sessions.revokeUser(userMatch[1]);
+        return json(res, 200, user);
+      }
+      if (userMatch && req.method === "DELETE") {
+        const name = (store.state.users || []).find((u) => u.id === userMatch[1])?.name;
+        await store.transaction((s) => {
+          removeUser(s, userMatch[1]);
+          event(s, `Removed ${name}.`);
+        });
+        sessions.revokeUser(userMatch[1]);
+        return json(res, 200, { removed: true });
+      }
       if (route === "/api/security" && req.method === "POST") {
         if (
           session.method !== "passkey" ||
@@ -880,6 +917,7 @@ export async function createApplication(options = {}) {
       req.headers.host !== expected.host ||
       req.headers.origin !== origin ||
       !session ||
+      session.role === "viewer" ||
       !match ||
       !qemu.running.has(match[1])
     )

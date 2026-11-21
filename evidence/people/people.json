@@ -1,0 +1,51 @@
+{
+  "origin": "http://localhost:8097/",
+  "at": "2026-11-21T14:39:05.806Z",
+  "results": [
+    {
+      "name": "The owner adds a viewer from the People card",
+      "ok": true,
+      "detail": "viewer"
+    },
+    {
+      "name": "The viewer signs in with their own name and password",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "The header shows the role and the view-only note",
+      "ok": true,
+      "detail": "visibility Viewer | visibility\nYou can view this workspace but not cha"
+    },
+    {
+      "name": "Pressing start as a viewer is refused with a clear message and nothing starts",
+      "ok": true,
+      "detail": "pressed: Your account can view machines but not change them. | stopped"
+    },
+    {
+      "name": "A viewer does not see the People card",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "A viewer does not see the owner's sign-in security",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "The people list is refused to a viewer by the server",
+      "ok": true,
+      "detail": "403"
+    },
+    {
+      "name": "A viewer cannot open a console connection",
+      "ok": true,
+      "detail": "refused"
+    },
+    {
+      "name": "The owner removes the person behind the confirmation gate, and they can no longer sign in",
+      "ok": true,
+      "detail": ""
+    }
+  ]
+}

@@ -40,6 +40,7 @@ import { explainPattern, createLibrary } from "./regex-tools.js";
 import { runBounded } from "./regex-runner.js";
 import { flavourReport, generateCode, LANGUAGES } from "./regex-convert.js";
 import { searchEverywhere } from "./search-everywhere.js";
+import { accountBadge, viewerNote } from "./people-view.js";
 
 // Help articles as plain text, rebuilt when the language changes, so the
 // header search can find them.
@@ -77,6 +78,14 @@ let regexTab = "explain", regexSample = null, regexReplacement = "", regexRun = 
 let regexDebug = null, regexDebugStep = 0, regexCodeLang = "JavaScript", regexFiles = [];
 let regexFileReplace = false, regexFileReplacement = "", regexFileResults = [];
 // Machine page tab and the data its Monitor and Log tabs have fetched.
+// People who can sign in besides the owner (owner only).
+let peopleList = null;
+async function loadPeople() {
+  if (session?.user && session.user.role !== "owner") return;
+  const r = await tryApi("/users");
+  peopleList = r.ok ? r.data : { users: [] };
+  if (page === "settings" && session?.authenticated) rerenderQuiet();
+}
 // Custom firmware images in managed storage, and the last upload's outcome.
 let firmwareList = null, firmwareUpload = null;
 async function loadFirmware() {
@@ -617,6 +626,7 @@ function render() {
     restoreFocus(focus);
     return;
   }
+  if (page === "settings" && peopleList === null) loadPeople();
   if (page === "settings" && !applianceUpdate)
     loadUpdate().then(() => page === "settings" && session?.authenticated && rerenderQuiet());
   if (!hostLoaded)
@@ -627,7 +637,7 @@ function render() {
   const paint = () => {
     document.documentElement.toggleAttribute("data-silent", silentRender);
     $("#app").innerHTML =
-      `<div class="shell">${railHtml()}<div class="content"><header class="appbar"><div class="brand"><span class="mark" aria-hidden="true"><span class="icon">memory</span></span>Material QEMU</div>${buildMetadata()}<label class="searchbar"><span class="icon" aria-hidden="true">search</span><input id="global-search" type="search" maxlength="${MAX_PATTERN}" spellcheck="false" aria-label="${searchOpts.regex ? t("Search machines with a regular expression", "用正規表達式搜尋機器") : t("Search machines", "搜尋機器")}" placeholder="${searchOpts.regex ? t("Regular expression, for example ^(debian|win)", "正規表達式，例如 ^(debian|win)") : t("Search machines, folders and notes", "搜尋機器、資料夾和備註")}" value="${escape(query)}"${searchOpts.regex ? ' class="mono"' : ""}${currentSearch().ok ? "" : " aria-invalid"}><kbd>Ctrl+Shift+F</kbd></label>${button("regex-toggle", '<span class="mono" aria-hidden="true">.*</span>', "regex-toggle", `aria-pressed="${searchOpts.regex}" aria-controls="regex-panel" aria-label="${escape(t("Regular expression search", "正規表達式搜尋"))}" title="${escape(t("Regular expression search", "正規表達式搜尋"))}"`)}<span class="spacer"></span><span class="pill healthy health">${t("Host connected", "主機已連線")}</span>${button("notifications", `<span class="icon" aria-hidden="true">notifications</span><span class="badge"${notificationLog.unread() ? "" : " hidden"}>${Math.min(notificationLog.unread(), 99)}</span>`, "icon-btn bell", `aria-expanded="false" aria-controls="notification-panel" aria-label="${escape(t("Notifications", "通知"))}" title="${escape(t("Notifications", "通知"))}"`)}${button("commands", `<span class="icon" aria-hidden="true">terminal</span>${t("Commands", "指令")}`, "ghost")}${button("logout", t("Sign out", "登出"), "ghost")}</header>${regexPanel()}${tabs}<main class="main" id="main" tabindex="-1" role="tabpanel" aria-labelledby="workspace-tab-${encodeURIComponent(currentTabId())}">${pageHtml()}</main></div></div>`;
+      `<div class="shell">${railHtml()}<div class="content"><header class="appbar"><div class="brand"><span class="mark" aria-hidden="true"><span class="icon">memory</span></span>Material QEMU</div>${buildMetadata()}<label class="searchbar"><span class="icon" aria-hidden="true">search</span><input id="global-search" type="search" maxlength="${MAX_PATTERN}" spellcheck="false" aria-label="${searchOpts.regex ? t("Search machines with a regular expression", "用正規表達式搜尋機器") : t("Search machines", "搜尋機器")}" placeholder="${searchOpts.regex ? t("Regular expression, for example ^(debian|win)", "正規表達式，例如 ^(debian|win)") : t("Search machines, folders and notes", "搜尋機器、資料夾和備註")}" value="${escape(query)}"${searchOpts.regex ? ' class="mono"' : ""}${currentSearch().ok ? "" : " aria-invalid"}><kbd>Ctrl+Shift+F</kbd></label>${button("regex-toggle", '<span class="mono" aria-hidden="true">.*</span>', "regex-toggle", `aria-pressed="${searchOpts.regex}" aria-controls="regex-panel" aria-label="${escape(t("Regular expression search", "正規表達式搜尋"))}" title="${escape(t("Regular expression search", "正規表達式搜尋"))}"`)}<span class="spacer"></span><span class="pill healthy health">${t("Host connected", "主機已連線")}</span>${accountBadge({ t, escape }, session?.user)}${button("notifications", `<span class="icon" aria-hidden="true">notifications</span><span class="badge"${notificationLog.unread() ? "" : " hidden"}>${Math.min(notificationLog.unread(), 99)}</span>`, "icon-btn bell", `aria-expanded="false" aria-controls="notification-panel" aria-label="${escape(t("Notifications", "通知"))}" title="${escape(t("Notifications", "通知"))}"`)}${button("commands", `<span class="icon" aria-hidden="true">terminal</span>${t("Commands", "指令")}`, "ghost")}${button("logout", t("Sign out", "登出"), "ghost")}</header>${regexPanel()}${viewerNote({ t }, session?.user)}${tabs}<main class="main" id="main" tabindex="-1" role="tabpanel" aria-labelledby="workspace-tab-${encodeURIComponent(currentTabId())}">${pageHtml()}</main></div></div>`;
     if (page === "console") {
       updateConsoleControls();
       connectConsole();
@@ -1098,6 +1108,7 @@ document.addEventListener("click", async (e) => {
       if (consoleTools().hasUnsaved() && !confirm(t("A recording or annotation has not been downloaded. Sign out and discard it?", "有錄影或標註尚未下載，要登出並捨棄嗎？"))) return;
       consoleTools().discard();
       onboardingMachine = false;
+      peopleList = null;
       await api("/logout", {});
       session = await api("/session");
       state = null;
@@ -1864,6 +1875,8 @@ function views() {
     machineView: machineViewFor(selected),
     firmware: firmwareList,
     firmwareUpload,
+    people: peopleList,
+    session,
     storage: storage || normalizeStorage(null, state),
     storageTab,
     upload,
@@ -2713,6 +2726,53 @@ async function handleExtra(action, b) {
     render();
     return true;
   }
+  if (action === "person-add") {
+    const status = $("#person-status");
+    try {
+      const added = await api("/users", {
+        name: $("#person-name").value,
+        username: $("#person-username").value,
+        password: $("#person-password").value,
+        role: $("#person-role").value,
+      });
+      notify(t(`${added.name} can now sign in.`, `${added.name} 現在可以登入。`));
+      await loadPeople();
+      render();
+    } catch (error) {
+      if (status) status.textContent = localizeServerError(error.message, t);
+    }
+    return true;
+  }
+  if (action.startsWith("person-password:")) {
+    const id = action.slice(16);
+    const person = peopleList?.users.find((u) => u.id === id);
+    modal(
+      t("Reset password", "重設密碼"),
+      `<p>${escape(t(`Set a new password for ${person?.name}. They are signed out everywhere.`, `為 ${person?.name} 設定新密碼，對方會在所有裝置登出。`))}</p><div class="field"><label for="reset-password">${t("New password (12 characters or more)", "新密碼（最少 12 個字元）")}</label><input id="reset-password" name="password" type="password" minlength="12" maxlength="256" autocomplete="new-password" required></div>`,
+      t("Reset password", "重設密碼"),
+      async (form) => {
+        await api(`/users/${id}`, { password: form.get("password") });
+        notify(t("Password reset.", "密碼已重設。"));
+      },
+    );
+    return true;
+  }
+  if (action.startsWith("person-remove:")) {
+    const id = action.slice(14);
+    const person = peopleList?.users.find((u) => u.id === id);
+    gate({
+      title: t(`Remove ${person?.name}?`, `移除 ${person?.name}？`),
+      body: escape(t("They can no longer sign in, and any open sessions end now. Their machines and the activity history stay.", "對方將不能再登入，所有已開啟的工作階段會立即結束；機器及活動記錄會保留。")),
+      confirmLabel: t("Slide to remove", "滑動以移除"),
+      doneText: t("Removed.", "已移除。"),
+      onConfirm: async () => {
+        await apiDelete(`/users/${id}`);
+        await loadPeople();
+        render();
+      },
+    });
+    return true;
+  }
   if (action === "fw-browse") {
     $("#firmware-file")?.click();
     return true;
@@ -2876,6 +2936,12 @@ document.addEventListener("change", (event) => {
   if (event.target.id === "storage-file" && event.target.files[0]) {
     startUpload(event.target.files[0]);
     event.target.value = "";
+  }
+  if (event.target.dataset?.personRole) {
+    api(`/users/${event.target.dataset.personRole}`, { role: event.target.value })
+      .then(() => notify(t("Role changed. They are signed out and get the new role next time.", "角色已更改。對方已登出，下次登入時使用新角色。")))
+      .catch((error) => notify(localizeServerError(error.message, t)))
+      .then(() => loadPeople());
   }
   if (event.target.id === "firmware-file" && event.target.files[0]) {
     const file = event.target.files[0];

@@ -12,7 +12,7 @@ This inventory covers the controls in the supplied Main, Onboarding, Overview, M
 | Command palette shortcut and button | Implemented searchable real workflow commands and live theme/language/motion controls, from header and Ctrl+Shift+F, with its own regular expression search: flags, token buttons, status and explanation (scripts/verify-search-everywhere.mjs). |
 | Notifications center | Implemented: bell with unread badge, panel with the last 50 notices, mark read and clear, Escape and focus return (scripts/verify-notifications.mjs). |
 | Help | Implemented task-oriented runtime help and the published documentation site with guides, every article and wiki page (scripts/verify-site.mjs). |
-| Owner identity | Implemented for one owner; multiple users remain pending. |
+| Owner identity | Implemented for the owner plus up to 50 people with the operator or viewer role, enforced by the server for every request and the console (tests/users-api.test.mjs, scripts/verify-people.mjs). Passkeys remain owner-only. |
 | Health/LAN indicator | Actual host connection shown; LAN reachability is not claimed. |
 | Workspace tabs, close/pin, Open every tab, New tab catalog | Implemented for actual destinations, with persistent closes, new-destination offering, pin/close controls, keyboard navigation and a searchable catalog. Advanced groups/reordering and unfinished destinations remain pending. |
 | Host/tool/advanced navigation destinations | Pending under the corresponding broader design boards; no inert command catalog substitutes for them. |
@@ -24,7 +24,7 @@ This inventory covers the controls in the supplied Main, Onboarding, Overview, M
 | --- | --- |
 | Passkey sign-in | Implemented and previously verified with a virtual WebAuthn authenticator; physical devices unverified. |
 | Password sign-in | Implemented with scrypt, sessions and origin/CSRF boundaries. |
-| Username | Implemented exact owner-username/password matching with backwards-compatible saved owner names and no anonymous identity disclosure. Scope remains one owner. |
+| Username | Implemented exact username/password matching for the owner (with backwards-compatible saved owner names) and for each added person, with no anonymous identity disclosure. |
 | Disable password sign-in | Implemented explicit Settings choice with registered-passkey prerequisite and fresh verified passkey for disable/re-enable. Saved password and existing sessions are preserved; no password-only recovery endpoint. New browser proof pending. |
 | Five-attempt unlock ladder | Five-attempt/fifteen-minute cooldown and bounded in-flight verification implemented. Richer ladder/ticket recovery remains pending, not simulated. |
 | Pre-auth language/theme buttons | Implemented browser-local controls; initial choices carry into new-owner setup. Existing account preferences apply after sign-in. |

@@ -2963,3 +2963,63 @@ dl.state-facts {
 dl.state-facts > div {
   display: contents;
 }
+.people {
+  list-style: none;
+  margin: 8px 0 16px;
+  padding: 0;
+  display: grid;
+  gap: 8px;
+}
+.person {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.person > div {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 140px;
+  min-width: 0;
+}
+.person .avatar {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--secondary-container);
+  color: var(--on-secondary-container);
+  font-weight: 700;
+}
+.person select {
+  min-height: 40px;
+}
+.person-form h3 {
+  margin: 8px 0;
+}
+.role-help {
+  margin: 8px 0 12px;
+  padding-left: 18px;
+  font-size: 14px;
+}
+.role-help li + li {
+  margin-top: 4px;
+}
+.account-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.viewer-banner {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.person select {
+  width: auto;
+  flex: 0 0 auto;
+}
+.account-pill {
+  white-space: nowrap;
+}
