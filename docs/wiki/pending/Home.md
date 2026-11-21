@@ -14,6 +14,7 @@ Material QEMU runs QEMU virtual machines from a browser on hardware you own: on 
 - [Measured Overview history](overview)
 - [Discover installed QEMU platforms](platforms)
 - [QEMU hardware, live actions, snapshots and storage](qemu-hardware)
+- [Required-feature inventory](required-features)
 - [Runtime architecture](runtime)
 - [Hosting with the deploy assistant](vm-hosting)
 - [Workspace tabs and command palette](workspace)

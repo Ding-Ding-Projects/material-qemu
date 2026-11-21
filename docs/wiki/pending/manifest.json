@@ -1,5 +1,5 @@
 {
-  "sourceCommit": "fd4f67fd154b68a30629b29811b92dc1203e2e0c",
+  "sourceCommit": "4ffa5a0252d433d5fa553c51399fbe8efdca710c",
   "wikiRemote": "https://github.com/Ding-Ding-Projects/material-qemu.wiki.git",
   "publicationState": "pending-first-page",
   "pages": [
@@ -74,6 +74,12 @@
       "sourceSha256": "f076d341d965e104f1c919b89fa7f16c9190daa97cd03d7e225019ac9d69bac0",
       "page": "qemu-hardware.md",
       "pageSha256": "f076d341d965e104f1c919b89fa7f16c9190daa97cd03d7e225019ac9d69bac0"
+    },
+    {
+      "source": "docs/features/required-features.md",
+      "sourceSha256": "7b13590e95ce1734d5f892418c693bec8e4583636f30aae01ccf7c9f9a9b439f",
+      "page": "required-features.md",
+      "pageSha256": "7b13590e95ce1734d5f892418c693bec8e4583636f30aae01ccf7c9f9a9b439f"
     },
     {
       "source": "docs/features/runtime.md",

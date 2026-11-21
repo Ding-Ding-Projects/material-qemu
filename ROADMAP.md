@@ -61,7 +61,7 @@
 - [x] Update an appliance in place from Settings: daily check, pull of the new release image, restart on the same data volume, automatic rollback; verified from build 31 to build 32 with a machine kept (evidence/appliance-update).
 - [x] Deliver native packaging: the Windows host app installs with Squirrel.Windows from every release and from build-installer.bat, installed and run on this computer (evidence/host-app). The portable deploy assistant is the hosting companion.
 - [x] Deliver a portable build companion that carries its source and runs build.bat and build-installer.bat with a window, built in every release and checked end to end (evidence/build-companion).
-- [ ] Complete the required-feature inventory and remaining acceptance.
+- [x] Complete the required-feature inventory: every required feature with its state (verified, implemented, pending, skipped) and proof (docs/features/required-features.md). Pending features stay listed there and below.
 - [x] Publish the documentation site on GitHub Pages with every article and wiki page, screenshot guides, search with a regex builder, two languages, light and dark, and phone layouts; checked live (scripts/verify-site.mjs, evidence/docs-site).
 - [x] Clean up: merged helper worktrees and branches removed; only main exists locally and on GitHub (read back with git ls-remote on 2026-11-21).
 
@@ -72,4 +72,4 @@
 - [x] Prepare complete wiki articles and navigation while its repository is uninitialized.
 - [x] Publish and verify the public nine-image screenshot gallery.
 - [ ] Publish the prepared wiki after its first page is initialized (owner action: create any first page on the repository Wiki tab; the pages in docs/wiki/pending are current, regenerate with node scripts/build-wiki.mjs).
-- [ ] Complete the remaining design-control inventory and release/delivery requirements.
+- [x] Complete the design-control inventory (docs/features/design-coverage.md, current) and the release and delivery requirements: normal releases with checksums for the image, OVA, USB image, installer ISO, deploy assistant, host app installer and build companion, the live documentation site and the homepage link.
