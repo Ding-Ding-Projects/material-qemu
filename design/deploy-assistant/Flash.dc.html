@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<title>Flash a USB drive or SD card</title>
+<title>Flash a USB boot drive</title>
 <script src="./support.js"></script>
 </head>
 <body>
@@ -28,15 +28,14 @@ button{font:inherit}
 </nav>
 <main style="flex: 1; min-width: 0; box-sizing: border-box; padding: 32px 40px; display: flex; flex-direction: column; gap: 18px;">
 <header style="display: flex; flex-direction: column; gap: 6px;">
-<span style="font-family: 'Roboto Mono', monospace; font-size: 12px; letter-spacing: .14em; color: #a39a93;">BARE METAL · SPARE PC OR RASPBERRY PI 4/5</span>
+<span style="font-family: 'Roboto Mono', monospace; font-size: 12px; letter-spacing: .14em; color: #a39a93;">BARE METAL · SPARE INTEL OR AMD PC</span>
 <h1 style="margin: 0; font-size: 44px; line-height: 1; font-weight: 800; font-stretch: 62%; text-transform: uppercase;">Flash a boot drive</h1>
 </header>
-<div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px;">
+<div style="display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px;">
 <button type="button" aria-pressed="true" style="display: flex; flex-direction: column; gap: 6px; align-items: flex-start; text-align: left; padding: 16px 18px; border-radius: 3px; background: #22170f; border: 1px solid {{accent}}; box-shadow: inset 3px 0 0 {{accent}}; color: #ece6e1;"><strong style="font-size: 22px; font-weight: 800; font-stretch: 62%; text-transform: uppercase;">PC · USB drive</strong><span style="font-family: 'Roboto Mono', monospace; font-size: 12px; color: #a39a93;">x86_64 · BIOS OR UEFI · 1.4 GB</span></button>
-<button type="button" aria-pressed="false" style="display: flex; flex-direction: column; gap: 6px; align-items: flex-start; text-align: left; padding: 16px 18px; border-radius: 3px; background: #141210; border: 1px solid #36302b; color: #ece6e1;"><strong style="font-size: 22px; font-weight: 800; font-stretch: 62%; text-transform: uppercase;">Raspberry Pi</strong><span style="font-family: 'Roboto Mono', monospace; font-size: 12px; color: #a39a93;">PI 4 / PI 5 · ARM64 · 1.2 GB</span></button>
 </div>
 <div style="display: flex; flex-direction: column; gap: 8px;">
-<span style="font-family: 'Roboto Mono', monospace; font-size: 11px; letter-spacing: .14em; color: #a39a93;">TARGET · REMOVABLE USB/SD ONLY · SYSTEM DISK NEVER LISTED</span>
+<span style="font-family: 'Roboto Mono', monospace; font-size: 11px; letter-spacing: .14em; color: #a39a93;">TARGET · REMOVABLE USB ONLY · SYSTEM DISK NEVER LISTED</span>
 <button type="button" aria-pressed="true" style="display: flex; align-items: center; gap: 18px; padding: 14px 18px; border-radius: 3px; background: #22170f; border: 1px solid {{accent}}; color: #ece6e1; text-align: left;">
 <span aria-hidden="true" style="width: 54px; height: 22px; border-radius: 3px 8px 8px 3px; border: 2px solid #a39a93; display: flex; align-items: center; justify-content: flex-start; padding-left: 4px; box-sizing: border-box;"><span style="width: 10px; height: 10px; background: #a39a93; border-radius: 1px;"></span></span>
 <span style="display: flex; flex-direction: column; gap: 2px;"><strong style="font-size: 18px;">SanDisk Ultra</strong><span style="font-family: 'Roboto Mono', monospace; font-size: 12px; color: #a39a93;">DISK 3 · USB · 28.6 GB</span></span>

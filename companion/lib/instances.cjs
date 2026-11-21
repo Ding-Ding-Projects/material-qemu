@@ -7,7 +7,7 @@ const fsp = require('node:fs/promises');
 const path = require('node:path');
 const crypto = require('node:crypto');
 const { drivers, validateName, validateResources, defaultRun } = require('./hypervisors.cjs');
-const { waitForReport, checkHealth } = require('./appliance.cjs');
+const { waitForReport, checkHealth, readSerial } = require('./appliance.cjs');
 
 class Registry {
   constructor(file) { this.file = file; this.items = []; }
@@ -130,7 +130,7 @@ async function deployDocker({ registry, hypervisor, image, version, name, ip, po
 
 async function status({ registry, hypervisors, run = defaultRun }) {
   const out = [];
-  for (const item of registry.items) {
+  for (let item of registry.items) {
     const hv = hypervisors.find((h) => h.id === item.hypervisor);
     if (!hv) { out.push({ ...item, state: 'unavailable', detail: 'Hypervisor not found on this computer.' }); continue; }
     const driver = drivers[hv.id];
@@ -138,6 +138,14 @@ async function status({ registry, hypervisors, run = defaultRun }) {
     if (!exists) { out.push({ ...item, state: 'missing', detail: 'The virtual machine no longer exists.' }); continue; }
     const running = await driver.running(hv, item, run);
     let health = null;
+    // A VM's address can change on every boot; take the latest serial report.
+    if (running && item.serialPath) {
+      const report = await readSerial(item.serialPath).catch(() => null);
+      if (report?.kind === 'ready' && report.url !== item.lastUrl) {
+        await registry.update(item.id, { lastUrl: report.url });
+        item = registry.get(item.id);
+      }
+    }
     if (running && item.lastUrl) health = await checkHealth(item.lastUrl, 3000);
     out.push({ ...item, state: running ? (health?.ok ? 'healthy' : 'starting') : 'stopped', health });
   }

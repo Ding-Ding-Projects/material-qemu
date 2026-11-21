@@ -10,10 +10,12 @@ const crypto = require('node:crypto');
 const REPO = 'Ding-Ding-Projects/material-qemu';
 
 function parseSerial(text) {
-  const lines = String(text).split(/\r?\n/);
+  // A guest terminal turns "\r\n" into "\r\r\n", so split on any run of line
+  // breaks and never rely on a line ending without a stray carriage return.
+  const lines = String(text).split(/[\r\n]+/);
   let report = null;
   for (const line of lines) {
-    const m = line.match(/MQ-(READY|FAILED|BOOT)\s+(.*)$/);
+    const m = line.match(/\bMQ-(READY|FAILED|BOOT)\s+([^\r\n]*)/);
     if (!m) continue;
     const fields = {};
     for (const pair of m[2].trim().split(/\s+/)) {
@@ -81,8 +83,7 @@ async function latestRelease(fetchImpl = fetch) {
   };
   const ova = asset(/^material-qemu-appliance-.*\.ova$/);
   const usb = asset(/^material-qemu-usb-x86_64-.*\.img\.gz$/);
-  const rpi = asset(/^material-qemu-rpi-arm64-.*\.img\.gz$/);
-  return { tag: rel.tag_name, ova, usb, rpi, sumUrl: ova ? ova.sumUrl : null, reason: ova ? null : 'The latest release has no appliance OVA with a checksum.' };
+  return { tag: rel.tag_name, ova, usb, sumUrl: ova ? ova.sumUrl : null, reason: ova ? null : 'The latest release has no appliance OVA with a checksum.' };
 }
 
 async function sha256File(file) {

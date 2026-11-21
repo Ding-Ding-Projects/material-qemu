@@ -98,3 +98,17 @@ test('an unreadable registry is kept aside and replaced by an empty list', async
   assert.equal(fs.existsSync(file), false);
   fs.rmSync(dir, { recursive: true, force: true });
 });
+
+test('serial reports survive the carriage returns a real guest terminal adds', () => {
+  // Captured shape from a real VirtualBox boot: each line ends "\r\r\n" and the
+  // report shares a line with the login prompt.
+  const text = 'Debian GNU/Linux 13 material-qemu ttyS0\n'
+    + 'material-qemu login: MQ-BOOT version=v0.1.0-build.8 ip=192.168.50.139 root=63G\r\r\n'
+    + '[   35.18] docker0: port 1 entered forwarding state\n'
+    + 'MQ-READY version=v0.1.0-build.8 url=http://192.168.50.139:8080/\r\r\n';
+  const r = parseSerial(text);
+  assert.equal(r.kind, 'ready');
+  assert.equal(r.url, 'http://192.168.50.139:8080/');
+  assert.equal(r.version, 'v0.1.0-build.8');
+  assert.equal(parseSerial('MQ-BOOT version=v1 ip=10.0.0.5\r').ip, '10.0.0.5');
+});

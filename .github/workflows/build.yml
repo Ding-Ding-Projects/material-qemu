@@ -127,59 +127,6 @@ jobs:
           if-no-files-found: warn
           retention-days: 14
 
-  rpi:
-    runs-on: ubuntu-24.04-arm
-    steps:
-      - uses: actions/checkout@v4
-      - id: meta
-        run: |
-          owner=$(echo "${GITHUB_REPOSITORY_OWNER}" | tr '[:upper:]' '[:lower:]')
-          echo "ref=ghcr.io/${owner}/material-qemu:${VERSION}-arm64" >> "$GITHUB_OUTPUT"
-      - uses: docker/login-action@v3
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-      - name: Build the arm64 container image natively
-        run: |
-          docker build --build-arg "SOURCE_REVISION=${GITHUB_SHA}" --build-arg "BUILD_DATE=$(date -u +%Y-%m-%dT%H:%M:%SZ)"             --label "org.opencontainers.image.source=https://github.com/${GITHUB_REPOSITORY}" -t "${{ steps.meta.outputs.ref }}" .
-          docker push "${{ steps.meta.outputs.ref }}"
-          mkdir -p in
-          docker save "${{ steps.meta.outputs.ref }}" | gzip -1 > in/material-qemu-image-arm64.tar.gz
-          ls -l in
-      - name: Install image tools
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y --no-install-recommends qemu-system-arm qemu-utils cloud-guest-utils xz-utils
-      - name: Build the Raspberry Pi image
-        run: bash appliance/build-rpi.sh in/material-qemu-image-arm64.tar.gz "${{ steps.meta.outputs.ref }}" "v${VERSION}" work
-      - name: Boot check under QEMU raspi3b
-        run: bash appliance/boot-check-rpi.sh work/material-qemu-rpi.img logs
-      - name: Package the Raspberry Pi image
-        run: |
-          set -euo pipefail
-          mkdir -p out
-          raw_sha=$(sha256sum work/material-qemu-rpi.img | cut -d' ' -f1)
-          raw_size=$(stat -c %s work/material-qemu-rpi.img)
-          gzip -1 -c work/material-qemu-rpi.img > "out/material-qemu-rpi-arm64-${VERSION}.img.gz"
-          printf '{"rawSha256":"%s","rawBytes":%s,"base":"%s"}\n' "$raw_sha" "$raw_size" "$(cat work/rpi-base-url.txt)" > "out/material-qemu-rpi-arm64-${VERSION}.img.json"
-          cd out && sha256sum "material-qemu-rpi-arm64-${VERSION}.img.gz" > "material-qemu-rpi-arm64-${VERSION}.img.gz.sha256"
-          ls -l; cat *.json *.sha256
-      - uses: actions/upload-artifact@v4
-        with:
-          name: rpi
-          path: out/
-          retention-days: 3
-          compression-level: 0
-      - if: ${{ always() }}
-        continue-on-error: true
-        uses: actions/upload-artifact@v4
-        with:
-          name: rpi-boot-logs
-          path: logs/rpi-serial.log
-          if-no-files-found: warn
-          retention-days: 14
-
   deploy-assistant:
     runs-on: windows-2025
     steps:
@@ -206,22 +153,18 @@ jobs:
 
   release:
     runs-on: ubuntu-24.04
-    needs: [image, appliance, rpi, deploy-assistant]
-    # The Raspberry Pi image is optional: a failed Pi build or boot check leaves it out
-    # of the release (and says so) instead of withholding the other files.
-    if: ${{ !cancelled() && needs.image.result == 'success' && needs.appliance.result == 'success' && needs.deploy-assistant.result == 'success' }}
+    needs: [image, appliance, deploy-assistant]
     steps:
       - uses: actions/download-artifact@v4
         with:
           path: assets
-          pattern: '{appliance,deploy-assistant,rpi}'
+          pattern: '{appliance,deploy-assistant}'
           merge-multiple: true
       - name: Publish the release
         env:
           GH_TOKEN: ${{ secrets.RELEASE_TOKEN || secrets.ORG_TOKEN || secrets.GITHUB_TOKEN }}
           IMAGE_REF: ${{ needs.image.outputs.ref }}
           IMAGE_DIGEST: ${{ needs.image.outputs.digest }}
-          RPI_RESULT: ${{ needs.rpi.result }}
         run: |
           set -euo pipefail
           tag="v${VERSION}"
@@ -235,7 +178,6 @@ jobs:
             pick=$(USED="$used" node -e 'const c=require("./catalog.json");const u=process.env.USED;const d=c.dishes.find(x=>!u.includes(x.name.en));if(d)console.log(`${d.name.en} ${d.name.zhHant}`)' || true)
             if [ -n "$pick" ]; then dish="Code name: ${pick} (from the public dim sum catalog, https://github.com/Ding-Ding-Projects/dim-sum-photos; no published photo asset is available yet)."; fi
           fi
-          if [ "$RPI_RESULT" = success ]; then RPI_LINE="**material-qemu-rpi-arm64-${VERSION}.img.gz**: Raspberry Pi 4 and 5 image (Raspberry Pi OS Lite 64-bit base). Write it with the Flash page; booted once under QEMU raspi3b emulation in this workflow."; else RPI_LINE="No Raspberry Pi image in this release: its build or boot check did not pass (job result: ${RPI_RESULT})."; fi
           title="Material QEMU ${VERSION}"
           if [ -n "${pick:-}" ]; then title="Material QEMU ${VERSION} · ${pick}"; fi
           cat > notes.md <<EOF
@@ -244,7 +186,6 @@ jobs:
           - **material-qemu-deploy-${VERSION}-portable.exe**: one-click deploy assistant for Windows. It imports the appliance into VirtualBox or VMware Workstation, bridges it onto your network, waits for the service to report its address and checks its health. Single portable file, unsigned, so Windows may show an unknown-publisher warning.
           - **material-qemu-appliance-${VERSION}.ova**: the appliance virtual machine (Debian 13, Docker, Material QEMU preloaded). Import it into VirtualBox or VMware with a bridged network adapter; the console shows the address to open.
           - **material-qemu-usb-x86_64-${VERSION}.img.gz**: the same appliance as a raw disk image for a USB drive (8 GiB or larger). The deploy assistant's Flash page writes and verifies it; it grows to fill the drive on first boot.
-          - ${RPI_LINE}
           - Container image: \`${IMAGE_REF}\` (digest \`${IMAGE_DIGEST}\`).
 
           ## Checks

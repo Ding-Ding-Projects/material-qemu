@@ -13,6 +13,10 @@ let registry = null;
 let deployAbort = null;
 const dataDir = () => path.join(app.getPath('userData'));
 const vmRoot = () => path.join(app.getPath('documents'), 'Material QEMU VMs');
+// Downloads live beside the VMs, not in AppData: hypervisor services (VBoxSVC,
+// VMware) run as separate processes and cannot see files a packaged or
+// sandboxed parent wrote into AppData.
+const cacheDir = () => path.join(vmRoot(), 'cache');
 
 async function hypervisors() { return hv.describe(); }
 
@@ -79,7 +83,7 @@ ipcMain.handle('deploy:start', async (_e, req) => {
       const rel = await appliance.latestRelease();
       if (!rel.ova) throw new Error(rel.reason);
       version = rel.tag;
-      const got = await appliance.downloadVerified(rel, path.join(dataDir(), 'cache'), { signal: deployAbort.signal, onProgress: (p) => send({ type: 'progress', ...p }) });
+      const got = await appliance.downloadVerified(rel, cacheDir(), { signal: deployAbort.signal, onProgress: (p) => send({ type: 'progress', ...p }) });
       ovaFile = got.file;
     } else if (!fs.existsSync(ovaFile)) throw new Error('The chosen appliance file no longer exists.');
     const adapter = h.id === 'virtualbox' ? req.adapter : null;
@@ -133,7 +137,7 @@ ipcMain.handle('flash:disks', async () => flashLib.listRemovableDisks());
 ipcMain.handle('flash:start', async (_e, { kind, diskNumber, gate }) => {
   if (flashing) return { ok: false, message: 'A flash is already running.' };
   if (!gate || gate.keys !== 2 || gate.slider !== 100) return { ok: false, message: 'Flashing needs both keys and the full slider.' };
-  if (!['usb', 'rpi'].includes(kind)) return { ok: false, message: 'Unknown image.' };
+  if (kind !== 'usb') return { ok: false, message: 'Unknown image.' };
   flashing = true;
   const startedAt = Date.now();
   const progress = (p) => win?.webContents.send('flash:event', p);
@@ -147,7 +151,7 @@ ipcMain.handle('flash:start', async (_e, { kind, diskNumber, gate }) => {
     const meta = await appliance.readMeta(asset);
     if (disk.size < meta.rawBytes) throw new Error('That disk is smaller than the image. Nothing was written.');
     progress({ phase: 'downloading', done: 0, total: asset.size });
-    const got = await appliance.downloadAsset(asset, path.join(dataDir(), 'cache'), { onProgress: (p) => progress({ phase: 'downloading', done: p.done, total: p.total }) });
+    const got = await appliance.downloadAsset(asset, cacheDir(), { onProgress: (p) => progress({ phase: 'downloading', done: p.done, total: p.total }) });
     progress({ phase: 'approval', done: 0, total: meta.rawBytes });
     const writer = flashLib.writerPath(process.resourcesPath);
     if (!writer) throw new Error('The disk writer is missing from this app.');

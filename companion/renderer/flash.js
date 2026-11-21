@@ -1,6 +1,6 @@
 'use strict';
-// The Flash page: write the PC (x86_64) or Raspberry Pi image to a removable
-// USB or SD disk behind the two-key slider gate, then read it back.
+// The Flash page: write the PC (x86_64) image to a removable USB or SD disk
+// behind the two-key slider gate, then read it back. Intel and AMD only.
 window.Flash = (() => {
   const s = { kind: 'usb', disks: null, disk: null, release: null, keys: [false, false], busy: false, progress: null, result: null, error: null, root: null };
   const ui = () => window.ui;
@@ -22,7 +22,6 @@ window.Flash = (() => {
     const asset = s.release?.[s.kind];
     const kinds = [
       { id: 'usb', title: t('PC from a USB drive'), detail: t('Boots a spare x86_64 PC (BIOS or UEFI) straight into Material QEMU.') },
-      { id: 'rpi', title: t('Raspberry Pi'), detail: t('Raspberry Pi 4 or 5 (64-bit) from an SD card or USB drive.') },
     ];
     const armed = s.keys[0] && s.keys[1];
     const diskList = s.disks === null
@@ -62,13 +61,11 @@ window.Flash = (() => {
     if (s.result?.ok) {
       done = el('div', { class: 'celebrate' }, el('h2', {}, t('{name} is ready', { name: s.disk?.name || '' })),
         el('p', {}, t('Written and read back: the disk matches the release image (SHA-256 {sha}).', { sha: s.result.sha256.slice(0, 16) + '…' })),
-        el('p', { class: 'muted' }, s.kind === 'rpi'
-          ? t('Put it in the Raspberry Pi with a network cable and power it on. After a few minutes its address is on the HDMI screen, and on your router\'s device list as material-qemu.')
-          : t('Boot the PC from this drive with a network cable connected. After a few minutes its address is on its screen.')),
+        el('p', { class: 'muted' }, t('Boot the PC from this drive with a network cable connected. After a few minutes its address is on its screen.')),
         el('button', { type: 'button', class: 'outline', onclick: () => { s.result = null; s.disk = null; s.keys = [false, false]; refreshDisks(); } }, t('Flash another')));
     }
     root.replaceChildren(
-      el('header', {}, el('h1', {}, t('Flash a USB drive or SD card')), el('p', { class: 'muted' }, t('Turn a spare PC or a Raspberry Pi into a dedicated Material QEMU server.'))),
+      el('header', {}, el('h1', {}, t('Flash a USB boot drive')), el('p', { class: 'muted' }, t('Turn a spare Intel or AMD PC into a dedicated Material QEMU server.'))),
       el('section', {}, el('h2', {}, t('1. Device')),
         el('div', { class: 'cards' }, ...kinds.map((k) => el('button', { type: 'button', class: 'card', 'aria-pressed': String(s.kind === k.id), disabled: s.busy, onclick: () => { s.kind = k.id; s.keys = [false, false]; draw(); } },
           el('strong', {}, k.title), el('span', { class: 'muted small' }, k.detail),

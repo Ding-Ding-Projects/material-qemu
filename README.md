@@ -27,15 +27,15 @@ The default Compose port is loopback-only. Remote access requires a reviewed HTT
 
 It installs QEMU for Windows through Chocolatey when it is missing (Windows asks for administrator approval), builds the runtime, starts the server on port 8090 at this computer's LAN address, waits for `/health`, and prints the link. Open it and create the first account to become the owner. `go-host.bat --status` and `go-host.bat --stop` check and stop it; `--port` and `--ip` override the defaults. Test data lives in `Documents\Material QEMU VMs\go-test`, separate from every other deployment, and is kept when it stops.
 
-This is a test bench, not the appliance: guests use software emulation, the Arm targets report their firmware as unavailable on Windows, and a result here says nothing about the OVA, USB or Raspberry Pi images.
+This is a test bench, not the appliance: guests use software emulation, the Arm targets report their firmware as unavailable on Windows, and a result here says nothing about the OVA or USB images.
 
 ## Host in VirtualBox, VMware, Docker or on a USB drive
 
-Each release from the build workflow carries a portable Windows deploy assistant (`material-qemu-deploy-<version>-portable.exe`), an appliance VM (`material-qemu-appliance-<version>.ova`), a USB image for spare PCs and, when its build passes, a Raspberry Pi 4/5 image. Run the assistant and pick a target:
+Each release from the build workflow carries a portable Windows deploy assistant (`material-qemu-deploy-<version>-portable.exe`), an appliance VM (`material-qemu-appliance-<version>.ova`), and a USB image for spare Intel or AMD PCs. Run the assistant and pick a target:
 
 - **VirtualBox or VMware Workstation**: it imports the appliance, bridges it onto your network, waits for it to report its address, checks its health, then shows the LAN link.
 - **Docker on this computer**: it runs the release container on a port of this computer's LAN address.
-- **Flash**: it writes the PC or Raspberry Pi image to a removable USB or SD disk behind a two-key slider gate, then reads the disk back to verify it.
+- **Flash**: it writes the PC image to a removable USB or SD disk behind a two-key slider gate, then reads the disk back to verify it.
 
 The **Instances** page starts, stops, restarts and removes what it created. The interface is in English, Cantonese, or both. See [hosting with the deploy assistant](docs/features/vm-hosting.md).
 
@@ -61,7 +61,7 @@ The assistant screens were designed first on a canvas; the source boards are in 
 
 ## Scope and remaining work
 
-The other 50 design boards remain design-only. The deploy assistant, the appliance OVA, the USB image and the Raspberry Pi image build in the workflow; see the [roadmap](ROADMAP.md) for which of them have been verified on real hypervisors and hardware. Advanced QEMU hardware, snapshots, migration and native installers are not delivered. Full required-feature parity, regex tooling, complete translation and production hardening remain incomplete. `build-installer.bat` reports that gap with a nonzero exit code.
+The other 50 design boards remain design-only. The deploy assistant, the appliance OVA and the USB image build in the workflow (Intel and AMD only; Raspberry Pi is out of scope); see the [roadmap](ROADMAP.md) for which of them have been verified on real hypervisors and hardware. Advanced QEMU hardware, snapshots, migration and native installers are not delivered. Full required-feature parity, regex tooling, complete translation and production hardening remain incomplete. `build-installer.bat` reports that gap with a nonzero exit code.
 
 See [roadmap](ROADMAP.md), [handoff](HANDOFF.md), [runtime architecture](docs/features/runtime.md) and the original [design contract](design/HANDOFF.md). Design frames illustrate the reference only and are not runtime evidence.
 
