@@ -1,0 +1,58 @@
+{
+  "origin": "http://localhost:8097/",
+  "at": "2026-11-21T07:30:29.495Z",
+  "downloads": [
+    "media-check-2026-11-21T07-29-27-796Z-recording.webm",
+    "media-check-2026-11-21T07-29-37-335Z-recording.webm",
+    "media-check-2026-11-21T07-30-12-350Z-recording.webm",
+    "media-check-2026-11-21T07-30-21-380Z-annotated.png",
+    "media-check-2026-11-21T07-30-21-380Z-raw.png"
+  ],
+  "results": [
+    {
+      "name": "recording reports its progress",
+      "ok": true,
+      "detail": "Recording 4/30 seconds, 0.0 MiB."
+    },
+    {
+      "name": "stopping makes the clip downloadable",
+      "ok": true,
+      "detail": "Recording ready: 4.0 seconds. Download before reloading."
+    },
+    {
+      "name": "the download is a WebM file",
+      "ok": true,
+      "detail": "media-check-2026-11-21T07-29-27-796Z-recording.webm 31435 bytes"
+    },
+    {
+      "name": "a recording stops itself at 30 seconds",
+      "ok": true,
+      "detail": "Recording ready: 30.0 seconds. Download before reloading."
+    },
+    {
+      "name": "signing out with an undownloaded clip asks first",
+      "ok": true,
+      "detail": "A recording or annotation has not been downloaded. Sign out and discard it?"
+    },
+    {
+      "name": "declining keeps the session",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "a browser without recording support is told so",
+      "ok": true,
+      "detail": "Recording is unavailable in this browser.Dismiss"
+    },
+    {
+      "name": "original and annotated frames download separately",
+      "ok": true,
+      "detail": "media-check-2026-11-21T07-30-21-380Z-raw.png / media-check-2026-11-21T07-30-21-380Z-annotated.png"
+    },
+    {
+      "name": "the annotated frame differs from the original",
+      "ok": true,
+      "detail": "30135 vs 34574 bytes"
+    }
+  ]
+}

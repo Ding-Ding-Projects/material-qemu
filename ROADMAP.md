@@ -18,8 +18,8 @@
 
 - [x] Preserve inactive framebuffer/recording/annotation helpers and boundary tests.
 - [x] Export the console as a PNG (QMP screendump) and prove it decodes pixel-for-pixel to the live framebuffer (scripts/verify-console-export.mjs, evidence/console).
-- [ ] Integrate bounded recording with actual output, stop/cancel and unsupported-browser proof.
-- [ ] Integrate annotation controls, original/edited separation and unsaved-work handling.
+- [x] Record the console to WebM with stop, a 30-second and 16 MiB limit, an unsupported-browser message and a sign-out warning for an undownloaded clip (scripts/verify-console-media.mjs, evidence/console-media).
+- [x] Annotate a frozen console frame with lines and text, downloading the original and the annotated frame separately, with unsaved-work warnings (evidence/console-media).
 - [x] Release guest input with Ctrl+Alt pressed alone, without catching Ctrl+Alt+Del (tests/input-release.test.mjs, verified with real key events in evidence/console).
 
 ## Remaining supplied-design acceptance
@@ -62,7 +62,7 @@
 - [ ] Deliver portable hosting/build companions and supported native packaging.
 - [ ] Complete the required-feature inventory and remaining acceptance.
 - [ ] Publish complete interactive documentation and wiki content; pending source staging is not publication.
-- [ ] Complete the requested preservation/cleanup pass with independently verified remote state.
+- [x] Clean up: merged helper worktrees and branches removed; only main exists locally and on GitHub (read back with git ls-remote on 2026-11-21).
 
 ## Preservation and evidence
 

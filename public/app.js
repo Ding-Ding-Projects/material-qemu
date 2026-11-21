@@ -33,6 +33,7 @@ import {
 import { normalizeStorage, kindOfUpload } from "./storage-model.js";
 import { localizeServerError } from "./server-errors.js";
 import { createReleaseChord } from "./input-release.js";
+import { createConsoleTools } from "./console-tools.js";
 const { startRegistration, startAuthentication } = window.SimpleWebAuthnBrowser;
 
 const $ = (selector) => document.querySelector(selector);
@@ -469,6 +470,42 @@ const machineWizard = () => views().create();
 // A render can call this again while the viewer module is still loading; only
 // the latest call may attach, so viewers never stack inside one console.
 let consoleAttempt = 0;
+// The recording and annotation tools read the viewer's canvas through one object
+// per connection; a new connection gets a new object so a running recording stops.
+let consoleConnection = null;
+function consoleTools() {
+  consoleTools.instance ||= createConsoleTools({
+    getConnection: () => consoleConnection,
+    getName: () => state?.machines.find((m) => m.id === selected)?.name,
+    t,
+    notify,
+    modal,
+    field,
+    button,
+    escape,
+    changed: updateMediaControls,
+    releaseInput: () => {},
+  });
+  return consoleTools.instance;
+}
+function updateMediaControls() {
+  const s = consoleTools().status();
+  const record = document.querySelector('[data-action="console-record"]');
+  if (record) {
+    record.innerHTML = `<span class="icon" aria-hidden="true">${s.recording ? "stop_circle" : "fiber_manual_record"}</span>${s.recording ? t("Stop recording", "停止錄影") : t("Record", "錄影")}`;
+    record.setAttribute("aria-pressed", String(s.recording));
+  }
+  const download = document.querySelector('[data-action="console-record-download"]');
+  if (download) download.hidden = !s.downloadAvailable;
+  const annotate = document.querySelector('[data-action="console-annotate"]');
+  if (annotate && consoleConnection) annotate.disabled = !s.canAnnotate;
+  const line = document.querySelector("#console-media-status");
+  if (line) line.textContent = s.text;
+}
+function dropConsoleConnection() {
+  if (consoleConnection) consoleTools().beforeDisconnect();
+  consoleConnection = null;
+}
 async function connectConsole() {
   if (!$("#vnc")) return;
   const attempt = ++consoleAttempt;
@@ -494,7 +531,20 @@ async function connectConsole() {
         "已連接 QEMU 即時畫面。",
       );
     });
+    const canvasReader = {
+      getImageData() {
+        const c = document.querySelector("#vnc canvas");
+        if (!c) throw new Error(t("The console display is not available.", "主控台畫面不可用。"));
+        return c.getContext("2d", { willReadFrequently: true }).getImageData(0, 0, c.width, c.height);
+      },
+    };
+    rfb.addEventListener("connect", () => {
+      consoleConnection = canvasReader;
+      updateMediaControls();
+    });
     rfb.addEventListener("disconnect", () => {
+      if (consoleConnection === canvasReader) dropConsoleConnection();
+      updateMediaControls();
       if ($("#console-status"))
         $("#console-status").textContent = t(
           "Console disconnected. Reconnect or check the machine state.",
@@ -744,6 +794,8 @@ document.addEventListener("click", async (e) => {
       return;
     }
     if (action === "logout") {
+      if (consoleTools().hasUnsaved() && !confirm(t("A recording or annotation has not been downloaded. Sign out and discard it?", "有錄影或標註尚未下載，要登出並捨棄嗎？"))) return;
+      consoleTools().discard();
       onboardingMachine = false;
       await api("/logout", {});
       session = await api("/session");
@@ -1286,6 +1338,10 @@ const releaseChord = createReleaseChord(() => {
   updateConsoleControls();
   notify(t("Keyboard and mouse released from the guest. Choose Guest input to capture them again.", "已從客體釋放鍵盤和滑鼠，按「客體輸入」可再次控制。"));
 });
+document.addEventListener("change", (e) => consoleTools().change(e));
+window.addEventListener("beforeunload", (e) => {
+  if (consoleTools.instance?.hasUnsaved()) e.preventDefault();
+});
 document.addEventListener("keydown", (e) => releaseChord.keydown(e), true);
 document.addEventListener("keyup", (e) => releaseChord.keyup(e), true);
 window.addEventListener("blur", () => releaseChord.reset());
@@ -1758,6 +1814,10 @@ function sectionName(id) {
   return t(...names[id] || [id, id]);
 }
 async function handleExtra(action, b) {
+  if (await consoleTools().handle(action)) {
+    updateMediaControls();
+    return true;
+  }
   if (action === "update-check") {
     const result = await tryApi("/appliance/update", { action: "check" });
     if (!result.ok) notify(result.error.message);

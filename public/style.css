@@ -2289,3 +2289,35 @@ html[data-silent] .empty-icon {
     opacity: 0;
   }
 }
+
+/* Elements hidden with the hidden attribute stay hidden even when a component
+   rule sets display (buttons use inline-flex). */
+[hidden] {
+  display: none !important;
+}
+.media-line {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  min-height: 0;
+}
+.media-line:has(#console-media-status:empty):has([hidden]) {
+  display: none;
+}
+
+/* The annotation editor shows the frozen frame scaled to the dialog; drawing
+   maps pointer positions back to frame pixels. */
+dialog:has(.annotation-canvas) {
+  width: min(1100px, calc(100vw - 32px));
+}
+.annotation-canvas {
+  display: block;
+  width: 100%;
+  height: auto;
+  margin: 12px 0;
+  border-radius: var(--shape-m);
+  background: #000;
+  touch-action: none;
+  cursor: crosshair;
+}
