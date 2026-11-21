@@ -74,6 +74,7 @@
 - [x] Install onto an internal disk from the installer ISO: checked in every release build under QEMU and step by step in VirtualBox (README, evidence/installer-virtualbox).
 - ~~Raspberry Pi image and flashing~~: deliberately not doing. The owner decided on 2026-11-21 that this runs on Intel and AMD CPUs only, so the Raspberry Pi job, scripts and Flash option were removed.
 - [x] Deliver appliance operating-system images and USB installer: every release carries the OVA and the x86_64 USB image with SHA-256 files (for example v0.1.0-build.23).
+- [x] Show the appliance IP address on its local console from boot: while starting, when running, and if it fails to become healthy. The login screen reads the live address of the network interface, and the CI boot check reads it from a picture of the console.
 - [x] Update an appliance in place from Settings: daily check, pull of the new release image, restart on the same data volume, automatic rollback; verified from build 31 to build 32 with a machine kept (evidence/appliance-update).
 - [x] Deliver native packaging: the Windows host app installs with Squirrel.Windows from every release and from build-installer.bat, installed and run on this computer (evidence/host-app). The portable deploy assistant is the hosting companion.
 - [x] Deliver a portable build companion that carries its source and runs build.bat and build-installer.bat with a window, built in every release and checked end to end (evidence/build-companion).

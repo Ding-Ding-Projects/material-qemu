@@ -15,6 +15,32 @@ serial() {
 }
 rootsize=$(df -h / | awk 'NR==2{print $2}')
 serial "MQ-BOOT version=$version ip=$MQ_IP root=$rootsize"
+# The network interface that holds the address. The login screen shows that
+# interface's address through agetty's \4{interface} escape, so the line
+# stays right if the network hands out a new address; naming the interface
+# keeps Docker's own bridge address off the screen.
+iface=$(ip -4 -o addr show 2>/dev/null | awk -v want="$MQ_IP" '{split($4, a, "/"); if (a[1] == want) {print $2; exit}}')
+ip_line() {
+  if [ -n "$iface" ]; then
+    printf 'IP address: \\4{%s}\n' "$iface"
+  else
+    printf 'IP address: %s\n' "$MQ_IP"
+  fi
+}
+# Write the login screen text (a heading, the IP address, then up to two
+# more lines) and redraw the screen so it shows at once.
+show() {
+  mkdir -p /etc/issue.d
+  {
+    printf '%s\n' "$1"
+    ip_line
+    [ -n "${2:-}" ] && printf '%s\n' "$2"
+    [ -n "${3:-}" ] && printf '%s\n' "$3"
+    printf '\n'
+  } > /etc/issue.d/material-qemu.issue
+  systemctl restart getty@tty1.service 2>/dev/null || true
+}
+show "Material QEMU $version is starting." "The web page opens at $PUBLIC_ORIGIN/ once it is ready."
 healthy=0
 i=0
 while [ "$i" -lt 900 ]; do
@@ -25,7 +51,6 @@ while [ "$i" -lt 900 ]; do
   i=$((i + 1))
   sleep 1
 done
-mkdir -p /etc/issue.d
 if [ "$healthy" -ne 1 ]; then
   # Put the evidence where the deploy app and the build's boot check can read it.
   {
@@ -37,17 +62,9 @@ if [ "$healthy" -ne 1 ]; then
     docker ps -a 2>&1 | head -n 10
   } | while IFS= read -r l; do serial "MQ-DIAG $l"; done
   serial "MQ-FAILED version=$version reason=health-timeout"
-  printf 'Material QEMU did not become healthy. Check: journalctl -u material-qemu\n\n' > /etc/issue.d/material-qemu.issue
-  systemctl restart getty@tty1.service 2>/dev/null || true
+  show "Material QEMU $version did not become healthy." "Check: journalctl -u material-qemu"
   exit 1
 fi
 serial "MQ-READY version=$version url=$PUBLIC_ORIGIN/"
-{
-  printf 'Material QEMU %s is running.\n' "$version"
-  printf 'Open %s/ from a browser on your network.\n' "$PUBLIC_ORIGIN"
-  printf 'The first account created there becomes the owner.\n'
-  printf '\n'
-} > /etc/issue.d/material-qemu.issue
-# Redraw the login screen so it shows the address now that it is known.
-systemctl restart getty@tty1.service 2>/dev/null || true
+show "Material QEMU $version is running." "Open $PUBLIC_ORIGIN/ from a browser on your network." "The first account created there becomes the owner."
 exit 0

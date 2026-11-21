@@ -102,7 +102,7 @@ A failed step opens a full-screen failure view that stays until dismissed. It sh
 `.github/workflows/build.yml` builds on every push:
 
 1. The x86_64 container image, pushed to `ghcr.io/<owner>/material-qemu:<version>`.
-2. The x86_64 appliance (`appliance/build-appliance.sh`): Debian 13 generic cloud image verified against its SHA512SUMS, grown to 8 GiB, customized in a chroot over `qemu-nbd`, booted once under QEMU on a throwaway 64 GiB overlay (`appliance/boot-check.sh`), then packaged as the OVA (`appliance/make-ova.mjs`) and the gzip-compressed USB image with a size and hash record.
+2. The x86_64 appliance (`appliance/build-appliance.sh`): Debian 13 generic cloud image verified against its SHA512SUMS, grown to 8 GiB, customized in a chroot over `qemu-nbd`, booted once under QEMU on a throwaway 64 GiB overlay (`appliance/boot-check.sh`, which also takes a picture of the console and reads it with OCR to confirm it shows the IP address), then packaged as the OVA (`appliance/make-ova.mjs`) and the gzip-compressed USB image with a size and hash record.
 3. The portable deploy assistant (`companion/`), built with electron-builder on Windows.
 4. One normal GitHub release with all files, their SHA-256 sums and workflow timing.
 

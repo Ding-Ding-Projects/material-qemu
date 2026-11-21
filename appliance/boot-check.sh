@@ -15,7 +15,38 @@ echo "Booting with accel=$accel"
 qemu-system-x86_64 -machine q35,accel=$accel -m 3072 -smp 2 \
   -drive file="$overlay",if=virtio \
   -nic user,model=e1000,hostfwd=tcp:127.0.0.1:18080-:8080 \
-  -serial file:"$logs/serial.log" -display none -daemonize -pidfile "$logs/qemu.pid"
+  -serial file:"$logs/serial.log" -display none -daemonize -pidfile "$logs/qemu.pid" \
+  -qmp unix:"$logs/qmp.sock",server=on,wait=off
+# Take a picture of the local console through QMP, so the check can read what
+# a person in front of the machine sees.
+screendump() {
+  python3 - "$logs/qmp.sock" "$1" <<'PY'
+import json, socket, sys
+s = socket.socket(socket.AF_UNIX)
+s.connect(sys.argv[1])
+f = s.makefile("rw")
+def cmd(c, **a):
+    f.write(json.dumps({"execute": c, "arguments": a} if a else {"execute": c}) + "\n"); f.flush()
+    while True:
+        r = json.loads(f.readline())
+        if "return" in r or "error" in r:
+            return r
+json.loads(f.readline())
+cmd("qmp_capabilities")
+r = cmd("screendump", filename=sys.argv[2], format="png")
+sys.exit(0 if "return" in r else 1)
+PY
+}
+# Read the console text with OCR, scaled up so the VGA font is easier to read.
+console_text() {
+  screendump "$1" || return 1
+  if command -v convert >/dev/null; then
+    convert "$1" -filter point -resize 300% -colorspace gray -negate "$1.ocr.png"
+  else
+    cp "$1" "$1.ocr.png"
+  fi
+  tesseract "$1.ocr.png" - 2>/dev/null || true
+}
 deadline=$((SECONDS + 1500))
 status=1
 while [ $SECONDS -lt $deadline ]; do
@@ -27,7 +58,23 @@ while [ $SECONDS -lt $deadline ]; do
     if curl -fsS --max-time 10 -H "Host: $host" http://127.0.0.1:18080/health; then
       echo
       echo "Appliance reported $url and answered /health through the forwarded port."
-      status=0
+      # The console must show the address too. The login screen is redrawn
+      # after the service reports ready, so allow it a little time.
+      ip=$(grep -a 'MQ-BOOT' "$logs/serial.log" | tail -n1 | sed -n 's/.* ip=\([^ ]*\).*/\1/p')
+      shown=0
+      for attempt in 1 2 3 4 5 6; do
+        sleep 10
+        text=$(console_text "$logs/console.png")
+        printf '%s\n' "$text" > "$logs/console.txt"
+        if printf '%s' "$text" | grep -q "IP address: *${ip//./\\.}"; then shown=1; break; fi
+      done
+      if [ $shown -eq 1 ]; then
+        echo "The console shows IP address: $ip."
+        status=0
+      else
+        echo "The console does not show IP address: $ip. Its text was:" >&2
+        cat "$logs/console.txt" >&2
+      fi
     fi
     break
   fi
