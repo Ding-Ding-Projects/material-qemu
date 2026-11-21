@@ -1,0 +1,87 @@
+#!/bin/sh
+# Checks for, and on request applies, a newer Material QEMU release.
+#
+# The web service runs in a container and cannot restart itself, so it asks by
+# writing "check" or "apply" to update-request in its data volume. This script
+# answers by writing update-status.json there. A daily timer also runs it, which
+# only checks. Applying pulls the new image, restarts the service on the same
+# data volume (machines, disks and settings are kept) and returns to the previous
+# image if the new one does not become healthy.
+set -u
+repo=Ding-Ding-Projects/material-qemu
+registry=ghcr.io/ding-ding-projects/material-qemu
+env_file=/opt/material-qemu/image.env
+version_file=/opt/material-qemu/version
+vol=$(docker volume inspect -f '{{.Mountpoint}}' material-qemu-data 2>/dev/null) || exit 0
+status="$vol/update-status.json"
+request="$vol/update-request"
+current=$(cat "$version_file" 2>/dev/null || echo unknown)
+latest=""
+
+write_status() { # state message
+  tmp="$status.tmp"
+  printf '{"current":"%s","latest":"%s","state":"%s","message":"%s","checkedAt":"%s"}\n' \
+    "$current" "$latest" "$1" "$2" "$(date -u +%Y-%m-%dT%H:%M:%SZ)" > "$tmp" && mv "$tmp" "$status"
+  chmod 0644 "$status" 2>/dev/null || true
+}
+
+action=check
+if [ -f "$request" ]; then
+  case "$(tr -cd 'a-z' < "$request")" in
+    apply) action=apply ;;
+  esac
+  rm -f "$request"
+fi
+
+latest=$(curl -fsSL --max-time 20 -H 'Accept: application/vnd.github+json' \
+  "https://api.github.com/repos/$repo/releases/latest" 2>/dev/null |
+  sed -n 's/.*"tag_name": *"v\{0,1\}\([0-9][0-9A-Za-z.+-]*\)".*/\1/p' | head -n1)
+if [ -z "$latest" ]; then
+  write_status error "Could not reach GitHub to check for updates."
+  exit 0
+fi
+if [ "$latest" = "$current" ]; then
+  write_status current "This is the latest release."
+  exit 0
+fi
+if [ "$action" != apply ]; then
+  write_status available "A newer release is available."
+  exit 0
+fi
+
+write_status downloading "Downloading the new release."
+if ! docker pull "$registry:$latest" >/dev/null 2>&1; then
+  write_status error "The new release could not be downloaded."
+  exit 0
+fi
+
+previous_env=$(cat "$env_file")
+previous_version=$current
+printf 'MQ_IMAGE=%s\n' "$registry:$latest" > "$env_file"
+printf '%s\n' "$latest" > "$version_file"
+write_status restarting "Restarting the web service on the new release."
+systemctl restart material-qemu
+
+healthy() {
+  . /run/material-qemu.env
+  host=$(printf '%s' "$PUBLIC_ORIGIN" | sed 's#^[a-z]*://##; s#/.*##')
+  i=0
+  while [ "$i" -lt 180 ]; do
+    curl -fsS --max-time 3 -H "Host: $host" "http://127.0.0.1:$MQ_PORT/health" >/dev/null 2>&1 && return 0
+    i=$((i + 1))
+    sleep 1
+  done
+  return 1
+}
+
+if healthy; then
+  current=$latest
+  write_status updated "Updated to $latest. Machines, disks and settings were kept."
+  exit 0
+fi
+
+printf '%s\n' "$previous_env" > "$env_file"
+printf '%s\n' "$previous_version" > "$version_file"
+systemctl restart material-qemu
+current=$previous_version
+write_status error "Release $latest did not start, so $previous_version was restored."

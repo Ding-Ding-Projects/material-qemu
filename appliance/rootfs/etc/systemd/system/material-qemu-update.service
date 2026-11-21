@@ -1,0 +1,8 @@
+[Unit]
+Description=Check for or apply a Material QEMU update
+After=docker.service material-qemu.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/sbin/material-qemu-update
+TimeoutStartSec=30min

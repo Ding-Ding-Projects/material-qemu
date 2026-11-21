@@ -86,7 +86,7 @@ printf '%s\n' "$version" | sudo tee "$mnt/opt/material-qemu/version" >/dev/null
 sudo chroot "$mnt" /bin/bash -euxc '
   rm -f /etc/network/interfaces.d/*cloud* /etc/netplan/*.yaml
   touch /etc/cloud/cloud-init.disabled
-  systemctl enable systemd-networkd systemd-networkd-wait-online docker material-qemu-growroot material-qemu-load material-qemu material-qemu-report
+  systemctl enable systemd-networkd systemd-networkd-wait-online docker material-qemu-growroot material-qemu-load material-qemu material-qemu-report material-qemu-update.path material-qemu-update.timer
   echo material-qemu > /etc/hostname
   printf "127.0.0.1 localhost\n127.0.1.1 material-qemu\n" > /etc/hosts
   ln -sf /usr/share/zoneinfo/UTC /etc/localtime

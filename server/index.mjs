@@ -15,6 +15,7 @@ import { Store, event } from "./store.mjs";
 import { Qemu, validateMachine, launchPlan, containedFile } from "./qemu.mjs";
 import { mergeMachineUpdate, migrateMachine, diskFileName } from "./machine-config.mjs";
 import { hostSummary } from "./host.mjs";
+import { readUpdateStatus, requestUpdate } from "./appliance-update.mjs";
 import { performLiveAction, SCREENSHOT_FILE } from "./live-actions.mjs";
 import {
   listSnapshots,
@@ -476,6 +477,13 @@ export async function createApplication(options = {}) {
           event(s, "Passkey registered.");
         });
         return json(res, 200, { registered: true });
+      }
+      if (route === "/api/appliance/update" && req.method === "GET")
+        return json(res, 200, await readUpdateStatus(data));
+      if (route === "/api/appliance/update" && req.method === "POST") {
+        const result = await requestUpdate(data, body.action);
+        await store.transaction((s) => event(s, `Appliance update ${body.action} requested.`));
+        return json(res, 202, result);
       }
       if (route === "/api/host" && req.method === "GET")
         return json(res, 200, hostSummary(qemu.host, qemu.capabilities));

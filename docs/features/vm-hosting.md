@@ -40,6 +40,12 @@ Pick **Docker on this computer**, choose which of this computer's LAN addresses 
 
 Docker Desktop's engine must be running. If it is installed but stopped, the Docker card says so and stays disabled.
 
+## Updating an appliance
+
+The appliance checks GitHub for a newer release once a day and shows the result in **Settings > Appliance updates**. **Check now** asks again. When a newer release exists, **Update and restart** (behind the two-key slider, which warns how many machines are running) pulls that release's container image from `ghcr.io/ding-ding-projects/material-qemu`, restarts the web service on the same data volume and waits for it to report healthy. Machines, disks, ISOs and settings live in that volume and are kept. Running machines stop when the service restarts. If the new release does not become healthy within three minutes, the previous image is restored and the card says so.
+
+The web service cannot restart its own container, so it writes `update-request` into its data volume; `material-qemu-update.path` notices it and runs `/usr/local/sbin/material-qemu-update`, which writes `update-status.json` back. `material-qemu-update.timer` runs the same script daily, and that run only checks. Outside the appliance (the container on Docker, or the native test host) the card is not shown.
+
 ## Flashing a USB drive or SD card
 
 The **Flash** page writes a ready-to-boot image:

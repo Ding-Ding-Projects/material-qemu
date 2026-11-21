@@ -35,7 +35,7 @@ if [ -s /etc/material-qemu/public-origin ]; then
   origin=$(head -n1 /etc/material-qemu/public-origin)
 fi
 umask 022
-printf 'PUBLIC_ORIGIN=%s\nMQ_IP=%s\nMQ_PORT=%s\n' "$origin" "$ip" "$port" > /run/material-qemu.env
+printf 'PUBLIC_ORIGIN=%s\nMQ_IP=%s\nMQ_PORT=%s\nMQ_APPLIANCE=1\n' "$origin" "$ip" "$port" > /run/material-qemu.env
 # Hand the hardware accelerator to the container when this machine has one
 # (a physical host, or a hypervisor with nested virtualization). The web
 # service runs as a non-root user, so it also joins the device's group.

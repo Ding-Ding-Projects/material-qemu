@@ -58,6 +58,8 @@ let session,
   editing = false,
   host = null,
   hostLoaded = false,
+  applianceUpdate = null,
+  updateTimer = null,
   snapshotStore = {},
   storage = null,
   storageTab = "disks",
@@ -208,6 +210,13 @@ async function apiDelete(route) {
   }
   return data;
 }
+async function loadUpdate() {
+  const result = await tryApi("/appliance/update");
+  applianceUpdate = result.ok ? result.data : { supported: false };
+  clearTimeout(updateTimer);
+  const busy = applianceUpdate.pending || ["downloading", "restarting"].includes(applianceUpdate.state);
+  if (busy) updateTimer = setTimeout(() => loadUpdate().then(() => page === "settings" && rerenderQuiet()), 4000);
+}
 async function loadHost() {
   hostLoaded = true;
   const result = await tryApi("/host");
@@ -309,6 +318,8 @@ function render() {
     restoreFocus(focus);
     return;
   }
+  if (page === "settings" && !applianceUpdate)
+    loadUpdate().then(() => page === "settings" && session?.authenticated && rerenderQuiet());
   if (!hostLoaded)
     loadHost().then(() => {
       if (["new", "settings"].includes(page) && session?.authenticated) render();
@@ -1323,6 +1334,7 @@ function views() {
     consoleScale,
     consoleInput,
     host,
+    applianceUpdate,
     appearance,
     thumbs,
     snaps: snapshotStore[selected] || { status: "loading", items: [] },
@@ -1729,6 +1741,29 @@ function sectionName(id) {
   return t(...names[id] || [id, id]);
 }
 async function handleExtra(action, b) {
+  if (action === "update-check") {
+    const result = await tryApi("/appliance/update", { action: "check" });
+    if (!result.ok) notify(result.error.message);
+    else notify(t("Checking for updates.", "正在檢查更新。"));
+    await loadUpdate();
+    rerenderQuiet();
+    return true;
+  }
+  if (action === "update-apply") {
+    const running = state.machines.filter((m) => m.state === "running" || m.state === "paused").length;
+    gate({
+      title: t("Update and restart?", "更新並重新啟動？"),
+      body: `<p>${t(`Material QEMU restarts on release ${escape(applianceUpdate?.latest || "")}. Machines, disks and settings are kept.`, `Material QEMU 會以版本 ${escape(applianceUpdate?.latest || "")} 重新啟動，機器、磁碟和設定都會保留。`)}</p>${running ? `<p><strong>${t(`${running} running machine(s) will be stopped.`, `${running} 部運行中的機器會被停止。`)}</strong></p>` : ""}<p>${t("If the new release does not start, the current one is restored.", "如果新版本未能啟動，會自動還原目前版本。")}</p>`,
+      confirmLabel: t("Slide to update", "滑動以更新"),
+      doneText: t("Update started", "已開始更新"),
+      onConfirm: async () => {
+        await api("/appliance/update", { action: "apply" });
+        await loadUpdate();
+        rerenderQuiet();
+      },
+    });
+    return true;
+  }
   // New machine form
   if (action.startsWith("cfg-")) {
     const [verb, ...args] = action.split(":");
