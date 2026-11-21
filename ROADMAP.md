@@ -28,9 +28,11 @@
 - [ ] Deliver full regex-builder parity and all required search/settings behavior.
 - [x] Add the server model for advanced hardware, firmware (UEFI, Secure Boot, TPM), multiple disks, networking, display and devices (see docs/features/qemu-hardware.md).
 - [x] Run the remade interface against the v2 server with a real UEFI machine (virtio and NVMe disks): dashboard thumbnail, console, power actions, snapshots and storage inventory (evidence/lang-gui-remake/real).
-- [ ] Click through every advanced hardware, firmware and network control in the create form against the v2 server.
+- [x] Click through the create form against the v2 server: every section, UEFI, a second disk, CPU topology and a port forward saved as a v2 machine (evidence/lang-gui-remake/workflows, scripts/verify-browser-workflows.mjs).
 - [x] Add server endpoints for live actions, snapshots, storage, resize, clone and disk import, tested against real QEMU.
-- [ ] Click through the import, resize, clone and snapshot restore workflows in the browser against the v2 server (the server side is verified).
+- [x] Click through VMDK import, disk resize, clone, snapshot and two-key snapshot restore in the browser against the v2 server.
+- [x] Render the remade interface in Cantonese and bilingual modes without horizontal overflow.
+- [ ] Translate server error messages (they stay in English in Cantonese mode).
 - [ ] Verify swtpm TPM start-up and Docker-image UEFI discovery on a Linux host or the built container.
 - [ ] Verify physical authenticators, installed guest operating-system boot, actual KVM and guest ACPI handling.
 - [ ] Verify complete latest-source visual (the Material Design 3 Expressive remake is implemented; screenshots use mocked API data), language, keyboard and narrow-screen parity; retain historical evidence with original provenance.

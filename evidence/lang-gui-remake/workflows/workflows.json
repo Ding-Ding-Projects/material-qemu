@@ -1,0 +1,69 @@
+{
+  "origin": "http://localhost:8096/",
+  "at": "2026-11-21T05:24:33.545Z",
+  "fields": {
+    "system": "arch=x86_64, machineType=q35, accelerator=tcg, firmware=bios",
+    "cpu": "cpuModel=max, memory=2048, sockets=1, cores=2, threads=1",
+    "disks": "disks.0.name=system, disks.0.sizeGiB=20, disks.0.bus=virtio, disks.0.format=qcow2, disks.0.cache=writeback",
+    "network": "network.mode=user, network.model=virtio, network.mac=",
+    "display": "display.adapter=virtio, sound=none",
+    "boot": "folder=, notes="
+  },
+  "results": [
+    {
+      "name": "launch preview shows UEFI pflash",
+      "ok": true,
+      "detail": "qemu-system-x86_64 \"-name\" \"wf-create\" \"-machine\" \"q35\" \"-accel\" \"tcg\" \"-cpu\" \"max\" \"-m\" \"2048\" \"-smp\" \"2,sockets=1,core"
+    },
+    {
+      "name": "create form saved a v2 machine",
+      "ok": false,
+      "detail": "{\"firmware\":\"uefi\",\"disks\":2,\"cores\":2,\"forwards\":[]}"
+    },
+    {
+      "name": "resize grew the system disk in the browser",
+      "ok": true,
+      "detail": "21"
+    },
+    {
+      "name": "clone created a new machine",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "VMDK import created a qcow2 machine",
+      "ok": true,
+      "detail": "{\"id\":\"disk0\",\"name\":\"wf-import\",\"sizeGiB\":1,\"bus\":\"virtio\",\"format\":\"qcow2\",\"cache\":\"writeback\",\"discard\":false}"
+    },
+    {
+      "name": "snapshot taken in the browser",
+      "ok": true,
+      "detail": "[\"wf-snap\"]"
+    },
+    {
+      "name": "restore through the gate reached the server",
+      "ok": true,
+      "detail": "wf-create: snapshot wf-snap restored. | wf-create: snapshot wf-snap created. | Imported wf-import from a vmdk image."
+    },
+    {
+      "name": "yue renders Chinese text",
+      "ok": true,
+      "detail": "工作區 儲存空間 ISO 媒體庫及磁碟映像集中管理。 磁碟 (7) ISO 媒體庫 (0) upload_file 將 ISO 或磁碟映像拖放到這裡 支援 "
+    },
+    {
+      "name": "yue has no horizontal overflow",
+      "ok": true,
+      "detail": "0"
+    },
+    {
+      "name": "both renders Chinese text",
+      "ok": true,
+      "detail": "Workspace · 工作區 Storage · 儲存空間 ISO library and disk images in one place. · ISO "
+    },
+    {
+      "name": "both has no horizontal overflow",
+      "ok": true,
+      "detail": "0"
+    }
+  ]
+}
