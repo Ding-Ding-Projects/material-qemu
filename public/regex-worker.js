@@ -1,8 +1,10 @@
 // Runs regex toolkit operations off the page so a pattern that backtracks
 // catastrophically can be stopped. Posts back { ok, result } or { ok: false, error }.
 import { findMatches, previewReplace, previewSplit } from "./regex-tools.js";
+import { debugMatch } from "./regex-debug.js";
+import { searchFiles } from "./regex-convert.js";
 
-const ops = { findMatches, previewReplace, previewSplit };
+const ops = { findMatches, previewReplace, previewSplit, debugMatch, searchFiles };
 self.onmessage = (event) => {
   const { id, op, args } = event.data || {};
   try {

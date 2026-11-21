@@ -78,6 +78,73 @@ const libText = await ev(`return document.querySelector('.regex-library')?.inner
 check("The library keeps a saved pattern after a reload", /Servers/.test(libText) && /server\$/.test(libText), libText.replace(/\s+/g, " "));
 await ev(`document.querySelector('[data-action="regex-use:0"]').click(); return 1;`); await sleep(1500);
 check("Using a saved pattern puts it in the search", (await ev(`return document.querySelector('#global-search').value`)) === "server$");
+
+// Debugger: step through a match that has to back up.
+await tab("debug"); await sleep(300);
+await setValue("#regex-sample", "aaac aab");
+await typeSearch("a+b"); await sleep(1800);
+const summary = await ev(`return document.querySelector('#regex-debug-summary')?.innerText || ''`);
+check("Debug finds the same match as the engine and counts steps", /Match “aab” at 5–8 after \d+ steps/.test(summary), summary);
+const steps = Number((await ev(`return document.querySelector('#regex-step-label')?.innerText || ''`)).split("/")[1]);
+await ev(`for (let i = 0; i < 6; i++) document.querySelector('[data-action="regex-step:next"]').click(); return 1;`); await sleep(300);
+const now = await ev(`return [document.querySelector('#regex-step-label').innerText, document.querySelector('.debug-now').innerText, document.querySelector('.debug-views mark')?.innerText || ''].join(' | ')`);
+check("Next steps forward and shows the pattern part being tried", now.startsWith(`7 / ${steps}`) && /Try|Matched|Failed|Back up/.test(now), now);
+await ev(`document.querySelector('[data-action="regex-step:last"]').click(); return 1;`); await sleep(300);
+check("Last goes to the found match", /Match found/.test(await ev(`return document.querySelector('.debug-now').innerText`)));
+const backtracks = await ev(`document.querySelector('#regex-step-range').value='4'; document.querySelector('#regex-step-range').dispatchEvent(new Event('input',{bubbles:true})); return document.querySelector('#regex-step-label').innerText`);
+check("The step slider jumps to a step", backtracks.startsWith("4 /"), backtracks);
+await shot("debug");
+await typeSearch("(?<=a)b"); await sleep(1500);
+check("Look-behind is refused by the debugger, not guessed", /cannot step through look-behind/.test(await output()));
+
+// Other flavours and code.
+await typeSearch("(?<year>\\d{4})-\\k<year>(?=x)"); await tab("flavours"); await sleep(500);
+const fl = await ev(`return document.querySelector('.regex-flavours')?.innerText.replace(/\\s+/g,' ') || ''`);
+check("Other flavours marks Go as not working and converts for Python", /Go \(RE2\) Does not work/.test(fl) && fl.includes("(?P<year>\\d{4})-(?P=year)(?=x)"), fl.slice(0, 160));
+await shot("flavours");
+await tab("code"); await sleep(300);
+await ev(`document.querySelector('[data-action="regex-lang:Python"]').click(); return 1;`); await sleep(300);
+const py = await ev(`return document.querySelector('#regex-code')?.innerText || ''`);
+check("Code generates Python with the converted named groups and flags", py.includes('re.compile(r"(?P<year>\\d{4})-(?P=year)(?=x)", re.IGNORECASE | re.MULTILINE)'), py.split("\n")[2]);
+await ev(`document.querySelector('[data-action="regex-lang:C#"]').click(); return 1;`); await sleep(300);
+check("Code switches language", (await ev(`return document.querySelector('#regex-code')?.innerText || ''`)).includes("new Regex(@\""));
+await shot("code");
+
+// Search local files: they are read in the browser, never uploaded.
+const filesDir = path.join(outDir, "sample-files");
+mkdirSync(filesDir, { recursive: true });
+writeFileSync(path.join(filesDir, "qemu-a.log"), "boot ok\nERROR disk not found\nwarning: slow\nerror again\n");
+writeFileSync(path.join(filesDir, "qemu-b.log"), "all fine\nnothing here\n");
+await typeSearch("error"); await tab("files"); await sleep(400);
+await send("DOM.enable");
+const doc = await send("DOM.getDocument", { depth: -1 });
+const node = await send("DOM.querySelector", { nodeId: doc.result.root.nodeId, selector: "#regex-files" });
+const uploadsBefore = await ev(`return performance.getEntriesByType('resource').filter((e) => /upload|import/i.test(e.name)).length`);
+await send("DOM.setFileInputFiles", { nodeId: node.result.nodeId, files: [path.join(filesDir, "qemu-a.log"), path.join(filesDir, "qemu-b.log")] });
+await sleep(2000);
+out = await output();
+check("Search files lists matching lines from the chosen files", /2 matching lines in 1 of 2 files/.test(out) && /qemu-a\.log/.test(out), out.split("\n")[0]);
+const uploadsAfter = await ev(`return performance.getEntriesByType('resource').filter((e) => /upload|import/i.test(e.name)).length`);
+check("Chosen files are not sent to the server", uploadsAfter === uploadsBefore);
+await shot("files");
+
+// Cantonese and phone width: every new tab renders its own labels with no sideways scrolling.
+const setLang = (lang) => ev(`const s=await (await fetch('/api/session')).json(); await fetch('/api/preferences',{method:'POST',headers:{'content-type':'application/json','x-csrf-token':s.csrf},body:JSON.stringify({settings:{language:'${lang}'}})}); return 1;`);
+await setLang("yue");
+await send("Emulation.setDeviceMetricsOverride", { width: 375, height: 812, deviceScaleFactor: 1, mobile: true });
+await send("Page.navigate", { url: origin }); await sleep(3000);
+await ev(`document.querySelector('[data-action="page:machines"]').click(); return 1;`); await sleep(1000);
+await typeSearch("a+b"); await sleep(400);
+const narrow = [];
+for (const [name, label] of [["debug", "除錯"], ["flavours", "其他語法"], ["code", "程式碼"], ["files", "搜尋檔案"]]) {
+  await tab(name); await sleep(1500);
+  const overflow = await ev(`return document.documentElement.scrollWidth - innerWidth`);
+  const shown = await ev(`return document.querySelector('[data-action="regex-tab:${name}"]').innerText`);
+  narrow.push(`${name}:${shown}:${overflow}`);
+  if (name === "debug") await shot("debug-375-yue");
+}
+check("New tabs are in Cantonese and fit 375 pixels without sideways scrolling", narrow.every((x) => x.endsWith(":0")) && narrow.join(" ").includes("除錯") && narrow.join(" ").includes("搜尋檔案"), narrow.join(" "));
+await setLang("en");
 writeFileSync(path.join(outDir, "regex-tools.json"), JSON.stringify({ origin, at: new Date().toISOString(), results }, null, 2));
 ws.close(); edge.kill();
 process.exit(results.every((r) => r.ok) ? 0 : 1);

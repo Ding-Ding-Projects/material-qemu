@@ -1,6 +1,6 @@
 {
   "origin": "http://localhost:8097/",
-  "at": "2026-11-21T11:18:47.048Z",
+  "at": "2026-11-21T11:28:05.729Z",
   "results": [
     {
       "name": "Explain describes each part, including the named group",
@@ -41,6 +41,61 @@
       "name": "Using a saved pattern puts it in the search",
       "ok": true,
       "detail": ""
+    },
+    {
+      "name": "Debug finds the same match as the engine and counts steps",
+      "ok": true,
+      "detail": "Match “aab” at 5–8 after 33 steps."
+    },
+    {
+      "name": "Next steps forward and shows the pattern part being tried",
+      "ok": true,
+      "detail": "7 / 56 | Matched at position 3 | a"
+    },
+    {
+      "name": "Last goes to the found match",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "The step slider jumps to a step",
+      "ok": true,
+      "detail": "4 / 56"
+    },
+    {
+      "name": "Look-behind is refused by the debugger, not guessed",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "Other flavours marks Go as not working and converts for Python",
+      "ok": true,
+      "detail": "Engine Result Notes JavaScript Works as written – PCRE (PHP, grep -P) Works as written – Python re Works, with differences Named groups are written (?P<name>…);"
+    },
+    {
+      "name": "Code generates Python with the converted named groups and flags",
+      "ok": true,
+      "detail": "pattern = re.compile(r\"(?P<year>\\d{4})-(?P=year)(?=x)\", re.IGNORECASE | re.MULTILINE)"
+    },
+    {
+      "name": "Code switches language",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "Search files lists matching lines from the chosen files",
+      "ok": true,
+      "detail": "2 matching lines in 1 of 2 files 1 ms"
+    },
+    {
+      "name": "Chosen files are not sent to the server",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "New tabs are in Cantonese and fit 375 pixels without sideways scrolling",
+      "ok": true,
+      "detail": "debug:除錯:0 flavours:其他語法:0 code:程式碼:0 files:搜尋檔案:0"
     }
   ]
 }

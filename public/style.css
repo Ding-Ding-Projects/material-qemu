@@ -2536,7 +2536,8 @@ dialog:has(.annotation-canvas) {
   white-space: pre-wrap;
   overflow-wrap: anywhere;
 }
-.regex-preview mark {
+.regex-preview mark,
+.file-lines mark {
   background: var(--primary-container);
   color: var(--on-primary-container);
   border-radius: 3px;
@@ -2569,4 +2570,96 @@ dialog:has(.annotation-canvas) {
 }
 .flavour {
   font-size: 12px;
+}
+
+.debug-controls input[type="range"] {
+  flex: 1 1 160px;
+  min-width: 120px;
+  accent-color: var(--primary, currentColor);
+}
+.debug-now {
+  margin: 8px 0;
+}
+.debug-views {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 12px;
+}
+.debug-views .label {
+  display: block;
+  font-size: 12px;
+  opacity: 0.8;
+  margin-bottom: 4px;
+}
+.regex-preview .caret {
+  display: inline-block;
+  width: 2px;
+  height: 1.1em;
+  margin: 0 -1px;
+  vertical-align: text-bottom;
+  background: var(--primary, currentColor);
+}
+.debug-steps,
+.file-lines {
+  list-style: none;
+  margin: 8px 0 0;
+  padding: 0;
+  font-size: 13px;
+}
+.debug-steps li,
+.file-lines li {
+  display: flex;
+  gap: 10px;
+  align-items: baseline;
+  padding: 3px 8px;
+  border-radius: 8px;
+}
+.debug-steps li.current {
+  background: color-mix(in srgb, var(--primary, #888) 18%, transparent);
+  font-weight: 600;
+}
+.debug-steps .num,
+.file-lines .num {
+  min-width: 3ch;
+  text-align: right;
+  opacity: 0.7;
+  font-variant-numeric: tabular-nums;
+}
+.debug-steps .step-fail span:nth-child(2),
+.debug-steps .step-backtrack span:nth-child(2) {
+  color: var(--error, #f2b8b5);
+}
+.debug-steps .step-match span:nth-child(2),
+.debug-steps .step-found span:nth-child(2) {
+  color: var(--tertiary, #9ed8a8);
+}
+.file-lines code {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.file-hits summary {
+  cursor: pointer;
+  padding: 4px 0;
+}
+.regex-flavours td {
+  vertical-align: top;
+}
+.regex-flavours td div + div {
+  margin-top: 4px;
+}
+.pick-files {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 40px;
+  padding: 0 20px;
+  border-radius: 20px;
+  cursor: pointer;
+  font-weight: 600;
+  background: var(--secondary-container, rgba(127, 127, 127, 0.2));
+  color: var(--on-secondary-container, inherit);
+}
+.pick-files:focus-within {
+  outline: 3px solid var(--primary, currentColor);
+  outline-offset: 2px;
 }

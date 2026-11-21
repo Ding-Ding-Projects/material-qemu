@@ -26,7 +26,8 @@
 
 - [ ] Complete every remaining control listed in docs/features/design-coverage.md.
 - [x] Add regex explain, a test bench with groups, replace and split previews, a saved pattern library and a one-second worker time limit to the regex builder (scripts/verify-regex-tools.mjs, evidence/regex-tools).
-- [ ] Deliver the rest of regex-builder parity (step debugger, other flavours, code generation, file search) and all required search/settings behavior.
+- [x] Add a step-by-step regex debugger, a comparison with other flavours, code generation in six languages and local file search to the regex builder (tests/regex-parity.test.mjs, scripts/verify-regex-tools.mjs, evidence/regex-tools).
+- [ ] Extend header search to storage, ISOs and documentation, and add the regex builder to the command palette search.
 - [x] Add the server model for advanced hardware, firmware (UEFI, Secure Boot, TPM), multiple disks, networking, display and devices (see docs/features/qemu-hardware.md).
 - [x] Run the remade interface against the v2 server with a real UEFI machine (virtio and NVMe disks): dashboard thumbnail, console, power actions, snapshots and storage inventory (evidence/lang-gui-remake/real).
 - [x] Click through the create form against the v2 server: every section, UEFI, a second disk, CPU topology and a port forward saved as a v2 machine (evidence/lang-gui-remake/workflows, scripts/verify-browser-workflows.mjs).

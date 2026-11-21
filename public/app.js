@@ -38,24 +38,70 @@ import { compileSearch, SEARCH_FIELDS, MAX_PATTERN } from "./search-pattern.js";
 import { createNotificationLog } from "./notifications.js";
 import { explainPattern, createLibrary } from "./regex-tools.js";
 import { runBounded } from "./regex-runner.js";
+import { flavourReport, generateCode, LANGUAGES } from "./regex-convert.js";
 
 // Regex builder tabs: explain, test bench, replace, split and the saved library.
 const regexLibrary = createLibrary();
 let regexTab = "explain", regexSample = null, regexReplacement = "", regexRun = 0, regexLast = { key: "", html: "" };
+let regexDebug = null, regexDebugStep = 0, regexCodeLang = "JavaScript", regexFiles = [];
+const REGEX_FILE_LIMIT = 20, REGEX_FILE_BYTES = 2 * 1024 * 1024;
+const regexFilesKey = () => regexFiles.map((x) => `${x.name}:${x.text.length}:${x.modified}`).join("|");
+function regexStepLabel(e) {
+  const kinds = { start: ["Start a new attempt", "開始新一輪嘗試"], try: ["Try", "嘗試"], match: ["Matched", "符合"], fail: ["Failed", "不符合"], backtrack: ["Back up and try another way", "回溯，改試另一種方法"], found: ["Match found", "找到配對"] };
+  return t(...kinds[e.kind]);
+}
+function drawDebug() {
+  const out = document.querySelector("#regex-output");
+  const d = regexDebug?.result;
+  if (!out || !d) return;
+  const sample = regexDebug.sample;
+  let html;
+  if (d.unsupported) html = `<p class="muted-line">${escape(t(`The debugger cannot step through ${d.unsupported}. The Test tab still runs the pattern with the browser's engine.`, `除錯器無法逐步執行${d.unsupported === "look-behind" ? "後顧" : "Unicode 屬性"}。測試分頁仍會用瀏覽器引擎執行此樣式。`))}</p>`;
+  else if (!d.ok) html = `<p class="error-text" role="alert">${escape(localizeServerError(d.error || "", t))}</p>`;
+  else {
+    const n = d.trace.length;
+    regexDebugStep = Math.max(0, Math.min(regexDebugStep, n - 1));
+    const e = d.trace[regexDebugStep];
+    const summary = d.aborted ? t(`Stopped after ${d.steps.toLocaleString()} steps: this pattern backtracks too much.`, `${d.steps.toLocaleString()} 步後已停止：此樣式回溯太多。`)
+      : d.match ? t(`Match “${d.match.text}” at ${d.match.index}–${d.match.end} after ${d.steps.toLocaleString()} steps.`, `經過 ${d.steps.toLocaleString()} 步，在 ${d.match.index}–${d.match.end} 找到配對「${d.match.text}」。`)
+      : t(`No match after ${d.steps.toLocaleString()} steps.`, `經過 ${d.steps.toLocaleString()} 步，沒有配對。`);
+    const pos = Math.min(e.pos, sample.length);
+    const textView = `${escape(sample.slice(0, pos))}<span class="caret" aria-hidden="true"></span>${escape(sample.slice(pos))}`;
+    const pat = e.end > e.start ? `${escape(query.slice(0, e.start))}<mark>${escape(query.slice(e.start, e.end))}</mark>${escape(query.slice(e.end))}` : escape(query);
+    const from = Math.max(0, regexDebugStep - 5), to = Math.min(n, regexDebugStep + 7);
+    const near = d.trace.slice(from, to).map((x, k) => `<li class="step-${x.kind}${from + k === regexDebugStep ? " current" : ""}"><span class="num">${from + k + 1}</span><span>${escape(regexStepLabel(x))}</span><code>${escape(query.slice(x.start, x.end)) || "&nbsp;"}</code><span class="muted">@${x.pos}</span></li>`).join("");
+    html = `<p class="muted-line" id="regex-debug-summary">${escape(summary)}${d.truncated ? " " + escape(t(`Showing the first ${n.toLocaleString()} steps.`, `只顯示首 ${n.toLocaleString()} 步。`)) : ""}${d.textCut ? " " + escape(t("Only the first 2,000 characters of the sample are stepped.", "只逐步執行範例的首 2,000 個字元。")) : ""}</p>
+<div class="regex-row debug-controls">${button("regex-step:first", '<span class="icon" aria-hidden="true">first_page</span>', "icon-btn", `aria-label="${t("First step", "第一步")}"`)}${button("regex-step:prev", '<span class="icon" aria-hidden="true">chevron_left</span>', "icon-btn", `aria-label="${t("Previous step", "上一步")}"`)}<input type="range" id="regex-step-range" min="1" max="${n}" value="${regexDebugStep + 1}" aria-label="${t("Step", "步驟")}">${button("regex-step:next", '<span class="icon" aria-hidden="true">chevron_right</span>', "icon-btn", `aria-label="${t("Next step", "下一步")}"`)}${button("regex-step:last", '<span class="icon" aria-hidden="true">last_page</span>', "icon-btn", `aria-label="${t("Last step", "最後一步")}"`)}<span id="regex-step-label" class="mono">${regexDebugStep + 1} / ${n}</span></div>
+<p class="debug-now" aria-live="polite"><strong>${escape(regexStepLabel(e))}</strong> ${t("at position", "位置")} ${e.pos}</p>
+<div class="debug-views"><div><span class="label">${t("Pattern", "樣式")}</span><pre class="regex-preview">${pat}</pre></div><div><span class="label">${t("Text", "文字")}</span><pre class="regex-preview">${textView}</pre></div></div>
+<ol class="debug-steps">${near}</ol>`;
+  }
+  regexLast = { key: regexDebug.key, html };
+  out.innerHTML = html;
+}
 const regexFlagString = () => `${searchOpts.flags.i ? "i" : ""}${searchOpts.flags.m ? "m" : ""}${searchOpts.flags.s ? "s" : ""}${searchOpts.flags.u ? "u" : ""}`;
 function regexSampleText() {
   return regexSample ?? state.machines.map((m) => `${m.name}\t${m.arch}\t${m.folder || ""}\t${(m.tags || []).join(" ")}\t${m.notes || ""}`).join("\n");
 }
 function regexTabBody() {
   const tab = (id, en, yue) => button(`regex-tab:${id}`, t(en, yue), regexTab === id ? "selected" : "", `role="tab" aria-selected="${regexTab === id}" aria-controls="regex-tab-body"`);
-  const tabs = `<div class="chips regex-tabs" role="tablist" aria-label="${t("Builder tools", "建構工具")}">${tab("explain", "Explain", "解釋")}${tab("test", "Test", "測試")}${tab("replace", "Replace", "取代")}${tab("split", "Split", "分割")}${tab("library", "Library", "樣式庫")}</div>`;
+  const tabs = `<div class="chips regex-tabs" role="tablist" aria-label="${t("Builder tools", "建構工具")}">${tab("explain", "Explain", "解釋")}${tab("test", "Test", "測試")}${tab("replace", "Replace", "取代")}${tab("split", "Split", "分割")}${tab("library", "Library", "樣式庫")}${tab("debug", "Debug", "除錯")}${tab("flavours", "Other flavours", "其他語法")}${tab("code", "Code", "程式碼")}${tab("files", "Search files", "搜尋檔案")}</div>`;
   let body = "";
   if (regexTab === "explain") {
     const s = currentSearch();
     body = !query ? `<p class="muted-line">${t("Type a pattern to see what each part means.", "輸入樣式，即可看到每部分的意思。")}</p>`
       : !s.ok ? `<p class="muted-line">${t("Fix the pattern first.", "請先修正樣式。")}</p>`
       : `<ol class="explain">${explainPattern(query).map((p) => `<li style="--depth:${p.depth}"><code>${escape(p.text)}</code><span>${escape(t(p.en, p.yue))}</span></li>`).join("")}</ol>`;
-  } else if (regexTab === "test" || regexTab === "replace" || regexTab === "split") {
+  } else if (regexTab === "flavours") {
+    const s = currentSearch();
+    body = !query || !s.ok ? `<p class="muted-line">${t("Type a valid pattern to compare flavours.", "輸入有效樣式，即可比較各種語法。")}</p>`
+      : `<div class="table-wrap"><table class="regex-flavours"><thead><tr><th>${t("Engine", "引擎")}</th><th>${t("Result", "結果")}</th><th>${t("Notes", "備註")}</th></tr></thead><tbody>${flavourReport(query, regexFlagString()).map((r) => `<tr><td>${escape(r.name)}</td><td><span class="pill ${r.ok ? "healthy" : "error"}">${r.ok ? (r.notes.length ? t("Works, with differences", "可用，但有差異") : t("Works as written", "照寫可用")) : t("Does not work", "不能使用")}</span></td><td>${r.notes.map((x) => `<div>${escape(t(...x))}</div>`).join("") || "–"}${r.converted ? `<div>${t("Converted:", "轉換後：")} <code>${escape(r.converted)}</code></div>` : ""}</td></tr>`).join("")}</tbody></table></div>`;
+  } else if (regexTab === "code") {
+    const s = currentSearch();
+    body = `<div class="chips" role="radiogroup" aria-label="${t("Language", "程式語言")}">${LANGUAGES.map((l) => button(`regex-lang:${l}`, escape(l), regexCodeLang === l ? "selected" : "", `role="radio" aria-checked="${regexCodeLang === l}"`)).join("")}</div>${!query || !s.ok ? `<p class="muted-line">${t("Type a valid pattern to generate code.", "輸入有效樣式，即可產生程式碼。")}</p>` : `<pre class="regex-preview" id="regex-code">${escape(generateCode(query, regexFlagString(), regexCodeLang))}</pre>${button("regex-copy", `<span class="icon" aria-hidden="true">content_copy</span>${t("Copy code", "複製程式碼")}`)}`}`;
+  } else if (regexTab === "files") {
+    body = `<p class="muted-line">${t(`Pick up to ${REGEX_FILE_LIMIT} text files of at most 2 MiB each. They are read in this browser only and never uploaded.`, `最多選擇 ${REGEX_FILE_LIMIT} 個文字檔，每個最多 2 MiB。檔案只在此瀏覽器讀取，不會上載。`)}</p><div class="regex-row"><label class="pick-files"><span class="icon" aria-hidden="true">folder_open</span>${t("Choose files", "選擇檔案")}<input type="file" id="regex-files" multiple accept=".txt,.log,.md,.csv,.json,.xml,.yaml,.yml,.ini,.conf,.cfg,.sh,.ps1,.js,.py,text/*" class="sr-only"></label>${regexFiles.length ? button("regex-files-clear", t("Clear files", "清除檔案"), "ghost") : ""}<span class="muted">${regexFiles.map((x) => escape(x.name)).join(", ")}</span></div><div id="regex-output" class="regex-output" aria-live="polite"></div>`;
+  } else if (regexTab === "test" || regexTab === "replace" || regexTab === "split" || regexTab === "debug") {
     body = `<label class="field"><span>${t("Sample text (starts as your machines, one per line)", "範例文字（預設為你的機器，每行一部）")}</span><textarea id="regex-sample" rows="4" spellcheck="false" class="mono">${escape(regexSampleText())}</textarea></label>${regexTab === "replace" ? `<label class="field"><span>${t("Replace with ($1, $<name>, $& are allowed)", "取代為（可用 $1、$<name>、$&）")}</span><input id="regex-replacement" class="mono" value="${escape(regexReplacement)}" spellcheck="false"></label>` : ""}<div id="regex-output" class="regex-output" aria-live="polite"></div>`;
   } else if (regexTab === "library") {
     const items = regexLibrary.list();
@@ -71,9 +117,35 @@ async function refreshRegexOutput() {
   if (!s.ok) { out.innerHTML = `<p class="muted-line">${t("Fix the pattern first.", "請先修正樣式。")}</p>`; return; }
   const sample = regexSampleText();
   const flags = regexFlagString();
-  const key = JSON.stringify([regexTab, query, flags, sample, regexReplacement]);
+  if (regexTab === "files" && !regexFiles.length) { out.innerHTML = `<p class="muted-line">${t("No files chosen yet.", "尚未選擇檔案。")}</p>`; return; }
+  const key = JSON.stringify([regexTab, query, flags, regexTab === "files" ? regexFilesKey() : sample, regexReplacement]);
   if (key === regexLast.key) { out.innerHTML = regexLast.html; return; }
   const run = ++regexRun;
+  if (regexTab === "debug") {
+    out.innerHTML = `<p class="muted-line">${t("Running…", "執行中…")}</p>`;
+    const r = await runBounded("debugMatch", [query, flags, sample], { limit: 3000 });
+    if (run !== regexRun) return;
+    regexDebug = { key, sample: sample.slice(0, 2000), result: r.ok ? r.result : { ok: false, error: r.timedOut ? "The debugger ran out of time." : r.error } };
+    regexDebugStep = 0;
+    drawDebug();
+    return;
+  }
+  if (regexTab === "files") {
+    out.innerHTML = `<p class="muted-line">${t("Searching…", "搜尋中…")}</p>`;
+    const r = await runBounded("searchFiles", [query, flags, regexFiles.map(({ name, text }) => ({ name, text }))], { limit: 3000 });
+    if (run !== regexRun) return;
+    let html;
+    if (!r.ok) html = `<p class="error-text" role="alert">${escape(r.timedOut ? t("Stopped after three seconds: this pattern backtracks too much on these files.", "三秒後已停止：此樣式在這些檔案上回溯太多。") : localizeServerError(r.error, t))}</p>`;
+    else {
+      const res = r.result;
+      const mark = (line) => { let h = "", at = 0; for (const [a, b] of line.ranges) { if (a < at || a > line.text.length) continue; h += escape(line.text.slice(at, a)) + `<mark>${escape(line.text.slice(a, b)) || "|"}</mark>`; at = b; } return h + escape(line.text.slice(at)); };
+      html = `<p class="muted-line">${t(`${res.total.toLocaleString()} matching lines in ${res.files.filter((x) => x.count).length} of ${res.files.length} files`, `${res.files.length} 個檔案中有 ${res.files.filter((x) => x.count).length} 個符合，共 ${res.total.toLocaleString()} 行`)}${res.truncated ? " " + t("(first 500 lines shown)", "（只顯示首 500 行）") : ""} <span class="muted">${r.ms} ms</span></p>${res.files.filter((x) => x.lines.length).map((x) => `<details open class="file-hits"><summary><span class="mono">${escape(x.name)}</span> <span class="muted">${t(`${x.count} matches`, `${x.count} 個配對`)}</span></summary><ol class="file-lines">${x.lines.map((l) => `<li><span class="num">${l.line}</span><code>${mark(l)}</code></li>`).join("")}</ol></details>`).join("")}`;
+    }
+    regexLast = { key, html };
+    const el = document.querySelector("#regex-output");
+    if (el) el.innerHTML = html;
+    return;
+  }
   const op = regexTab === "replace" ? ["previewReplace", [query, flags, sample, regexReplacement]] : regexTab === "split" ? ["previewSplit", [query, flags, sample]] : ["findMatches", [query, flags, sample]];
   out.innerHTML = `<p class="muted-line">${t("Running…", "執行中…")}</p>`;
   const r = await runBounded(op[0], op[1]);
@@ -93,7 +165,7 @@ function updateRegexTools() {
   const holder = document.querySelector("#regex-tools");
   if (!holder) return;
   const focusId = document.activeElement?.id;
-  if (!["regex-sample", "regex-replacement", "regex-lib-name"].includes(focusId)) holder.innerHTML = regexTabBody();
+  if (!["regex-sample", "regex-replacement", "regex-lib-name", "regex-step-range"].includes(focusId)) holder.innerHTML = regexTabBody();
   refreshRegexOutput();
 }
 
@@ -1490,13 +1562,22 @@ const releaseChord = createReleaseChord(() => {
 });
 let regexInputTimer = null;
 document.addEventListener("input", (e) => {
+  if (e.target.id === "regex-step-range") { regexDebugStep = Number(e.target.value) - 1; drawDebug(); document.querySelector("#regex-step-range")?.focus(); return; }
   if (e.target.id === "regex-sample") regexSample = e.target.value;
   else if (e.target.id === "regex-replacement") regexReplacement = e.target.value;
   else return;
   clearTimeout(regexInputTimer);
   regexInputTimer = setTimeout(refreshRegexOutput, 250);
 });
-document.addEventListener("change", (e) => {
+document.addEventListener("change", async (e) => {
+  if (e.target.id === "regex-files") {
+    const picked = [...e.target.files].slice(0, REGEX_FILE_LIMIT);
+    const skipped = [...e.target.files].length - picked.length + picked.filter((x) => x.size > REGEX_FILE_BYTES).length;
+    regexFiles = await Promise.all(picked.filter((x) => x.size <= REGEX_FILE_BYTES).map(async (x) => ({ name: x.name, text: await x.text(), modified: x.lastModified })));
+    if (skipped) notify(t(`${skipped} files were skipped: at most ${REGEX_FILE_LIMIT} files of 2 MiB each.`, `已略過 ${skipped} 個檔案：最多 ${REGEX_FILE_LIMIT} 個，每個 2 MiB。`));
+    updateRegexTools();
+    return;
+  }
   consoleTools().change(e);
   const flag = e.target.dataset?.searchFlag, field = e.target.dataset?.searchField;
   if (!flag && !field) return;
@@ -2085,6 +2166,31 @@ async function handleExtra(action, b) {
     regexTab = action.slice(10);
     updateRegexTools();
     document.querySelector(`[data-action="regex-tab:${regexTab}"]`)?.focus();
+    return true;
+  }
+  if (action.startsWith("regex-step:")) {
+    const n = regexDebug?.result?.trace?.length || 0;
+    const to = action.slice(11);
+    regexDebugStep = to === "first" ? 0 : to === "last" ? n - 1 : to === "next" ? regexDebugStep + 1 : regexDebugStep - 1;
+    drawDebug();
+    document.querySelector(`[data-action="${action}"]`)?.focus();
+    return true;
+  }
+  if (action.startsWith("regex-lang:")) {
+    regexCodeLang = action.slice(11);
+    updateRegexTools();
+    document.querySelector(`[data-action="${action}"]`)?.focus();
+    return true;
+  }
+  if (action === "regex-copy") {
+    const code = $("#regex-code")?.textContent || "";
+    try { await navigator.clipboard.writeText(code); notify(t("Code copied.", "已複製程式碼。")); }
+    catch { notify(t("The browser did not allow copying. Select the code and copy it instead.", "瀏覽器不允許複製，請選取程式碼後自行複製。")); }
+    return true;
+  }
+  if (action === "regex-files-clear") {
+    regexFiles = [];
+    updateRegexTools();
     return true;
   }
   if (action === "regex-save") {
