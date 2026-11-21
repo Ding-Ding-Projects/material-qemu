@@ -56,3 +56,9 @@ test("the appliance enables the update units and flags itself to the container",
   assert.match(script, /docker pull "\$registry:\$latest"/);
   assert.match(script, /was restored/);
 });
+
+test("the update path unit is not ordered after Docker, which would form a boot cycle", () => {
+  const root = path.join(path.dirname(new URL(import.meta.url).pathname.replace(/^\/([A-Za-z]:)/, "$1")), "..");
+  const unit = readFileSync(path.join(root, "appliance", "rootfs", "etc", "systemd", "system", "material-qemu-update.path"), "utf8");
+  assert.doesNotMatch(unit, /^After=.*docker/m);
+});

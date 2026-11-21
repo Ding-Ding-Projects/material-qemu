@@ -1,6 +1,8 @@
 [Unit]
 Description=Watch for Material QEMU update requests
-After=docker.service
+# No ordering after docker.service: path units run before basic.target, and
+# Docker starts after it, so that ordering would form a cycle that systemd
+# breaks by dropping the web service from the boot.
 
 [Path]
 PathExists=/var/lib/docker/volumes/material-qemu-data/_data/update-request
