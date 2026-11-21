@@ -65,6 +65,110 @@ The other 50 design boards remain design-only. The deploy assistant, the applian
 
 See [roadmap](ROADMAP.md), [handoff](HANDOFF.md), [runtime architecture](docs/features/runtime.md) and the original [design contract](design/HANDOFF.md). Design frames illustrate the reference only and are not runtime evidence.
 
+## Step-by-step walkthrough
+
+Every picture below is an unedited screenshot from one run of `scripts/walkthrough.mjs` against a fresh server (native Windows, QEMU 11.1, software emulation), starting from an empty data folder. The machine has a blank disk, so its console shows the UEFI firmware looking for something to boot.
+
+### Sign up and set up
+
+1. First run: create the owner account (the first account becomes the owner).
+
+   ![First run: create the owner account (the first account becomes the owner)](evidence/walkthrough/01-first-run.png)
+
+2. Owner name and a password of at least 12 characters entered.
+
+   ![Owner name and a password of at least 12 characters entered](evidence/walkthrough/02-owner-filled.png)
+
+3. Guided setup starts; progress is saved automatically.
+
+   ![Guided setup starts; progress is saved automatically](evidence/walkthrough/03-onboarding.png)
+
+4. Final review step of setup.
+
+   ![Final review step of setup](evidence/walkthrough/04-onboarding-review.png)
+
+5. The dashboard before any machine exists.
+
+   ![The dashboard before any machine exists](evidence/walkthrough/05-dashboard-empty.png)
+
+### Create a machine
+
+6. New machine: name it and pick a preset.
+
+   ![New machine: name it and pick a preset](evidence/walkthrough/06-new-machine-preset.png)
+
+7. System and firmware: UEFI selected; the launch preview updates on the right.
+
+   ![System and firmware: UEFI selected; the launch preview updates on the right](evidence/walkthrough/07-new-machine-firmware.png)
+
+8. CPU and memory.
+
+   ![CPU and memory](evidence/walkthrough/08-new-machine-cpu.png)
+
+9. Disks: a second data disk added.
+
+   ![Disks: a second data disk added](evidence/walkthrough/09-new-machine-disks.png)
+
+10. Network: a port forward from host port 2222 to guest port 22.
+
+   ![Network: a port forward from host port 2222 to guest port 22](evidence/walkthrough/10-new-machine-network.png)
+
+11. Display and devices.
+
+   ![Display and devices](evidence/walkthrough/11-new-machine-display.png)
+
+12. Boot order and automation.
+
+   ![Boot order and automation](evidence/walkthrough/12-new-machine-boot.png)
+
+### Run it
+
+13. Create and start: the machine page with the live console.
+
+   ![Create and start: the machine page with the live console](evidence/walkthrough/13-machine-running.png)
+
+14. Take snapshot: name it.
+
+   ![Take snapshot: name it](evidence/walkthrough/14-snapshot-dialog.png)
+
+15. The snapshot appears in the timeline.
+
+   ![The snapshot appears in the timeline](evidence/walkthrough/15-snapshot-taken.png)
+
+16. Dashboard with a live thumbnail of the running machine.
+
+   ![Dashboard with a live thumbnail of the running machine](evidence/walkthrough/16-dashboard-running.png)
+
+### Find your way around
+
+17. Machines list with filters and the power button.
+
+   ![Machines list with filters and the power button](evidence/walkthrough/17-machines.png)
+
+18. Storage: both disks, with resize, clone and attach actions.
+
+   ![Storage: both disks, with resize, clone and attach actions](evidence/walkthrough/18-storage.png)
+
+19. Settings: colour seed, theme, language, motion, passkeys and host facts.
+
+   ![Settings: colour seed, theme, language, motion, passkeys and host facts](evidence/walkthrough/19-settings.png)
+
+### Power off safely
+
+20. Power off needs both keys and a full slide.
+
+   ![Power off needs both keys and a full slide](evidence/walkthrough/20-power-off-gate.png)
+
+21. The machine is powered off.
+
+   ![The machine is powered off](evidence/walkthrough/21-powered-off.png)
+
+### On a phone
+
+22. On a phone the rail becomes a bottom bar; nothing is removed.
+
+   ![On a phone the rail becomes a bottom bar; nothing is removed](evidence/walkthrough/22-phone.png)
+
 ## Verified runtime images
 
 These images come from the Material Design 3 web app running natively on Windows with QEMU 11.1, driving a real UEFI machine with a virtio system disk and an NVMe data disk. Headless Microsoft Edge captured them at 1440 by 960 and 375 by 812 pixels. The [evidence inventory](evidence/README.md) records the details and limitations; earlier container images are kept there with their provenance.

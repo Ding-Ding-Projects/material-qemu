@@ -1,0 +1,95 @@
+{
+  "origin": "http://localhost:8097/",
+  "at": "2026-11-21T07:07:44.003Z",
+  "steps": [
+    {
+      "file": "01-first-run.png",
+      "title": "First run: create the owner account (the first account becomes the owner)"
+    },
+    {
+      "file": "02-owner-filled.png",
+      "title": "Owner name and a password of at least 12 characters entered"
+    },
+    {
+      "file": "03-onboarding.png",
+      "title": "Guided setup starts; progress is saved automatically"
+    },
+    {
+      "file": "04-onboarding-review.png",
+      "title": "Final review step of setup"
+    },
+    {
+      "file": "05-dashboard-empty.png",
+      "title": "The dashboard before any machine exists"
+    },
+    {
+      "file": "06-new-machine-preset.png",
+      "title": "New machine: name it and pick a preset"
+    },
+    {
+      "file": "07-new-machine-firmware.png",
+      "title": "System and firmware: UEFI selected; the launch preview updates on the right"
+    },
+    {
+      "file": "08-new-machine-cpu.png",
+      "title": "CPU and memory"
+    },
+    {
+      "file": "09-new-machine-disks.png",
+      "title": "Disks: a second data disk added"
+    },
+    {
+      "file": "10-new-machine-network.png",
+      "title": "Network: a port forward from host port 2222 to guest port 22"
+    },
+    {
+      "file": "11-new-machine-display.png",
+      "title": "Display and devices"
+    },
+    {
+      "file": "12-new-machine-boot.png",
+      "title": "Boot order and automation"
+    },
+    {
+      "file": "13-machine-running.png",
+      "title": "Create and start: the machine page with the live console"
+    },
+    {
+      "file": "14-snapshot-dialog.png",
+      "title": "Take snapshot: name it"
+    },
+    {
+      "file": "15-snapshot-taken.png",
+      "title": "The snapshot appears in the timeline"
+    },
+    {
+      "file": "16-dashboard-running.png",
+      "title": "Dashboard with a live thumbnail of the running machine"
+    },
+    {
+      "file": "17-machines.png",
+      "title": "Machines list with filters and the power button"
+    },
+    {
+      "file": "18-storage.png",
+      "title": "Storage: both disks, with resize, clone and attach actions"
+    },
+    {
+      "file": "19-settings.png",
+      "title": "Settings: colour seed, theme, language, motion, passkeys and host facts"
+    },
+    {
+      "file": "20-power-off-gate.png",
+      "title": "Power off needs both keys and a full slide"
+    },
+    {
+      "file": "21-powered-off.png",
+      "title": "The machine is powered off"
+    },
+    {
+      "file": "22-phone.png",
+      "title": "On a phone the rail becomes a bottom bar; nothing is removed"
+    }
+  ],
+  "phoneOverflow": 0
+}

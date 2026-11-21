@@ -37,7 +37,8 @@
 - [x] Boot an installed guest operating system (Debian 13 imported from a VMDK) to its login prompt and shut it down through ACPI (evidence/installed-guest).
 - [x] Register a passkey in Settings, sign out and sign in with it in headless Edge using the browser's virtual authenticator (scripts/verify-passkeys.mjs).
 - ~~Verify passkeys with a physical security key or phone.~~ Skipped at the owner's request on 2026-11-21; registration and sign-in pass with the browser's virtual authenticator.
-- [ ] Verify complete latest-source visual (the Material Design 3 Expressive remake is implemented; screenshots use mocked API data), language, keyboard and narrow-screen parity; retain historical evidence with original provenance.
+- [x] Capture the remade interface from a real server: a 22-step first-run walkthrough (evidence/walkthrough), dark and light pages, Cantonese and bilingual modes, and phone width without horizontal scrolling.
+- [ ] Verify full keyboard-only operation of every page.
 
 ## Delivery and broader design
 
@@ -55,7 +56,7 @@
 - ~~Verify the Docker target against a running Docker engine.~~ Skipped at the owner's request on 2026-11-21: the development host has the Windows hypervisor off, so Docker Desktop cannot run there.
 - [ ] Verify a real USB flash and boot on a physical PC.
 - ~~Raspberry Pi image and flashing~~: deliberately not doing. The owner decided on 2026-11-21 that this runs on Intel and AMD CPUs only, so the Raspberry Pi job, scripts and Flash option were removed.
-- [ ] Deliver appliance operating-system images and USB installer.
+- [x] Deliver appliance operating-system images and USB installer: every release carries the OVA and the x86_64 USB image with SHA-256 files (for example v0.1.0-build.23).
 - [ ] Deliver portable hosting/build companions and supported native packaging.
 - [ ] Complete the required-feature inventory and remaining acceptance.
 - [ ] Publish complete interactive documentation and wiki content; pending source staging is not publication.

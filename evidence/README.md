@@ -1,5 +1,9 @@
 # Runtime evidence
 
+## First-run walkthrough
+
+[walkthrough](walkthrough/) holds 22 unedited headless Microsoft Edge screenshots from one run of `scripts/walkthrough.mjs` against a fresh native Windows server (QEMU 11.1, TCG) with an empty data folder: owner sign-up, onboarding, the six new-machine sections, create and start of a UEFI machine with two disks and a port forward, the live console, a snapshot, every page, the two-key power-off gate and phone width. [walkthrough.json](walkthrough/walkthrough.json) lists each step.
+
 ## Latest verified interface: Material Design 3 remake
 
 Unedited headless Microsoft Edge captures in [lang-gui-remake/real](lang-gui-remake/real/) of the remade web app, served by the native Node.js server on Windows 11 with QEMU 11.1.0 (TCG). The machine `remake-uefi` uses UEFI firmware (edk2 from the QEMU install), a 4 GiB virtio qcow2 system disk and a 2 GiB NVMe qcow2 data disk. Captures cover the dashboard, machines, new machine, storage, settings and machine pages in dark and light at 1440 by 960, and the dashboard, new machine and storage pages at 375 by 812 (document width equal to the viewport, so no horizontal scrolling).
