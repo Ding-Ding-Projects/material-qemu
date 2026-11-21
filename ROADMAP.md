@@ -33,8 +33,8 @@
 - [x] Click through VMDK import, disk resize, clone, snapshot and two-key snapshot restore in the browser against the v2 server.
 - [x] Render the remade interface in Cantonese and bilingual modes without horizontal overflow.
 - [ ] Translate server error messages (they stay in English in Cantonese mode).
-- [ ] Verify swtpm TPM start-up and Docker-image UEFI discovery on a Linux host or the built container.
-- [ ] Verify physical authenticators, installed guest operating-system boot, actual KVM and guest ACPI handling.
+- [x] Verify swtpm TPM start-up, UEFI and Secure Boot discovery and KVM in the built container inside the VirtualBox appliance (evidence/appliance-build-19).
+- [ ] Verify physical authenticators, installed guest operating-system boot and guest ACPI handling.
 - [ ] Verify complete latest-source visual (the Material Design 3 Expressive remake is implemented; screenshots use mocked API data), language, keyboard and narrow-screen parity; retain historical evidence with original provenance.
 
 ## Delivery and broader design
@@ -49,7 +49,7 @@
 - [x] Verify the same on VMware: with VMnet0 pinned to the real Ethernet adapter, the appliance got its LAN address at boot and answered healthy (VMware's automatic bridge had picked a network without DHCP).
 - [ ] Verify LAN reachability from a second device (only this computer has been checked).
 - [x] Add the Docker host target, USB flashing, and English/Cantonese/bilingual modes to the deploy assistant.
-- [ ] Verify the Docker target against a running Docker engine (Docker Desktop on the development host fails at startup).
+- [ ] Verify the Docker target against a running Docker engine. On the development host the Windows hypervisor is off (HypervisorPresent false, no Host Compute Service), so WSL and Docker Desktop cannot start; enabling it needs an owner decision and a restart.
 - [ ] Verify a real USB flash and boot on a physical PC.
 - ~~Raspberry Pi image and flashing~~: deliberately not doing. The owner decided on 2026-11-21 that this runs on Intel and AMD CPUs only, so the Raspberry Pi job, scripts and Flash option were removed.
 - [ ] Deliver appliance operating-system images and USB installer.
